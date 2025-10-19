@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ClinicaPsi.Infrastructure\ClinicaPsi.Infrastructure.csproj" />
+    <ProjectReference Include="..\ClinicaPsi.Shared\ClinicaPsi.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
