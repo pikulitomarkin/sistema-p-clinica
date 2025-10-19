@@ -5,7 +5,15 @@
 ![EF Core](https://img.shields.io/badge/EF%20Core-9.0-512BD4?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
+[![Build Status](https://github.com/pikulitomarkin/sistema-p-clinica/workflows/.NET%20Build%20and%20Test/badge.svg)](https://github.com/pikulitomarkin/sistema-p-clinica/actions)
+
 Sistema completo de gestão desenvolvido em ASP.NET Core 9.0 com Blazor Server para clínicas de psicologia, oferecendo funcionalidades modernas de agendamento, gamificação e notificações inteligentes.
+
+## 🔗 Links Importantes
+
+- **Repositório**: https://github.com/pikulitomarkin/sistema-p-clinica
+- **Issues**: https://github.com/pikulitomarkin/sistema-p-clinica/issues
+- **Wiki**: https://github.com/pikulitomarkin/sistema-p-clinica/wiki
 
 ## ✨ Funcionalidades Principais
 
@@ -99,8 +107,8 @@ ClinicaPsi/
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/clinicapsi.git
-cd clinicapsi
+git clone https://github.com/pikulitomarkin/sistema-p-clinica.git
+cd sistema-p-clinica
 ```
 
 ### 2. Restaure as dependências
@@ -230,9 +238,9 @@ O sistema de pontos incentiva a continuidade do tratamento:
 
 Contribuições são bem-vindas! Para contribuir:
 
-1. Fork o projeto
+1. Fork o projeto (https://github.com/pikulitomarkin/sistema-p-clinica/fork)
 2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
+3. Commit suas mudanças (`git commit -m 'feat: Adiciona MinhaFeature'`)
 4. Push para a branch (`git push origin feature/MinhaFeature`)
 5. Abra um Pull Request
 
@@ -246,7 +254,7 @@ Contribuições são bem-vindas! Para contribuir:
 
 ## 🐛 Reportando Bugs
 
-Encontrou um bug? Por favor, abra uma [issue](https://github.com/seu-usuario/clinicapsi/issues) com:
+Encontrou um bug? Por favor, abra uma [issue](https://github.com/pikulitomarkin/sistema-p-clinica/issues) com:
 
 - Descrição detalhada do problema
 - Passos para reproduzir
@@ -265,8 +273,8 @@ Desenvolvido com ❤️ para facilitar a gestão de clínicas de psicologia.
 ## 📞 Suporte
 
 - 📧 Email: suporte@clinicapsi.com
-- 💬 Discord: [Link do servidor]
-- 📱 WhatsApp: [Número de contato]
+- 🐛 Issues: https://github.com/pikulitomarkin/sistema-p-clinica/issues
+- 💬 Discussions: https://github.com/pikulitomarkin/sistema-p-clinica/discussions
 
 ## 🙏 Agradecimentos
 
@@ -276,6 +284,6 @@ Desenvolvido com ❤️ para facilitar a gestão de clínicas de psicologia.
 
 ---
 
-⭐ Se este projeto foi útil para você, considere dar uma estrela no GitHub!
+⭐ Se este projeto foi útil para você, considere dar uma estrela no [GitHub](https://github.com/pikulitomarkin/sistema-p-clinica)!
 
 **Feito com .NET 9.0 e Blazor** 🚀
