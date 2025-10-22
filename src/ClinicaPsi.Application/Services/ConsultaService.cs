@@ -103,4 +103,72 @@ public class ConsultaService
 
         return await _context.SaveChangesAsync() > 0;
     }
+
+    public async Task<int> GetConsultasHojeAsync()
+    {
+        var hoje = DateTime.Today;
+        var amanha = hoje.AddDays(1);
+        
+        return await _context.Consultas
+            .CountAsync(c => c.DataHorario >= hoje && c.DataHorario < amanha 
+                           && c.Status == StatusConsulta.Agendada);
+    }
+
+    public async Task<List<Consulta>> GetConsultasHojeListAsync()
+    {
+        var hoje = DateTime.Today;
+        var amanha = hoje.AddDays(1);
+        
+        return await _context.Consultas
+            .Include(c => c.Paciente)
+            .Include(c => c.Psicologo)
+            .Where(c => c.DataHorario >= hoje && c.DataHorario < amanha 
+                       && c.Status == StatusConsulta.Agendada)
+            .OrderBy(c => c.DataHorario)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetCountProximasConsultasAsync(int dias)
+    {
+        var hoje = DateTime.Today;
+        var dataFim = hoje.AddDays(dias);
+        
+        return await _context.Consultas
+            .CountAsync(c => c.DataHorario >= hoje && c.DataHorario <= dataFim 
+                           && c.Status == StatusConsulta.Agendada);
+    }
+
+    public async Task<List<Consulta>> GetConsultasByDateAsync(DateTime data)
+    {
+        var inicioDia = data.Date;
+        var fimDia = inicioDia.AddDays(1);
+        
+        return await _context.Consultas
+            .Include(c => c.Paciente)
+            .Include(c => c.Psicologo)
+            .Where(c => c.DataHorario >= inicioDia && c.DataHorario < fimDia)
+            .OrderBy(c => c.DataHorario)
+            .ToListAsync();
+    }
+
+    public async Task<List<Consulta>> GetConsultasRealizadasAsync(DateTime dataInicio, DateTime dataFim)
+    {
+        return await _context.Consultas
+            .Include(c => c.Paciente)
+            .Include(c => c.Psicologo)
+            .Where(c => c.DataHorario >= dataInicio && c.DataHorario <= dataFim 
+                       && c.Status == StatusConsulta.Realizada)
+            .OrderBy(c => c.DataHorario)
+            .ToListAsync();
+    }
+
+    public async Task<List<Consulta>> GetConsultasByPeriodAsync(DateTime dataInicio, DateTime dataFim)
+    {
+        return await _context.Consultas
+            .Include(c => c.Paciente)
+            .Include(c => c.Psicologo)
+            .Where(c => c.DataHorario >= dataInicio && c.DataHorario <= dataFim)
+            .OrderBy(c => c.DataHorario)
+            .ToListAsync();
+    }
 }

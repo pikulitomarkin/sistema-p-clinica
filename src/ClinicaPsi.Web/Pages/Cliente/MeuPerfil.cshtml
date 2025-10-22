@@ -1,0 +1,357 @@
+@page
+@using ClinicaPsi.Web.Extensions
+@model ClinicaPsi.Web.Pages.Cliente.MeuPerfilModel
+@{
+    ViewData["Title"] = "Meu Perfil";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="bi bi-person-circle me-2"></i>Meu Perfil</h2>
+                    <p class="text-muted mb-0">Gerencie suas informações pessoais e configurações da conta</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (ViewData.ModelState.ErrorCount > 0)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Corrija os erros abaixo:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Informações do Perfil -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person me-2"></i>Informações Pessoais</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-page-handler="AtualizarPerfil">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Nome Completo *</label>
+                                    <input asp-for="Input.Nome" class="form-control" placeholder="Seu nome completo">
+                                    <span asp-validation-for="Input.Nome" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Email *</label>
+                                    <input asp-for="Input.Email" type="email" class="form-control" placeholder="seu@email.com">
+                                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Telefone</label>
+                                    <input asp-for="Input.Telefone" class="form-control" placeholder="(11) 99999-9999">
+                                    <span asp-validation-for="Input.Telefone" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">CPF *</label>
+                                    <input asp-for="Input.CPF" class="form-control" placeholder="000.000.000-00" maxlength="11">
+                                    <span asp-validation-for="Input.CPF" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Data de Nascimento *</label>
+                                    <input asp-for="Input.DataNascimento" type="date" class="form-control">
+                                    <span asp-validation-for="Input.DataNascimento" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Endereço</label>
+                                    <input asp-for="Input.Endereco" class="form-control" placeholder="Rua, número, bairro, cidade">
+                                    <span asp-validation-for="Input.Endereco" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h6 class="text-muted mb-3"><i class="bi bi-shield-exclamation me-2"></i>Contato de Emergência</h6>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Nome do Contato</label>
+                                    <input asp-for="Input.ContatoEmergencia" class="form-control" placeholder="Nome completo">
+                                    <span asp-validation-for="Input.ContatoEmergencia" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Telefone de Emergência</label>
+                                    <input asp-for="Input.TelefoneEmergencia" class="form-control" placeholder="(11) 99999-9999">
+                                    <span asp-validation-for="Input.TelefoneEmergencia" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h6 class="text-muted mb-3"><i class="bi bi-heart-pulse me-2"></i>Informações Clínicas</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Histórico Médico</label>
+                            <textarea asp-for="Input.HistoricoMedico" class="form-control" rows="3" 
+                                      placeholder="Descreva seu histórico médico relevante (doenças, cirurgias, tratamentos anteriores)..."></textarea>
+                            <span asp-validation-for="Input.HistoricoMedico" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Medicamentos em Uso</label>
+                            <textarea asp-for="Input.MedicamentosUso" class="form-control" rows="2" 
+                                      placeholder="Liste os medicamentos que você usa atualmente..."></textarea>
+                            <span asp-validation-for="Input.MedicamentosUso" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Observações Adicionais</label>
+                            <textarea asp-for="Input.Observacoes" class="form-control" rows="2" 
+                                      placeholder="Outras informações que considera importantes..."></textarea>
+                            <span asp-validation-for="Input.Observacoes" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-2"></i>Salvar Alterações
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alterar Senha -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Alterar Senha</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-page-handler="AlterarSenha">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Senha Atual *</label>
+                                    <input asp-for="InputSenha.SenhaAtual" type="password" class="form-control">
+                                    <span asp-validation-for="InputSenha.SenhaAtual" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Nova Senha *</label>
+                                    <input asp-for="InputSenha.NovaSenha" type="password" class="form-control">
+                                    <span asp-validation-for="InputSenha.NovaSenha" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Confirmar Nova Senha *</label>
+                                    <input asp-for="InputSenha.ConfirmarSenha" type="password" class="form-control">
+                                    <span asp-validation-for="InputSenha.ConfirmarSenha" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <small>A senha deve ter pelo menos 6 caracteres. Recomendamos usar letras, números e símbolos.</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-shield-check me-2"></i>Alterar Senha
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar com Informações -->
+        <div class="col-lg-4">
+            <!-- Resumo do Perfil -->
+            @if (Model.Paciente != null)
+            {
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="bi bi-person-badge me-2"></i>Resumo do Perfil</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="bi bi-person-fill display-4 text-primary"></i>
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-3">
+                            <h5 class="mb-1">@Model.Paciente.Nome</h5>
+                            <small class="text-muted">@Model.CalcularIdade() anos</small>
+                        </div>
+
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <div class="bg-light rounded p-2">
+                                    <div class="fw-bold text-success">@Model.Paciente.PsicoPontos</div>
+                                    <small class="text-muted">PsicoPontos</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="bg-light rounded p-2">
+                                    <div class="fw-bold text-info">@Model.Paciente.ConsultasRealizadas</div>
+                                    <small class="text-muted">Consultas</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="bg-light rounded p-2">
+                                    <div class="fw-bold text-warning">@Model.Paciente.ConsultasGratuitas</div>
+                                    <small class="text-muted">Gratuitas</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row g-2 small">
+                            <div class="col-12">
+                                <i class="bi bi-envelope me-2 text-muted"></i>
+                                @Model.Paciente.Email
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(Model.Paciente.Telefone))
+                            {
+                                <div class="col-12">
+                                    <i class="bi bi-telephone me-2 text-muted"></i>
+                                    @Model.Paciente.Telefone
+                                </div>
+                            }
+                            <div class="col-12">
+                                <i class="bi bi-calendar me-2 text-muted"></i>
+                                Membro desde @Model.Paciente.DataCadastro.ToString("MM/yyyy")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Dicas de Segurança -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-shield-exclamation me-2"></i>Dicas de Segurança</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Use uma senha forte e única</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Mantenha seus dados atualizados</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Nunca compartilhe sua senha</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Informe mudanças no histórico médico</small>
+                        </li>
+                        <li class="mb-0">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Faça logout em dispositivos compartilhados</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Suporte -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-headset me-2"></i>Precisa de Ajuda?</h6>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-3">Nossa equipe está aqui para ajudar você!</p>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-chat-dots me-2"></i>Chat Online
+                        </button>
+                        <button class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-telephone me-2"></i>(11) 9999-9999
+                        </button>
+                        <button class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-envelope me-2"></i>suporte@clinicapsi.com
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Máscara para CPF
+        const cpfInput = document.querySelector('input[name="Input.CPF"]');
+        if (cpfInput) {
+            cpfInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    e.target.value = value;
+                }
+            });
+        }
+
+        // Máscara para telefones
+        const telefoneInputs = document.querySelectorAll('input[type="tel"], input[name*="Telefone"]');
+        telefoneInputs.forEach(input => {
+            input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    if (value.length === 11) {
+                        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                    } else if (value.length === 10) {
+                        value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                    }
+                    e.target.value = value;
+                }
+            });
+        });
+    });
+</script>

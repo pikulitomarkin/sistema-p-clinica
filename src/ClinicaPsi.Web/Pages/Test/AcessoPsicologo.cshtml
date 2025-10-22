@@ -1,0 +1,80 @@
+@page "/test/acesso-psicologo"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using ClinicaPsi.Shared.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@model ClinicaPsi.Web.Pages.Test.AcessoPsicologoModel
+@{
+    ViewData["Title"] = "Teste de Acesso - Psicólogo";
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <h1>Teste de Acesso - Psicólogo</h1>
+    
+    @if (!User.Identity.IsAuthenticated)
+    {
+        <div class="alert alert-warning">
+            <h4>Não está logado</h4>
+            <p>Você precisa fazer login primeiro.</p>
+            <form method="post" asp-page-handler="Login">
+                <button type="submit" class="btn btn-primary">Login Automático como Psicólogo</button>
+            </form>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            <h4>✅ Logado com sucesso!</h4>
+            <p><strong>Usuário:</strong> @User.Identity.Name</p>
+            <p><strong>Roles:</strong> @string.Join(", ", User.Claims.Where(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(c => c.Value))</p>
+        </div>
+        
+        @if (Model.CurrentUser != null)
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Informações do Usuário</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Nome:</strong> @Model.CurrentUser.NomeCompleto</p>
+                    <p><strong>Email:</strong> @Model.CurrentUser.Email</p>
+                    <p><strong>Tipo:</strong> @Model.CurrentUser.TipoUsuario</p>
+                    <p><strong>PsicologoId:</strong> @(Model.CurrentUser.PsicologoId?.ToString() ?? "NULL ❌")</p>
+                    
+                    @if (Model.CurrentUser.PsicologoId == null)
+                    {
+                        <div class="alert alert-danger mt-3">
+                            <h6>⚠️ Problema Identificado</h6>
+                            <p>O usuário não está associado a um registro na tabela Psicologos.</p>
+                            <p>Isso está causando o erro de "Acesso Negado" nas páginas do psicólogo.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        
+        <div class="mt-4">
+            <h4>Teste de Acesso às Páginas</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="list-group">
+                        <a href="/psicologo" class="list-group-item list-group-item-action">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                        <a href="/psicologo/agenda" class="list-group-item list-group-item-action">
+                            <i class="bi bi-calendar-week me-2"></i>Minha Agenda
+                        </a>
+                        <a href="/psicologo/consultas" class="list-group-item list-group-item-action">
+                            <i class="bi bi-clipboard-check me-2"></i>Minhas Consultas
+                        </a>
+                        <a href="/psicologo/pacientes" class="list-group-item list-group-item-action">
+                            <i class="bi bi-person-lines-fill me-2"></i>Meus Pacientes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

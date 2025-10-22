@@ -1,0 +1,375 @@
+@page
+@using ClinicaPsi.Web.Extensions
+@model ClinicaPsi.Web.Pages.Cliente.HistoricoModel
+@{
+    ViewData["Title"] = "Histórico";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="bi bi-clock-history me-2"></i>Histórico</h2>
+                    <p class="text-muted mb-0">Acompanhe seu histórico de consultas e movimentação de pontos</p>
+                </div>
+                <button class="btn btn-outline-primary" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            @TempData["Info"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Data Início</label>
+                            <input type="date" name="dataInicio" value="@Model.DataInicio.ToString("yyyy-MM-dd")" 
+                                   class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Data Fim</label>
+                            <input type="date" name="dataFim" value="@Model.DataFim.ToString("yyyy-MM-dd")" 
+                                   class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo de Consulta</label>
+                            <select name="filtroTipo" class="form-select">
+                                <option value="todos" selected="@(Model.FiltroTipo == "todos")">Todos os tipos</option>
+                                <option value="normal" selected="@(Model.FiltroTipo == "normal")">Normal</option>
+                                <option value="gratuita" selected="@(Model.FiltroTipo == "gratuita")">Gratuita</option>
+                                <option value="avaliacao" selected="@(Model.FiltroTipo == "avaliacao")">Avaliação</option>
+                                <option value="retorno" selected="@(Model.FiltroTipo == "retorno")">Retorno</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-search me-2"></i>Filtrar
+                            </button>
+                            <a href="?" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Resumo -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-6 text-primary mb-2">@Model.TotalConsultasRealizadas</div>
+                    <h6 class="text-muted mb-0">Consultas Realizadas</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-6 text-success mb-2">@Model.TotalGasto.ToString("C")</div>
+                    <h6 class="text-muted mb-0">Total Investido</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-6 text-info mb-2">@Model.ConsultasGratuitas</div>
+                    <h6 class="text-muted mb-0">Consultas Gratuitas</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="display-6 text-warning mb-2">@Model.TotalPontosGanhos</div>
+                    <h6 class="text-muted mb-0">PsicoPontos Ganhos</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Histórico de Consultas -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-calendar2-check me-2"></i>Histórico de Consultas</h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.ConsultasHistorico.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Psicólogo</th>
+                                        <th>Tipo</th>
+                                        <th>Status</th>
+                                        <th>Valor</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var consulta in Model.ConsultasHistorico)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">@consulta.DataHorario.ToString("dd/MM/yyyy")</div>
+                                                <small class="text-muted">@consulta.DataHorario.ToString("HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold">@consulta.Psicologo.Nome</div>
+                                                <small class="text-muted">@consulta.Psicologo.Especialidades</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark">
+                                                    @consulta.Tipo.GetDisplayName()
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge @Model.GetStatusBadgeClass(consulta.Status)">
+                                                    @consulta.Status.GetDisplayName()
+                                                </span>
+                                            </td>
+                                            <td class="fw-bold">@consulta.Valor.ToString("C")</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                        data-bs-toggle="modal" data-bs-target="#detalhesModal@(consulta.Id)">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Modal Detalhes -->
+                                        <div class="modal fade" id="detalhesModal@(consulta.Id)" tabindex="-1">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Detalhes da Consulta</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <strong>Data/Horário:</strong><br>
+                                                                @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <strong>Duração:</strong><br>
+                                                                @consulta.DuracaoMinutos minutos
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <strong>Psicólogo:</strong><br>
+                                                                @consulta.Psicologo.Nome
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <strong>Especialidades:</strong><br>
+                                                                @consulta.Psicologo.Especialidades
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <strong>Tipo:</strong><br>
+                                                                @consulta.Tipo.GetDisplayName()
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <strong>Valor:</strong><br>
+                                                                @consulta.Valor.ToString("C")
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <strong>Status:</strong><br>
+                                                                <span class="badge @Model.GetStatusBadgeClass(consulta.Status)">
+                                                                    @consulta.Status.GetDisplayName()
+                                                                </span>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <strong>Agendado em:</strong><br>
+                                                                @consulta.DataAgendamento.ToString("dd/MM/yyyy HH:mm")
+                                                            </div>
+                                                            @if (!string.IsNullOrWhiteSpace(consulta.Observacoes))
+                                                            {
+                                                                <div class="col-12">
+                                                                    <strong>Observações:</strong><br>
+                                                                    @consulta.Observacoes
+                                                                </div>
+                                                            }
+                                                            @if (!string.IsNullOrWhiteSpace(consulta.RelatorioSessao))
+                                                            {
+                                                                <div class="col-12">
+                                                                    <strong>Relatório da Sessão:</strong><br>
+                                                                    <div class="alert alert-light">
+                                                                        @consulta.RelatorioSessao
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            @if (consulta.Status == StatusConsulta.Cancelada && !string.IsNullOrWhiteSpace(consulta.MotivoCancelamento))
+                                                            {
+                                                                <div class="col-12">
+                                                                    <strong>Motivo do Cancelamento:</strong><br>
+                                                                    <div class="alert alert-warning">
+                                                                        @consulta.MotivoCancelamento
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                            Fechar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginação -->
+                        @if (Model.TotalPaginas > 1)
+                        {
+                            <div class="card-footer">
+                                <nav>
+                                    <ul class="pagination justify-content-center mb-0">
+                                        @if (Model.PaginaAtual > 1)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="?pagina=@(Model.PaginaAtual - 1)&dataInicio=@Model.DataInicio.ToString("yyyy-MM-dd")&dataFim=@Model.DataFim.ToString("yyyy-MM-dd")&filtroTipo=@Model.FiltroTipo">
+                                                    <i class="bi bi-chevron-left"></i>
+                                                </a>
+                                            </li>
+                                        }
+
+                                        @for (int i = Math.Max(1, Model.PaginaAtual - 2); i <= Math.Min(Model.TotalPaginas, Model.PaginaAtual + 2); i++)
+                                        {
+                                            <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                                <a class="page-link" href="?pagina=@i&dataInicio=@Model.DataInicio.ToString("yyyy-MM-dd")&dataFim=@Model.DataFim.ToString("yyyy-MM-dd")&filtroTipo=@Model.FiltroTipo">
+                                                    @i
+                                                </a>
+                                            </li>
+                                        }
+
+                                        @if (Model.PaginaAtual < Model.TotalPaginas)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="?pagina=@(Model.PaginaAtual + 1)&dataInicio=@Model.DataInicio.ToString("yyyy-MM-dd")&dataFim=@Model.DataFim.ToString("yyyy-MM-dd")&filtroTipo=@Model.FiltroTipo">
+                                                    <i class="bi bi-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </nav>
+                                <div class="text-center text-muted">
+                                    <small>Página @Model.PaginaAtual de @Model.TotalPaginas (@Model.TotalRegistros registros)</small>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-calendar-x display-1 text-muted opacity-50"></i>
+                            <h5 class="text-muted mt-3">Nenhuma consulta encontrada</h5>
+                            <p class="text-muted">Tente ajustar os filtros ou o período selecionado</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar com Estatísticas e Pontos -->
+        <div class="col-lg-4">
+            <!-- Gráfico de Consultas por Psicólogo -->
+            @if (Model.ConsultasPorPsicologo.Any())
+            {
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-person-check me-2"></i>Consultas por Psicólogo</h6>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var item in Model.ConsultasPorPsicologo.OrderByDescending(x => x.Value).Take(5))
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-truncate">@item.Key</small>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress me-2" style="width: 60px; height: 8px;">
+                                        <div class="progress-bar bg-primary" style="width: @(item.Value * 100.0 / Model.ConsultasPorPsicologo.Values.Max())%"></div>
+                                    </div>
+                                    <span class="badge bg-primary">@item.Value</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Histórico de PsicoPontos -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-star me-2"></i>Movimentação de PsicoPontos</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.HistoricoPontos.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var movimento in Model.HistoricoPontos.Take(10))
+                            {
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi @Model.GetTipoMovimentacaoIcon(movimento.TipoMovimentacao) me-2"></i>
+                                            <div>
+                                                <div class="fw-bold">@movimento.Descricao</div>
+                                                <small class="text-muted">@movimento.DataMovimentacao.ToString("dd/MM/yyyy HH:mm")</small>
+                                            </div>
+                                        </div>
+                                        <span class="badge @Model.GetTipoMovimentacaoBadgeClass(movimento.TipoMovimentacao)">
+                                            @(movimento.TipoMovimentacao == TipoMovimentacaoPontos.Uso ? "-" : "+")@movimento.Pontos
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mt-3 pt-3 border-top">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="text-success fw-bold">+@Model.TotalPontosGanhos</div>
+                                    <small class="text-muted">Ganhos</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-primary fw-bold">-@Model.TotalPontosUsados</div>
+                                    <small class="text-muted">Usados</small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-3">
+                            <i class="bi bi-star display-6 text-muted opacity-50"></i>
+                            <p class="text-muted mt-2 mb-0">Nenhuma movimentação de pontos no período</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

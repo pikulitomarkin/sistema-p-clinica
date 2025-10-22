@@ -1,0 +1,445 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@model ClinicaPsi.Web.Pages.Psicologo.RelatoriosModel
+@{
+    ViewData["Title"] = "Relatórios";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="gradient-text mb-0">
+        <i class="bi bi-graph-up me-2"></i>
+        Relatórios
+    </h2>
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary btn-modern" onclick="gerarRelatorioCompleto()">
+            <i class="bi bi-file-earmark-pdf me-2"></i>
+            Gerar PDF
+        </button>
+        <button type="button" class="btn btn-outline-primary" onclick="exportarDados()">
+            <i class="bi bi-download me-2"></i>
+            Exportar Dados
+        </button>
+    </div>
+</div>
+
+<!-- Filtros de Período -->
+<div class="card card-modern mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="dataInicio" class="form-label">Data Início</label>
+                <input type="date" class="form-control" id="dataInicio" name="dataInicio" 
+                       value="@Model.DataInicio.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-3">
+                <label for="dataFim" class="form-label">Data Fim</label>
+                <input type="date" class="form-control" id="dataFim" name="dataFim" 
+                       value="@Model.DataFim.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-3">
+                <label for="periodo" class="form-label">Período Pré-definido</label>
+                <select class="form-select" id="periodo" name="periodo" onchange="setPeriodo()">
+                    <option value="">Personalizado</option>
+                    <option value="7">Últimos 7 dias</option>
+                    <option value="30">Últimos 30 dias</option>
+                    <option value="90">Últimos 3 meses</option>
+                    <option value="365">Último ano</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>
+                    Atualizar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Cards de Resumo -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card card-modern stat-card">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-check text-primary" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-1">@Model.TotalConsultas</h3>
+                <small class="text-muted">Total de Consultas</small>
+                <div class="mt-2">
+                    <small class="text-success">
+                        <i class="bi bi-arrow-up"></i>
+                        +@Model.VariacaoConsultas%
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-modern stat-card">
+            <div class="card-body text-center">
+                <i class="bi bi-currency-dollar text-success" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-1">@Model.ReceitaTotal.ToString("C")</h3>
+                <small class="text-muted">Receita Total</small>
+                <div class="mt-2">
+                    <small class="text-success">
+                        <i class="bi bi-arrow-up"></i>
+                        +@Model.VariacaoReceita%
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-modern stat-card">
+            <div class="card-body text-center">
+                <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-1">@Model.PacientesAtendidos</h3>
+                <small class="text-muted">Pacientes Atendidos</small>
+                <div class="mt-2">
+                    <small class="text-info">
+                        <i class="bi bi-arrow-up"></i>
+                        +@Model.VariacaoPacientes%
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-modern stat-card">
+            <div class="card-body text-center">
+                <i class="bi bi-percent text-warning" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-1">@Model.TaxaComparecimento.ToString("N1")%</h3>
+                <small class="text-muted">Taxa de Comparecimento</small>
+                <div class="mt-2">
+                    <small class="@(Model.VariacaoComparecimento >= 0 ? "text-success" : "text-danger")">
+                        <i class="bi bi-arrow-@(Model.VariacaoComparecimento >= 0 ? "up" : "down")"></i>
+                        @(Model.VariacaoComparecimento >= 0 ? "+" : "")@Model.VariacaoComparecimento%
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Consultas por Período
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="consultasChart" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-pie-chart me-2"></i>
+                    Status das Consultas
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart me-2"></i>
+                    Receita Mensal
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="receitaChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock me-2"></i>
+                    Distribuição por Horário
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="horarioChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabelas Detalhadas -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-trophy me-2"></i>
+                    Top 10 Pacientes (Consultas)
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Paciente</th>
+                                <th>Consultas</th>
+                                <th>Receita</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.TopPacientes.Take(10))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2">
+                                                @item.NomePaciente.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div>
+                                                <strong>@item.NomePaciente</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">@item.TotalConsultas</span>
+                                    </td>
+                                    <td>
+                                        <strong>@item.ReceitaTotal.ToString("C")</strong>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-week me-2"></i>
+                    Dias da Semana Mais Ativos
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Dia da Semana</th>
+                                <th>Consultas</th>
+                                <th>Receita</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ConsultasPorDiaSemana.OrderByDescending(x => x.TotalConsultas))
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@item.DiaSemana</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@item.TotalConsultas</span>
+                                    </td>
+                                    <td>
+                                        <strong>@item.ReceitaTotal.ToString("C")</strong>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resumo Detalhado -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-text me-2"></i>
+                    Resumo Detalhado do Período
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Informações Gerais</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Período:</strong> @Model.DataInicio.ToString("dd/MM/yyyy") a @Model.DataFim.ToString("dd/MM/yyyy")</li>
+                            <li><strong>Total de Dias:</strong> @((Model.DataFim - Model.DataInicio).Days + 1) dias</li>
+                            <li><strong>Média de Consultas/Dia:</strong> @(Model.TotalConsultas > 0 ? Math.Round((double)Model.TotalConsultas / ((Model.DataFim - Model.DataInicio).Days + 1), 1) : 0)</li>
+                            <li><strong>Valor Médio por Consulta:</strong> @(Model.TotalConsultas > 0 ? (Model.ReceitaTotal / Model.TotalConsultas).ToString("C") : "R$ 0,00")</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success">Performance</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Consultas Realizadas:</strong> @Model.ConsultasRealizadas (@(Model.TotalConsultas > 0 ? Math.Round((double)Model.ConsultasRealizadas / Model.TotalConsultas * 100, 1) : 0)%)</li>
+                            <li><strong>Consultas Canceladas:</strong> @Model.ConsultasCanceladas (@(Model.TotalConsultas > 0 ? Math.Round((double)Model.ConsultasCanceladas / Model.TotalConsultas * 100, 1) : 0)%)</li>
+                            <li><strong>No-Shows:</strong> @Model.NoShows (@(Model.TotalConsultas > 0 ? Math.Round((double)Model.NoShows / Model.TotalConsultas * 100, 1) : 0)%)</li>
+                            <li><strong>Consultas Gratuitas:</strong> @Model.ConsultasGratuitas (@(Model.TotalConsultas > 0 ? Math.Round((double)Model.ConsultasGratuitas / Model.TotalConsultas * 100, 1) : 0)%)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Função para definir período pré-definido
+        function setPeriodo() {
+            const periodo = document.getElementById('periodo').value;
+            if (periodo) {
+                const hoje = new Date();
+                const dataFim = hoje.toISOString().split('T')[0];
+                const dataInicio = new Date(hoje.getTime() - (periodo * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+                
+                document.getElementById('dataInicio').value = dataInicio;
+                document.getElementById('dataFim').value = dataFim;
+            }
+        }
+
+        // Configuração dos gráficos
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        };
+
+        // Gráfico de Consultas por Período
+        const consultasCtx = document.getElementById('consultasChart').getContext('2d');
+        new Chart(consultasCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.ConsultasPorDia.Select(x => x.Data.ToString("dd/MM")))),
+                datasets: [{
+                    label: 'Consultas',
+                    data: @Html.Raw(Json.Serialize(Model.ConsultasPorDia.Select(x => x.Total))),
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Gráfico de Status das Consultas
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Realizadas', 'Agendadas', 'Canceladas', 'No-Show'],
+                datasets: [{
+                    data: [@Model.ConsultasRealizadas, @Model.ConsultasAgendadas, @Model.ConsultasCanceladas, @Model.NoShows],
+                    backgroundColor: ['#28a745', '#007bff', '#dc3545', '#fd7e14'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                ...chartOptions,
+                cutout: '60%'
+            }
+        });
+
+        // Gráfico de Receita Mensal
+        const receitaCtx = document.getElementById('receitaChart').getContext('2d');
+        new Chart(receitaCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.ReceitaPorMes.Select(x => x.Mes))),
+                datasets: [{
+                    label: 'Receita (R$)',
+                    data: @Html.Raw(Json.Serialize(Model.ReceitaPorMes.Select(x => x.Valor))),
+                    backgroundColor: '#28a745',
+                    borderColor: '#1e7e34',
+                    borderWidth: 1
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Gráfico de Distribution por Horário
+        const horarioCtx = document.getElementById('horarioChart').getContext('2d');
+        new Chart(horarioCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.ConsultasPorHorario.Select(x => x.Horario + "h"))),
+                datasets: [{
+                    label: 'Consultas',
+                    data: @Html.Raw(Json.Serialize(Model.ConsultasPorHorario.Select(x => x.Total))),
+                    backgroundColor: '#17a2b8',
+                    borderColor: '#138496',
+                    borderWidth: 1
+                }]
+            },
+            options: chartOptions
+        });
+
+        function gerarRelatorioCompleto() {
+            alert('Funcionalidade de geração de PDF em desenvolvimento');
+        }
+
+        function exportarDados() {
+            alert('Funcionalidade de exportação em desenvolvimento');
+        }
+    </script>
+}
+
+<style>
+    .stat-card {
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    canvas {
+        max-height: 400px;
+    }
+</style>

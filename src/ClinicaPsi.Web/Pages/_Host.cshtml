@@ -1,0 +1,333 @@
+@page "/"
+@using ClinicaPsi.Application.Services
+@inject PacienteService PacienteService
+@inject ConsultaService ConsultaService
+@{
+    ViewData["Title"] = "PsiiAnaSantos - Psicóloga Psi. Ana Santos";
+}
+
+<!-- Hero Section Moderna -->
+<div class="hero-section">
+    <div class="container hero-content">
+        <div class="row align-items-center justify-content-center text-center">
+            <div class="col-lg-10">
+                <div class="psychologist-image mb-4 animate-fade-in">
+                    <img src="~/images/ana-santos.jpg" 
+                         alt="Psi. Ana Santos" 
+                         class="rounded-circle img-fluid"
+                         style="width: 250px; height: 250px; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                </div>
+                <h1 class="display-3 fw-bold text-white mb-3 animate-fade-in animate-delay-1">Psi. Ana Santos</h1>
+                <div class="badge bg-light text-dark fs-6 mb-3 animate-fade-in animate-delay-2">
+                    <i class="bi bi-award"></i> CRP: 08/45168
+                </div>
+                <p class="lead text-white mb-4 animate-fade-in animate-delay-2">
+                    Psicóloga Clínica especializada em Terapia Cognitivo-Comportamental
+                </p>
+                <p class="fs-5 text-white-50 mb-5 animate-fade-in animate-delay-3">
+                    Transformando vidas através da psicoterapia humanizada e baseada em evidências científicas
+                </p>
+                <div class="d-flex flex-wrap gap-3 justify-content-center animate-fade-in animate-delay-3">
+                    <a href="/Agendamento" class="btn btn-modern">
+                        <i class="bi bi-calendar-check me-2"></i> Agendar Consulta
+                    </a>
+                    <a href="#psicopontos" class="btn btn-outline-modern">
+                        <i class="bi bi-star-fill me-2"></i> Sistema PsicoPontos
+                    </a>
+                    <a href="/Account/Login" class="btn btn-outline-modern">
+                        <i class="bi bi-person-circle me-2"></i> Área do Cliente
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Cards de Informações Profissionais -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-4">
+            <div class="modern-card h-100 animate-fade-in animate-delay-1">
+                <div class="card-header text-center">
+                    <div class="translucent-icon">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <h5 class="mb-0">Formação Acadêmica</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-success fw-bold">Psicologia</h6>
+                        <small class="text-muted">Centro Universitário Campo Real - 2024</small>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-success fw-bold">Especialização em TCC</h6>
+                        <small class="text-muted">Instituto Descomplica Ead - 2025</small>
+                    </div>
+                    <div class="mb-0">
+                        <h6 class="text-success fw-bold">Especialização em Psicologia Organizacional</h6>
+                        <small class="text-muted">Instituto Descomplica Ead - 2025</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="modern-card h-100 animate-fade-in animate-delay-2">
+                <div class="card-header text-center">
+                    <div class="translucent-icon">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <h5 class="mb-0">Especialidades</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <span class="small">Terapia Cognitivo-Comportamental</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <span class="small">Psicologia Organizacional</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="modern-card h-100 animate-fade-in animate-delay-3">
+                <div class="card-header text-center">
+                    <div class="translucent-icon">
+                        <i class="bi bi-briefcase-fill"></i>
+                    </div>
+                    <h5 class="mb-0">Experiência</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-0">
+                        <h6 class="text-success fw-bold">2022 - 2024</h6>
+                        <small class="text-muted">Estágio em Psicologia Clínica - Centro Universitário Campo Real</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="modern-card text-center animate-fade-in animate-delay-1">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h3 class="display-5 text-success mb-2">0</h3>
+                    <p class="text-muted mb-0">Pacientes Ativos</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="modern-card text-center animate-fade-in animate-delay-2">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-calendar-check-fill"></i>
+                    </div>
+                    <h3 class="display-5 text-success mb-2">0</h3>
+                    <p class="text-muted mb-0">Consultas Hoje</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="modern-card text-center animate-fade-in animate-delay-3">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-calendar3"></i>
+                    </div>
+                    <h3 class="display-5 text-success mb-2">0</h3>
+                    <p class="text-muted mb-0">Próximos 7 Dias</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="modern-card text-center animate-fade-in animate-delay-3">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <h3 class="display-5 text-success mb-2">0</h3>
+                    <p class="text-muted mb-0">PsicoPontos Total</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sistema PsicoPontos -->
+    <div id="psicopontos" class="points-section animate-fade-in">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h3 class="text-dark fw-bold mb-3">
+                    <i class="bi bi-trophy-fill me-2"></i>
+                    Sistema PsicoPontos - Programa de Fidelidade
+                </h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-success rounded-circle p-2 me-3">
+                                <i class="bi bi-plus-lg text-white"></i>
+                            </div>
+                            <span><strong>Ganhe 1 ponto</strong> a cada consulta realizada</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-success rounded-circle p-2 me-3">
+                                <i class="bi bi-gift text-white"></i>
+                            </div>
+                            <span><strong>Troque 10 pontos</strong> por 1 consulta gratuita</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-success rounded-circle p-2 me-3">
+                                <i class="bi bi-arrow-repeat text-white"></i>
+                            </div>
+                            <span><strong>Incentive</strong> a continuidade do tratamento</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="bg-success rounded-circle p-2 me-3">
+                                <i class="bi bi-graph-up text-white"></i>
+                            </div>
+                            <span><strong>Acompanhe</strong> seus pontos online</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <a href="/login" class="btn btn-modern btn-lg">
+                    <i class="bi bi-person-circle me-2"></i>
+                    Ver Meus Pontos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações de Contato -->
+    <div class="contact-section animate-fade-in">
+        <div class="row">
+            <div class="col-lg-6">
+                <h4 class="text-success fw-bold mb-4">
+                    <i class="bi bi-geo-alt-fill me-2"></i>
+                    Informações de Contato
+                </h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-building text-success me-2"></i>
+                                <strong>Endereço:</strong>
+                            </div>
+                            <small class="text-muted">
+                                Rua Orlando Ferreira Neto, 39 - Jd Itapoã<br>
+                                Londrina - PR, 86043-470
+                            </small>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-telephone-fill text-success me-2"></i>
+                                <strong>Telefone:</strong>
+                            </div>
+                            <small class="text-muted">(42) 99936-9724</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-envelope-fill text-success me-2"></i>
+                                <strong>E-mail:</strong>
+                            </div>
+                            <small class="text-muted">psiana@psiianasantos.com.br</small>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-clock-fill text-success me-2"></i>
+                                <strong>Horários:</strong>
+                            </div>
+                            <small class="text-muted">Segunda a Sexta: 9h às 17h</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <h5 class="text-success fw-bold mb-3">Pronta para Atendê-la!</h5>
+                    <p class="text-muted mb-4">Agende sua consulta e comece sua jornada de autoconhecimento e bem-estar.</p>
+                    <a href="/agendamento" class="btn btn-modern btn-lg">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Agendar Agora
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Área de Acesso por Perfil -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="modern-card animate-fade-in">
+                <div class="card-header text-center">
+                    <div class="translucent-icon">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <h5 class="mb-0">Área Restrita - Acesso por Perfil</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4 text-center">
+                        <div class="col-lg-4">
+                            <div class="modern-card border-0" style="background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%);">
+                                <div class="card-body">
+                                    <div class="translucent-icon" style="background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%); color: #dc3545;">
+                                        <i class="bi bi-person-gear"></i>
+                                    </div>
+                                    <h6 class="text-danger fw-bold">Área Administrativa</h6>
+                                    <p class="small text-muted">Psi. Ana Santos<br>Controle total do sistema</p>
+                                    <a href="/admin" class="btn btn-outline-danger">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>
+                                        Acessar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="modern-card border-0" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);">
+                                <div class="card-body">
+                                    <div class="translucent-icon" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%); color: #0d6efd;">
+                                        <i class="bi bi-person-badge"></i>
+                                    </div>
+                                    <h6 class="text-primary fw-bold">Área dos Psicólogos</h6>
+                                    <p class="small text-muted">Agenda e compromissos<br>Consultas e relatórios</p>
+                                    <a href="/psicologo" class="btn btn-outline-primary">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>
+                                        Acessar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="modern-card border-0" style="background: var(--gradient-green-light);">
+                                <div class="card-body">
+                                    <div class="translucent-icon">
+                                        <i class="bi bi-person-heart"></i>
+                                    </div>
+                                    <h6 class="text-success fw-bold">Portal do Cliente</h6>
+                                    <p class="small text-muted">Agendamentos e pontos<br>Consultas e histórico</p>
+                                    <a href="/cliente" class="btn btn-outline-modern">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>
+                                        Acessar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

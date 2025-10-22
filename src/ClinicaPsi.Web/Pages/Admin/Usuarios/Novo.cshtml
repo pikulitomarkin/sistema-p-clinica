@@ -1,0 +1,339 @@
+@page
+@model ClinicaPsi.Web.Pages.Admin.Usuarios.NovoModel
+@{
+    ViewData["Title"] = "Novo Usuário";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="bi bi-person-plus text-primary me-2"></i>
+            Novo Usuário
+        </h1>
+        <p class="text-muted mb-0">Cadastre um novo usuário no sistema</p>
+    </div>
+    <a href="/admin/usuarios" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i>
+        Voltar
+    </a>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<form method="post">
+    <div class="row">
+        <!-- Informações Básicas -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person me-2"></i>
+                        Informações Básicas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="nomeCompleto" class="form-label">Nome Completo <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @(ViewData.ModelState["Input.NomeCompleto"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                   id="nomeCompleto" asp-for="Input.NomeCompleto" required>
+                            <span asp-validation-for="Input.NomeCompleto" class="invalid-feedback"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control @(ViewData.ModelState["Input.Email"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                       id="email" asp-for="Input.Email" required>
+                                <span asp-validation-for="Input.Email" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="tipoUsuario" class="form-label">Tipo de Usuário <span class="text-danger">*</span></label>
+                            <select class="form-select @(ViewData.ModelState["Input.TipoUsuario"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                    id="tipoUsuario" asp-for="Input.TipoUsuario" required onchange="toggleCamposEspecificos()">
+                                <option value="">Selecione...</option>
+                                <option value="@TipoUsuario.Admin">Administrador</option>
+                                <option value="@TipoUsuario.Psicologo">Psicólogo</option>
+                                <option value="@TipoUsuario.Cliente">Cliente/Paciente</option>
+                            </select>
+                            <span asp-validation-for="Input.TipoUsuario" class="invalid-feedback"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="senha" class="form-label">Senha <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control @(ViewData.ModelState["Input.Senha"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                       id="senha" asp-for="Input.Senha" required>
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('senha')">
+                                    <i class="bi bi-eye" id="senha-icon"></i>
+                                </button>
+                                <span asp-validation-for="Input.Senha" class="invalid-feedback"></span>
+                            </div>
+                            <div class="form-text">Mínimo de 6 caracteres</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="confirmarSenha" class="form-label">Confirmar Senha <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                <input type="password" class="form-control @(ViewData.ModelState["Input.ConfirmarSenha"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                       id="confirmarSenha" asp-for="Input.ConfirmarSenha" required>
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirmarSenha')">
+                                    <i class="bi bi-eye" id="confirmarSenha-icon"></i>
+                                </button>
+                                <span asp-validation-for="Input.ConfirmarSenha" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campos Específicos para Cliente -->
+            <div class="card mb-4" id="camposCliente" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-heart me-2"></i>
+                        Informações do Paciente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="cpf" class="form-label">CPF</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                                <input type="text" class="form-control @(ViewData.ModelState["Input.CPF"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                       id="cpf" asp-for="Input.CPF" placeholder="00000000000" maxlength="11">
+                                <span asp-validation-for="Input.CPF" class="invalid-feedback"></span>
+                            </div>
+                            <div class="form-text">Apenas números, sem pontos ou traços</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="telefone" class="form-label">Telefone</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                                <input type="tel" class="form-control @(ViewData.ModelState["Input.Telefone"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                       id="telefone" asp-for="Input.Telefone" placeholder="(11) 99999-9999">
+                                <span asp-validation-for="Input.Telefone" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campos Específicos para Psicólogo -->
+            <div class="card mb-4" id="camposPsicologo" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge me-2"></i>
+                        Informações do Psicólogo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.PsicologosDisponiveis.Any())
+                    {
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="psicologoId" class="form-label">Selecionar Psicólogo <span class="text-danger">*</span></label>
+                                <select class="form-select @(ViewData.ModelState["Input.PsicologoId"]?.Errors.Count > 0 ? "is-invalid" : "")" 
+                                        id="psicologoId" asp-for="Input.PsicologoId">
+                                    <option value="">Selecione um psicólogo...</option>
+                                    @foreach (var psicologo in Model.PsicologosDisponiveis)
+                                    {
+                                        <option value="@psicologo.Id">@psicologo.Nome - CRP: @psicologo.CRP</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Input.PsicologoId" class="invalid-feedback"></span>
+                                <div class="form-text">Selecione o psicólogo que será associado a este usuário</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="crp" class="form-label">CRP</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-award"></i></span>
+                                    <input type="text" class="form-control" id="crp" asp-for="Input.CRP" readonly>
+                                </div>
+                                <div class="form-text">Preenchido automaticamente</div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Atenção!</strong> Não há psicólogos disponíveis para associar a um usuário.
+                            <br>
+                            Todos os psicólogos cadastrados já possuem usuários associados.
+                            <br>
+                            <a href="/admin/psicologos" class="alert-link">Cadastre um novo psicólogo</a> antes de criar este usuário.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Painel de Ajuda -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Tipos de Usuário
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="bi bi-shield-check me-2"></i>
+                            Administrador
+                        </h6>
+                        <p class="small text-muted mb-0">
+                            Acesso completo ao sistema. Pode gerenciar usuários, psicólogos, consultas e configurações.
+                        </p>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <h6 class="text-info">
+                            <i class="bi bi-person-badge me-2"></i>
+                            Psicólogo
+                        </h6>
+                        <p class="small text-muted mb-0">
+                            Acesso à área profissional. Pode gerenciar sua agenda, consultas e pacientes.
+                        </p>
+                    </div>
+                    <hr>
+                    <div class="mb-0">
+                        <h6 class="text-success">
+                            <i class="bi bi-person-heart me-2"></i>
+                            Cliente/Paciente
+                        </h6>
+                        <p class="small text-muted mb-0">
+                            Acesso ao portal do cliente. Pode agendar consultas, ver histórico e pontos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        Segurança
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Senha deve ter pelo menos 6 caracteres</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Email deve ser único no sistema</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>CPF deve ser único para clientes</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Usuários criados pelo admin são ativados automaticamente</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Criar Usuário
+                    </button>
+                    <a href="/admin/usuarios" class="btn btn-outline-secondary btn-lg ms-2">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancelar
+                    </a>
+                </div>
+                <div>
+                    <button type="reset" class="btn btn-outline-warning">
+                        <i class="bi bi-arrow-clockwise me-2"></i>
+                        Limpar Formulário
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Alternar campos específicos baseado no tipo de usuário
+        function toggleCamposEspecificos() {
+            const tipoUsuario = document.getElementById('tipoUsuario').value;
+            const camposCliente = document.getElementById('camposCliente');
+            const camposPsicologo = document.getElementById('camposPsicologo');
+            
+            // Esconder todos os campos específicos
+            camposCliente.style.display = 'none';
+            camposPsicologo.style.display = 'none';
+            
+            // Mostrar campos baseado no tipo
+            if (tipoUsuario === '@TipoUsuario.Cliente') {
+                camposCliente.style.display = 'block';
+            } else if (tipoUsuario === '@TipoUsuario.Psicologo') {
+                camposPsicologo.style.display = 'block';
+            }
+        }
+
+        // Alternar visibilidade da senha
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(fieldId + '-icon');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+            } else {
+                field.type = 'password';
+                icon.className = 'bi bi-eye';
+            }
+        }
+
+        // Atualizar CRP quando psicólogo for selecionado
+        document.getElementById('psicologoId').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const crpField = document.getElementById('crp');
+            
+            if (selectedOption.value) {
+                const crp = selectedOption.text.split('CRP: ')[1];
+                crpField.value = crp || '';
+            } else {
+                crpField.value = '';
+            }
+        });
+
+        // Formatar CPF (apenas números)
+        document.getElementById('cpf').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+        });
+
+        // Formatar telefone
+        document.getElementById('telefone').addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length >= 11) {
+                value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            } else if (value.length >= 7) {
+                value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+            } else if (value.length >= 3) {
+                value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+            }
+            this.value = value;
+        });
+
+        // Inicializar campos na carga da página
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleCamposEspecificos();
+        });
+    </script>
+}

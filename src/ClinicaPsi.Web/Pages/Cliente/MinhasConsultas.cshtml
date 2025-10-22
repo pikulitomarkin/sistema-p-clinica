@@ -1,0 +1,408 @@
+@page
+@using ClinicaPsi.Web.Extensions
+@model ClinicaPsi.Web.Pages.Cliente.MinhasConsultasModel
+@{
+    ViewData["Title"] = "Minhas Consultas";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="bi bi-calendar2-check me-2"></i>Minhas Consultas</h2>
+                    <p class="text-muted mb-0">Gerencie seus agendamentos e histórico de consultas</p>
+                </div>
+                <a href="/Cliente/AgendarConsulta" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Nova Consulta
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filtros e Busca -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" name="busca" value="@Model.Busca" class="form-control" 
+                                       placeholder="Buscar por psicólogo ou observações...">
+                                <input type="hidden" name="filtroStatus" value="@Model.FiltroStatus">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-search me-2"></i>Buscar
+                            </button>
+                            @if (!string.IsNullOrWhiteSpace(Model.Busca))
+                            {
+                                <a href="?filtroStatus=@Model.FiltroStatus" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Limpar
+                                </a>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Abas de Filtro -->
+    <ul class="nav nav-pills mb-4" id="consultasTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(Model.FiltroStatus == "proximas" ? "active" : "")" 
+               href="?filtroStatus=proximas&busca=@Model.Busca">
+                <i class="bi bi-calendar-event me-2"></i>
+                Próximas (@Model.ConsultasProximas.Count)
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(Model.FiltroStatus == "realizadas" ? "active" : "")" 
+               href="?filtroStatus=realizadas&busca=@Model.Busca">
+                <i class="bi bi-check-circle me-2"></i>
+                Realizadas (@Model.ConsultasRealizadas.Count)
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @(Model.FiltroStatus == "canceladas" ? "active" : "")" 
+               href="?filtroStatus=canceladas&busca=@Model.Busca">
+                <i class="bi bi-x-circle me-2"></i>
+                Canceladas (@Model.ConsultasCanceladas.Count)
+            </a>
+        </li>
+    </ul>
+
+    <!-- Conteúdo das Abas -->
+    <div class="tab-content">
+        <!-- Próximas Consultas -->
+        @if (Model.FiltroStatus == "proximas")
+        {
+            <div class="row">
+                @if (Model.ConsultasProximas.Any())
+                {
+                    @foreach (var consulta in Model.ConsultasProximas)
+                    {
+                        <div class="col-lg-6 mb-4">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header bg-light border-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">@consulta.Psicologo.Nome</h6>
+                                            <small class="text-muted">@consulta.Psicologo.Especialidades</small>
+                                        </div>
+                                        <span class="badge @Model.GetStatusBadgeClass(consulta.Status)">
+                                            @consulta.Status.GetDisplayName()
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-calendar-date text-primary me-2"></i>
+                                                <div>
+                                                    <small class="text-muted">Data</small>
+                                                    <div class="fw-bold">@consulta.DataHorario.ToString("dd/MM/yyyy")</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-clock text-primary me-2"></i>
+                                                <div>
+                                                    <small class="text-muted">Horário</small>
+                                                    <div class="fw-bold">@consulta.DataHorario.ToString("HH:mm")</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-hourglass text-primary me-2"></i>
+                                                <div>
+                                                    <small class="text-muted">Duração</small>
+                                                    <div class="fw-bold">@consulta.DuracaoMinutos min</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-currency-dollar text-primary me-2"></i>
+                                                <div>
+                                                    <small class="text-muted">Valor</small>
+                                                    <div class="fw-bold">@consulta.Valor.ToString("C")</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(consulta.Observacoes))
+                                    {
+                                        <div class="mt-3">
+                                            <small class="text-muted">Observações:</small>
+                                            <p class="mb-0 small">@consulta.Observacoes</p>
+                                        </div>
+                                    }
+
+                                    @if (Model.PrecisaConfirmacao(consulta))
+                                    {
+                                        <div class="alert alert-warning mt-3 mb-0 p-2">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>
+                                            <small>Confirme sua presença para esta consulta</small>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="card-footer bg-transparent border-0">
+                                    <div class="btn-group w-100" role="group">
+                                        @if (Model.PrecisaConfirmacao(consulta))
+                                        {
+                                            <form method="post" asp-page-handler="ConfirmarPresenca" class="d-inline">
+                                                <input type="hidden" name="consultaId" value="@consulta.Id">
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-check-circle me-1"></i>Confirmar
+                                                </button>
+                                            </form>
+                                        }
+                                        @if (Model.PodeSerCancelada(consulta))
+                                        {
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    data-bs-toggle="modal" data-bs-target="#cancelarModal@(consulta.Id)">
+                                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                                            </button>
+                                        }
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                data-bs-toggle="modal" data-bs-target="#detalhesModal@(consulta.Id)">
+                                            <i class="bi bi-eye me-1"></i>Detalhes
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Cancelar Consulta -->
+                        <div class="modal fade" id="cancelarModal@(consulta.Id)" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Cancelar Consulta</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="post" asp-page-handler="CancelarConsulta">
+                                        <div class="modal-body">
+                                            <input type="hidden" name="consultaId" value="@consulta.Id">
+                                            <p>Tem certeza que deseja cancelar esta consulta?</p>
+                                            <p><strong>Data/Hora:</strong> @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")</p>
+                                            <p><strong>Psicólogo:</strong> @consulta.Psicologo.Nome</p>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">Motivo do cancelamento (opcional)</label>
+                                                <textarea name="motivo" class="form-control" rows="3" 
+                                                          placeholder="Descreva o motivo do cancelamento..."></textarea>
+                                            </div>
+                                            
+                                            <div class="alert alert-warning">
+                                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                                <small>Cancelamentos só são permitidos com 24h de antecedência.</small>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                Manter Consulta
+                                            </button>
+                                            <button type="submit" class="btn btn-danger">
+                                                Cancelar Consulta
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Detalhes -->
+                        <div class="modal fade" id="detalhesModal@(consulta.Id)" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Detalhes da Consulta</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <strong>Psicólogo:</strong><br>
+                                                @consulta.Psicologo.Nome
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Especialidades:</strong><br>
+                                                @consulta.Psicologo.Especialidades
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Data/Horário:</strong><br>
+                                                @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Duração:</strong><br>
+                                                @consulta.DuracaoMinutos minutos
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Tipo:</strong><br>
+                                                @consulta.Tipo.GetDisplayName()
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Valor:</strong><br>
+                                                @consulta.Valor.ToString("C")
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Status:</strong><br>
+                                                <span class="badge @Model.GetStatusBadgeClass(consulta.Status)">
+                                                    @consulta.Status.GetDisplayName()
+                                                </span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <strong>Agendado em:</strong><br>
+                                                @consulta.DataAgendamento.ToString("dd/MM/yyyy HH:mm")
+                                            </div>
+                                            @if (!string.IsNullOrWhiteSpace(consulta.Observacoes))
+                                            {
+                                                <div class="col-12">
+                                                    <strong>Observações:</strong><br>
+                                                    @consulta.Observacoes
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            Fechar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="bi bi-calendar-x display-1 text-muted opacity-50"></i>
+                            <h4 class="text-muted mt-3">Nenhuma consulta próxima</h4>
+                            <p class="text-muted">Que tal agendar uma nova consulta?</p>
+                            <a href="/Cliente/AgendarConsulta" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Agendar Consulta
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Consultas Realizadas -->
+        @if (Model.FiltroStatus == "realizadas")
+        {
+            <div class="row">
+                @if (Model.ConsultasRealizadas.Any())
+                {
+                    @foreach (var consulta in Model.ConsultasRealizadas.Take(20))
+                    {
+                        <div class="col-lg-4 mb-3">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-1">@consulta.Psicologo.Nome</h6>
+                                            <small class="text-muted">@consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </div>
+                                        <span class="badge bg-success">Realizada</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">@consulta.Tipo.GetDisplayName()</small>
+                                        <strong class="text-success">@consulta.Valor.ToString("C")</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="bi bi-clock-history display-1 text-muted opacity-50"></i>
+                            <h4 class="text-muted mt-3">Nenhuma consulta realizada</h4>
+                            <p class="text-muted">Seu histórico aparecerá aqui após as consultas</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Consultas Canceladas -->
+        @if (Model.FiltroStatus == "canceladas")
+        {
+            <div class="row">
+                @if (Model.ConsultasCanceladas.Any())
+                {
+                    @foreach (var consulta in Model.ConsultasCanceladas.Take(20))
+                    {
+                        <div class="col-lg-4 mb-3">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-1">@consulta.Psicologo.Nome</h6>
+                                            <small class="text-muted">@consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </div>
+                                        <span class="badge @Model.GetStatusBadgeClass(consulta.Status)">
+                                            @consulta.Status.GetDisplayName()
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">@consulta.Tipo.GetDisplayName()</small>
+                                        @if (!string.IsNullOrWhiteSpace(consulta.MotivoCancelamento))
+                                        {
+                                            <div class="mt-2">
+                                                <small class="text-muted"><strong>Motivo:</strong> @consulta.MotivoCancelamento</small>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="bi bi-x-circle display-1 text-muted opacity-50"></i>
+                            <h4 class="text-muted mt-3">Nenhuma consulta cancelada</h4>
+                            <p class="text-muted">Ótimo! Você mantém seus compromissos</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

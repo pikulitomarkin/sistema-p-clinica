@@ -1,0 +1,290 @@
+@page
+@using ClinicaPsi.Shared.Models
+@model ClinicaPsi.Web.Pages.Admin.AuditoriaModel
+@{
+    ViewData["Title"] = "Auditoria de Usuários";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">
+                <i class="bi bi-shield-check me-2"></i>
+                Auditoria de Usuários
+            </h1>
+            <p class="text-muted">Histórico completo de ações administrativas sobre usuários</p>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-clipboard-data text-primary fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Total de Registros</h6>
+                            <h3 class="mb-0">@Model.TotalRegistros</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-person-plus text-success fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Criações</h6>
+                            <h3 class="mb-0">@(Model.Estatisticas.ContainsKey(TipoAcaoAuditoria.CriacaoUsuario) ? Model.Estatisticas[TipoAcaoAuditoria.CriacaoUsuario] : 0)</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-person-x text-warning fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Desativações</h6>
+                            <h3 class="mb-0">@(Model.Estatisticas.ContainsKey(TipoAcaoAuditoria.DesativacaoUsuario) ? Model.Estatisticas[TipoAcaoAuditoria.DesativacaoUsuario] : 0)</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-pencil-square text-info fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Edições</h6>
+                            <h3 class="mb-0">@(Model.Estatisticas.ContainsKey(TipoAcaoAuditoria.EdicaoUsuario) ? Model.Estatisticas[TipoAcaoAuditoria.EdicaoUsuario] : 0)</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Administrador</label>
+                    <input type="text" class="form-control" name="filtroAdmin" value="@Model.FiltroAdmin" placeholder="Nome ou ID">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Usuário Afetado</label>
+                    <input type="text" class="form-control" name="filtroUsuario" value="@Model.FiltroUsuario" placeholder="Nome ou email">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Ação</label>
+                    <select class="form-select" name="filtroAcao">
+                        <option value="">Todas</option>
+                        @foreach (var acao in Enum.GetValues<TipoAcaoAuditoria>())
+                        {
+                            <option value="@((int)acao)" selected="@(Model.FiltroAcao == acao)">@ObterNomeAcao(acao)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Data Início</label>
+                    <input type="date" class="form-control" name="dataInicio" value="@Model.DataInicio?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Data Fim</label>
+                    <input type="date" class="form-control" name="dataFim" value="@Model.DataFim?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-2"></i>Filtrar
+                    </button>
+                    <a href="/admin/auditoria" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-2"></i>Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Logs -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">Registros de Auditoria</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Registros.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Ação</th>
+                                <th>Administrador</th>
+                                <th>Usuário Afetado</th>
+                                <th>IP</th>
+                                <th>Detalhes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var registro in Model.Registros)
+                            {
+                                <tr>
+                                    <td>
+                                        <small class="text-muted d-block">@registro.DataHora.ToString("dd/MM/yyyy")</small>
+                                        <strong>@registro.DataHora.ToString("HH:mm:ss")</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge @ObterClasseAcao(registro.Acao)">
+                                            <i class="bi @ObterIconeAcao(registro.Acao) me-1"></i>
+                                            @ObterNomeAcao(registro.Acao)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div>@registro.AdminNome</div>
+                                        <small class="text-muted">@registro.AdminId.Substring(0, 8)...</small>
+                                    </td>
+                                    <td>
+                                        <div>@registro.UsuarioAfetadoNome</div>
+                                        <small class="text-muted">@registro.UsuarioAfetadoEmail</small>
+                                    </td>
+                                    <td>
+                                        <small class="font-monospace">@(registro.IpAddress ?? "-")</small>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(registro.Detalhes))
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#detalhesModal@(registro.Id)">
+                                                <i class="bi bi-info-circle"></i> Ver
+                                            </button>
+
+                                            <!-- Modal de Detalhes -->
+                                            <div class="modal fade" id="detalhesModal@(registro.Id)" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Detalhes da Ação</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <pre class="bg-light p-3 rounded">@registro.Detalhes</pre>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginação -->
+                @if (Model.TotalPaginas > 1)
+                {
+                    <div class="card-footer bg-white">
+                        <nav>
+                            <ul class="pagination justify-content-center mb-0">
+                                @for (int i = 1; i <= Model.TotalPaginas; i++)
+                                {
+                                    <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                        <a class="page-link" href="?pagina=@i&filtroAdmin=@Model.FiltroAdmin&filtroUsuario=@Model.FiltroUsuario&filtroAcao=@((int?)Model.FiltroAcao)&dataInicio=@Model.DataInicio?.ToString("yyyy-MM-dd")&dataFim=@Model.DataFim?.ToString("yyyy-MM-dd")">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-3">Nenhum registro de auditoria encontrado</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string ObterNomeAcao(TipoAcaoAuditoria acao)
+    {
+        return acao switch
+        {
+            TipoAcaoAuditoria.CriacaoUsuario => "Criação",
+            TipoAcaoAuditoria.DesativacaoUsuario => "Desativação",
+            TipoAcaoAuditoria.ReativacaoUsuario => "Reativação",
+            TipoAcaoAuditoria.EdicaoUsuario => "Edição",
+            TipoAcaoAuditoria.AlteracaoSenha => "Alteração de Senha",
+            TipoAcaoAuditoria.AlteracaoRole => "Alteração de Role",
+            TipoAcaoAuditoria.ExclusaoUsuario => "Exclusão",
+            _ => acao.ToString()
+        };
+    }
+
+    string ObterClasseAcao(TipoAcaoAuditoria acao)
+    {
+        return acao switch
+        {
+            TipoAcaoAuditoria.CriacaoUsuario => "bg-success",
+            TipoAcaoAuditoria.DesativacaoUsuario => "bg-warning",
+            TipoAcaoAuditoria.ReativacaoUsuario => "bg-info",
+            TipoAcaoAuditoria.EdicaoUsuario => "bg-primary",
+            TipoAcaoAuditoria.AlteracaoSenha => "bg-secondary",
+            TipoAcaoAuditoria.AlteracaoRole => "bg-info",
+            TipoAcaoAuditoria.ExclusaoUsuario => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    string ObterIconeAcao(TipoAcaoAuditoria acao)
+    {
+        return acao switch
+        {
+            TipoAcaoAuditoria.CriacaoUsuario => "bi-person-plus",
+            TipoAcaoAuditoria.DesativacaoUsuario => "bi-person-x",
+            TipoAcaoAuditoria.ReativacaoUsuario => "bi-person-check",
+            TipoAcaoAuditoria.EdicaoUsuario => "bi-pencil-square",
+            TipoAcaoAuditoria.AlteracaoSenha => "bi-key",
+            TipoAcaoAuditoria.AlteracaoRole => "bi-shield-check",
+            TipoAcaoAuditoria.ExclusaoUsuario => "bi-trash",
+            _ => "bi-info-circle"
+        };
+    }
+}

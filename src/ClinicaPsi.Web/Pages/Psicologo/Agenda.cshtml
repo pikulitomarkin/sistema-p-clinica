@@ -1,0 +1,556 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@model ClinicaPsi.Web.Pages.Psicologo.AgendaModel
+@{
+    ViewData["Title"] = "Minha Agenda";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="gradient-text mb-0">
+        <i class="bi bi-calendar-week me-2"></i>
+        Minha Agenda
+    </h2>
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary btn-modern" data-bs-toggle="modal" data-bs-target="#agendarConsultaModal">
+            <i class="bi bi-plus-circle me-2"></i>
+            Nova Consulta
+        </button>
+        <button type="button" class="btn btn-outline-primary" onclick="exportarAgenda()">
+            <i class="bi bi-download me-2"></i>
+            Exportar
+        </button>
+    </div>
+</div>
+
+<!-- Filtros e Navegação -->
+<div class="card card-modern mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-3">
+                <label for="semanaAtual" class="form-label">Semana</label>
+                <div class="input-group">
+                    <button class="btn btn-outline-secondary" type="button" onclick="previousWeek()">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <input type="week" class="form-control" id="semanaAtual" value="@Model.SemanaAtual.ToString("yyyy-\\WW")">
+                    <button class="btn btn-outline-secondary" type="button" onclick="nextWeek()">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="visualizacao" class="form-label">Visualização</label>
+                <select class="form-select" id="visualizacao" onchange="changeView()">
+                    <option value="semana" selected>Semana</option>
+                    <option value="dia">Dia</option>
+                    <option value="mes">Mês</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filtroStatus" class="form-label">Status</label>
+                <select class="form-select" id="filtroStatus" onchange="filterByStatus()">
+                    <option value="">Todos</option>
+                    <option value="Agendada">Agendadas</option>
+                    <option value="Confirmada">Confirmadas</option>
+                    <option value="Realizada">Realizadas</option>
+                    <option value="Cancelada">Canceladas</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-success w-100" onclick="goToToday()">
+                    <i class="bi bi-calendar-event me-1"></i>
+                    Hoje
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Agenda Semanal -->
+<div class="card card-modern">
+    <div class="card-body p-0">
+        <div class="agenda-container">
+            <!-- Cabeçalho dos dias -->
+            <div class="agenda-header">
+                <div class="time-column"></div>
+                @for (int i = 0; i < 7; i++)
+                {
+                    var dia = Model.SemanaAtual.AddDays(i - (int)Model.SemanaAtual.DayOfWeek + 1);
+                    var isToday = dia.Date == DateTime.Today;
+                    <div class="day-header @(isToday ? "today" : "")">
+                        <div class="day-name">@dia.ToString("ddd")</div>
+                        <div class="day-number">@dia.Day</div>
+                    </div>
+                }
+            </div>
+
+            <!-- Grade de horários -->
+            <div class="agenda-grid">
+                <!-- Coluna de horários -->
+                <div class="time-column">
+                    @for (int hour = 7; hour <= 19; hour++)
+                    {
+                        <div class="time-slot">
+                            @hour:00
+                        </div>
+                    }
+                </div>
+
+                <!-- Colunas dos dias -->
+                @for (int dayIndex = 0; dayIndex < 7; dayIndex++)
+                {
+                    var dia = Model.SemanaAtual.AddDays(dayIndex - (int)Model.SemanaAtual.DayOfWeek + 1);
+                    var consultasDoDia = Model.ConsultasSemana.Where(c => c.DataHorario.Date == dia.Date).ToList();
+                    
+                    <div class="day-column" data-date="@dia.ToString("yyyy-MM-dd")">
+                        @for (int hour = 7; hour <= 19; hour++)
+                        {
+                            var horario = new DateTime(dia.Year, dia.Month, dia.Day, hour, 0, 0);
+                            var consulta = consultasDoDia.FirstOrDefault(c => c.DataHorario.Hour == hour);
+                            
+                            <div class="time-slot @(consulta != null ? "occupied" : "available")" 
+                                 data-time="@horario.ToString("yyyy-MM-dd HH:mm")"
+                                 onclick="@(consulta != null ? $"viewConsulta({consulta.Id})" : $"newConsulta('{horario:yyyy-MM-dd HH:mm}')")">
+                                
+                                @if (consulta != null)
+                                {
+                                    <div class="consulta-card status-@consulta.Status.ToString().ToLower()">
+                                        <div class="consulta-time">@consulta.DataHorario.ToString("HH:mm")</div>
+                                        <div class="consulta-patient">@consulta.Paciente?.Nome</div>
+                                        <div class="consulta-type">@consulta.Tipo.GetDisplayName()</div>
+                                        <div class="consulta-status">
+                                            <span class="badge status-@consulta.Status.ToString().ToLower()">
+                                                @consulta.Status.GetDisplayName()
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="available-slot">
+                                        <i class="bi bi-plus-circle"></i>
+                                        <small>Disponível</small>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resumo do Dia -->
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    Próximas Consultas
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.ProximasConsultas.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var consulta in Model.ProximasConsultas.Take(5))
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">@consulta.Paciente?.Nome</h6>
+                                    <p class="mb-1">
+                                        <i class="bi bi-clock me-1"></i>
+                                        @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm") - 
+                                        @consulta.DataHorario.AddMinutes(consulta.DuracaoMinutos).ToString("HH:mm")
+                                    </p>
+                                    <small class="text-muted">@consulta.Tipo.GetDisplayName()</small>
+                                </div>
+                                <div>
+                                    <span class="badge status-@consulta.Status.ToString().ToLower() me-2">
+                                        @consulta.Status.GetDisplayName()
+                                    </span>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" onclick="viewConsulta(@consulta.Id)">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success" onclick="editConsulta(@consulta.Id)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-calendar-x text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2">Nenhuma consulta agendada</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Estatísticas da Semana
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="stat-card text-center">
+                            <div class="stat-number text-primary">@Model.ConsultasSemana.Count()</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-card text-center">
+                            <div class="stat-number text-success">@Model.ConsultasSemana.Count(c => c.Status == StatusConsulta.Realizada)</div>
+                            <div class="stat-label">Realizadas</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-card text-center">
+                            <div class="stat-number text-warning">@Model.ConsultasSemana.Count(c => c.Status == StatusConsulta.Agendada)</div>
+                            <div class="stat-label">Agendadas</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-card text-center">
+                            <div class="stat-number text-danger">@Model.ConsultasSemana.Count(c => c.Status == StatusConsulta.Cancelada)</div>
+                            <div class="stat-label">Canceladas</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="text-center">
+                    <div class="stat-number text-info">@Model.ConsultasSemana.Where(c => c.Status == StatusConsulta.Realizada).Sum(c => c.Valor).ToString("C")</div>
+                    <div class="stat-label">Receita da Semana</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nova Consulta -->
+<div class="modal fade" id="agendarConsultaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-page-handler="AgendarConsulta" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Agendar Nova Consulta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="pacienteId" class="form-label">Paciente</label>
+                            <select class="form-select" id="pacienteId" name="pacienteId" required>
+                                <option value="">Selecione um paciente</option>
+                                @foreach (var paciente in Model.PacientesDisponiveis)
+                                {
+                                    <option value="@paciente.Id">@paciente.Nome</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tipoConsulta" class="form-label">Tipo</label>
+                            <select class="form-select" id="tipoConsulta" name="tipoConsulta" required>
+                                <option value="Normal">Consulta Normal</option>
+                                <option value="Retorno">Retorno</option>
+                                <option value="Avaliacao">Avaliação</option>
+                                <option value="Gratuita">Gratuita (PsicoPontos)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="dataConsulta" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="dataConsulta" name="dataConsulta" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="horaConsulta" class="form-label">Horário</label>
+                            <select class="form-select" id="horaConsulta" name="horaConsulta" required>
+                                <!-- Preenchido via JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="duracao" class="form-label">Duração (minutos)</label>
+                            <select class="form-select" id="duracao" name="duracao">
+                                <option value="50" selected>50 minutos</option>
+                                <option value="30">30 minutos</option>
+                                <option value="60">60 minutos</option>
+                                <option value="90">90 minutos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="valor" class="form-label">Valor</label>
+                            <input type="number" step="0.01" class="form-control" id="valor" name="valor" value="@Model.ValorConsultaPadrao">
+                        </div>
+                        <div class="col-md-12">
+                            <label for="observacoes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Agendar Consulta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Funções da agenda
+        function previousWeek() {
+            const weekInput = document.getElementById('semanaAtual');
+            const currentWeek = new Date(weekInput.value);
+            currentWeek.setDate(currentWeek.getDate() - 7);
+            weekInput.value = currentWeek.toISOString().slice(0, 10);
+            location.reload();
+        }
+
+        function nextWeek() {
+            const weekInput = document.getElementById('semanaAtual');
+            const currentWeek = new Date(weekInput.value);
+            currentWeek.setDate(currentWeek.getDate() + 7);
+            weekInput.value = currentWeek.toISOString().slice(0, 10);
+            location.reload();
+        }
+
+        function goToToday() {
+            const today = new Date();
+            const weekInput = document.getElementById('semanaAtual');
+            weekInput.value = today.toISOString().slice(0, 10);
+            location.reload();
+        }
+
+        function changeView() {
+            const view = document.getElementById('visualizacao').value;
+            alert('Mudança de visualização para: ' + view + ' (em desenvolvimento)');
+        }
+
+        function filterByStatus() {
+            const status = document.getElementById('filtroStatus').value;
+            // Implementar filtro
+            console.log('Filtrar por status:', status);
+        }
+
+        function viewConsulta(id) {
+            alert('Ver consulta ID: ' + id + ' (em desenvolvimento)');
+        }
+
+        function editConsulta(id) {
+            alert('Editar consulta ID: ' + id + ' (em desenvolvimento)');
+        }
+
+        function newConsulta(datetime) {
+            const modal = new bootstrap.Modal(document.getElementById('agendarConsultaModal'));
+            const date = datetime.split(' ')[0];
+            const time = datetime.split(' ')[1];
+            
+            document.getElementById('dataConsulta').value = date;
+            // Carregar horários disponíveis
+            loadAvailableTimes(date, time);
+            modal.show();
+        }
+
+        function loadAvailableTimes(date, selectedTime) {
+            const horaSelect = document.getElementById('horaConsulta');
+            horaSelect.innerHTML = '';
+            
+            // Horários de exemplo (em produção, buscar do servidor)
+            const horarios = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+            
+            horarios.forEach(hora => {
+                const option = document.createElement('option');
+                option.value = hora;
+                option.textContent = hora;
+                if (hora === selectedTime) {
+                    option.selected = true;
+                }
+                horaSelect.appendChild(option);
+            });
+        }
+
+        function exportarAgenda() {
+            alert('Funcionalidade de exportação em desenvolvimento');
+        }
+    </script>
+}
+
+<style>
+    .agenda-container {
+        overflow-x: auto;
+        min-height: 600px;
+    }
+
+    .agenda-header {
+        display: grid;
+        grid-template-columns: 80px repeat(7, 1fr);
+        border-bottom: 2px solid #e9ecef;
+        background: #f8f9fa;
+    }
+
+    .time-column {
+        border-right: 1px solid #e9ecef;
+        background: #f8f9fa;
+    }
+
+    .day-header {
+        padding: 1rem;
+        text-align: center;
+        border-right: 1px solid #e9ecef;
+    }
+
+    .day-header.today {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        font-weight: bold;
+    }
+
+    .day-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .day-number {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-top: 0.25rem;
+    }
+
+    .agenda-grid {
+        display: grid;
+        grid-template-columns: 80px repeat(7, 1fr);
+    }
+
+    .day-column {
+        border-right: 1px solid #e9ecef;
+    }
+
+    .time-slot {
+        height: 60px;
+        border-bottom: 1px solid #e9ecef;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .time-column .time-slot {
+        background: #f8f9fa;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6c757d;
+        cursor: default;
+    }
+
+    .time-slot.available:hover {
+        background: #e3f2fd;
+    }
+
+    .time-slot.occupied {
+        padding: 0.25rem;
+    }
+
+    .consulta-card {
+        width: 100%;
+        height: 100%;
+        padding: 0.25rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .consulta-card.status-agendada {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+
+    .consulta-card.status-confirmada {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+    }
+
+    .consulta-card.status-realizada {
+        background: linear-gradient(135deg, #6f42c1, #5a2d91);
+    }
+
+    .consulta-card.status-cancelada {
+        background: linear-gradient(135deg, #dc3545, #a71e2a);
+    }
+
+    .consulta-time {
+        font-weight: bold;
+    }
+
+    .consulta-patient {
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .consulta-type, .consulta-status {
+        font-size: 0.6rem;
+    }
+
+    .available-slot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+    }
+
+    .available-slot:hover {
+        opacity: 1;
+    }
+
+    .stat-card {
+        padding: 1rem;
+        border-radius: 10px;
+        background: #f8f9fa;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .badge.status-agendada { background-color: #007bff; }
+    .badge.status-confirmada { background-color: #28a745; }
+    .badge.status-realizada { background-color: #6f42c1; }
+    .badge.status-cancelada { background-color: #dc3545; }
+</style>

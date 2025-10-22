@@ -1,0 +1,496 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@model ClinicaPsi.Web.Pages.Psicologo.PacientesModel
+@{
+    ViewData["Title"] = "Meus Pacientes";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="gradient-text mb-0">
+        <i class="bi bi-people me-2"></i>
+        Meus Pacientes
+    </h2>
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary btn-modern" data-bs-toggle="modal" data-bs-target="#novoPacienteModal">
+            <i class="bi bi-person-plus me-2"></i>
+            Novo Paciente
+        </button>
+        <button type="button" class="btn btn-outline-primary" onclick="exportarPacientes()">
+            <i class="bi bi-download me-2"></i>
+            Exportar
+        </button>
+    </div>
+</div>
+
+<!-- Filtros e Busca -->
+<div class="card card-modern mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="busca" class="form-label">Buscar Paciente</label>
+                <input type="text" class="form-control" id="busca" name="busca" 
+                       value="@Model.FiltroBusca" placeholder="Nome, email ou CPF">
+            </div>
+            <div class="col-md-2">
+                <label for="ordenacao" class="form-label">Ordenar por</label>
+                <select class="form-select" id="ordenacao" name="ordenacao">
+                    <option value="nome" selected="@(Model.Ordenacao == "nome")">Nome</option>
+                    <option value="ultimaConsulta" selected="@(Model.Ordenacao == "ultimaConsulta")">Última Consulta</option>
+                    <option value="totalConsultas" selected="@(Model.Ordenacao == "totalConsultas")">Total de Consultas</option>
+                    <option value="pontos" selected="@(Model.Ordenacao == "pontos")">PsicoPontos</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="periodo" class="form-label">Período</label>
+                <select class="form-select" id="periodo" name="periodo">
+                    <option value="">Todos</option>
+                    <option value="30" selected="@(Model.FiltroPeriodo == 30)">Últimos 30 dias</option>
+                    <option value="90" selected="@(Model.FiltroPeriodo == 90)">Últimos 90 dias</option>
+                    <option value="180" selected="@(Model.FiltroPeriodo == 180)">Últimos 6 meses</option>
+                    <option value="365" selected="@(Model.FiltroPeriodo == 365)">Último ano</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="visualizacao" class="form-label">Visualização</label>
+                <select class="form-select" id="visualizacao" name="visualizacao" onchange="this.form.submit()">
+                    <option value="cards" selected="@(Model.Visualizacao == "cards")">Cards</option>
+                    <option value="lista" selected="@(Model.Visualizacao == "lista")">Lista</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>
+                    Buscar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Estatísticas Rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card card-modern stat-card">
+            <div class="card-body text-center">
+                <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-1">@Model.TotalPacientes</h3>
+                <small class="text-muted">Total de Pacientes</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-modern stat-card">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-check text-success" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-1">@Model.PacientesAtivos30Dias</h3>
+                <small class="text-muted">Ativos (30 dias)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-modern stat-card">
+            <div class="card-body text-center">
+                <i class="bi bi-clock-history text-warning" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-1">@Model.PacientesInativos90Dias</h3>
+                <small class="text-muted">Inativos (90+ dias)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-modern stat-card">
+            <div class="card-body text-center">
+                <i class="bi bi-star text-info" style="font-size: 2rem;"></i>
+                <h3 class="mt-2 mb-1">@Model.MediaPsicoPontos.ToString("N0")</h3>
+                <small class="text-muted">Média PsicoPontos</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista/Cards de Pacientes -->
+<div class="card card-modern">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul me-2"></i>
+            Lista de Pacientes (@Model.TotalPacientes)
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Pacientes.Any())
+        {
+            @if (Model.Visualizacao == "cards")
+            {
+                <!-- Visualização em Cards -->
+                <div class="p-3">
+                    <div class="row g-3">
+                        @foreach (var paciente in Model.Pacientes)
+                        {
+                            var ultimaConsulta = Model.UltimasConsultas.FirstOrDefault(c => c.PacienteId == paciente.Id);
+                            var totalConsultas = Model.TotalConsultasPorPaciente.GetValueOrDefault(paciente.Id, 0);
+                            var proximaConsulta = Model.ProximasConsultas.FirstOrDefault(c => c.PacienteId == paciente.Id);
+                            
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card paciente-card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2">
+                                                @paciente.Nome.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">@paciente.Nome</h6>
+                                                <small class="text-muted">@paciente.Email</small>
+                                            </div>
+                                        </div>
+                                        <div class="badge bg-primary">
+                                            @paciente.PsicoPontos pts
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                                <div class="text-center">
+                                                    <div class="h5 mb-1 text-info">@totalConsultas</div>
+                                                    <small class="text-muted">Consultas</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-center">
+                                                    <div class="h5 mb-1 text-success">@paciente.ConsultasGratuitas</div>
+                                                    <small class="text-muted">Gratuitas</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        @if (ultimaConsulta != null)
+                                        {
+                                            <div class="mb-2">
+                                                <small class="text-muted">Última consulta:</small>
+                                                <div>@ultimaConsulta.DataHorario.ToString("dd/MM/yyyy")</div>
+                                            </div>
+                                        }
+                                        
+                                        @if (proximaConsulta != null)
+                                        {
+                                            <div class="mb-2">
+                                                <small class="text-muted">Próxima consulta:</small>
+                                                <div class="text-primary">@proximaConsulta.DataHorario.ToString("dd/MM/yyyy HH:mm")</div>
+                                            </div>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(paciente.Telefone))
+                                        {
+                                            <div class="mb-2">
+                                                <i class="bi bi-telephone me-1"></i>
+                                                <small>@paciente.Telefone</small>
+                                            </div>
+                                        }
+                                        
+                                        <div class="mb-2">
+                                            <i class="bi bi-calendar me-1"></i>
+                                            <small>@paciente.DataNascimento.ToString("dd/MM/yyyy") (@(DateTime.Now.Year - paciente.DataNascimento.Year) anos)</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="btn-group w-100">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="viewPaciente(@paciente.Id)">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success btn-sm" onclick="editPaciente(@paciente.Id)">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info btn-sm" onclick="agendarConsulta(@paciente.Id)">
+                                                <i class="bi bi-calendar-plus"></i>
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-sm" onclick="historicoConsultas(@paciente.Id)">
+                                                <i class="bi bi-clock-history"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Visualização em Lista -->
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Paciente</th>
+                                <th>Contato</th>
+                                <th>Idade</th>
+                                <th>Consultas</th>
+                                <th>PsicoPontos</th>
+                                <th>Última Consulta</th>
+                                <th>Próxima Consulta</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var paciente in Model.Pacientes)
+                            {
+                                var ultimaConsulta = Model.UltimasConsultas.FirstOrDefault(c => c.PacienteId == paciente.Id);
+                                var totalConsultas = Model.TotalConsultasPorPaciente.GetValueOrDefault(paciente.Id, 0);
+                                var proximaConsulta = Model.ProximasConsultas.FirstOrDefault(c => c.PacienteId == paciente.Id);
+                                
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2">
+                                                @paciente.Nome.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div>
+                                                <strong>@paciente.Nome</strong>
+                                                <br><small class="text-muted">@paciente.Email</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(paciente.Telefone))
+                                        {
+                                            <i class="bi bi-telephone me-1"></i>@paciente.Telefone
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @((DateTime.Now.Year - paciente.DataNascimento.Year)) anos
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@totalConsultas</span>
+                                        @if (paciente.ConsultasGratuitas > 0)
+                                        {
+                                            <small class="text-success d-block">@paciente.ConsultasGratuitas gratuitas</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">@paciente.PsicoPontos pts</span>
+                                    </td>
+                                    <td>
+                                        @if (ultimaConsulta != null)
+                                        {
+                                            @ultimaConsulta.DataHorario.ToString("dd/MM/yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Nunca</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (proximaConsulta != null)
+                                        {
+                                            <span class="text-primary">@proximaConsulta.DataHorario.ToString("dd/MM/yyyy")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" onclick="viewPaciente(@paciente.Id)" title="Visualizar">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success" onclick="editPaciente(@paciente.Id)" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info" onclick="agendarConsulta(@paciente.Id)" title="Agendar">
+                                                <i class="bi bi-calendar-plus"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            
+            <!-- Paginação -->
+            @if (Model.TotalPaginas > 1)
+            {
+                <div class="card-footer">
+                    <nav aria-label="Navegação de páginas">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item @(Model.PaginaAtual <= 1 ? "disabled" : "")">
+                                <a class="page-link" href="?pagina=@(Model.PaginaAtual - 1)&@Request.QueryString.Value?.Replace($"pagina={Model.PaginaAtual}", "")">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            
+                            @for (int i = Math.Max(1, Model.PaginaAtual - 2); i <= Math.Min(Model.TotalPaginas, Model.PaginaAtual + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                    <a class="page-link" href="?pagina=@i&@Request.QueryString.Value?.Replace($"pagina={Model.PaginaAtual}", "")">@i</a>
+                                </li>
+                            }
+                            
+                            <li class="page-item @(Model.PaginaAtual >= Model.TotalPaginas ? "disabled" : "")">
+                                <a class="page-link" href="?pagina=@(Model.PaginaAtual + 1)&@Request.QueryString.Value?.Replace($"pagina={Model.PaginaAtual}", "")">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mt-3">Nenhum paciente encontrado</h5>
+                <p class="text-muted">Ajuste os filtros ou cadastre um novo paciente</p>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoPacienteModal">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Cadastrar Paciente
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Novo Paciente -->
+<div class="modal fade" id="novoPacienteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-page-handler="NovoPaciente" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-plus me-2"></i>
+                        Novo Paciente
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="nome" class="form-label">Nome Completo *</label>
+                            <input type="text" class="form-control" id="nome" name="nome" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cpf" class="form-label">CPF</label>
+                            <input type="text" class="form-control" id="cpf" name="cpf" 
+                                   placeholder="000.000.000-00" maxlength="14">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="telefone" class="form-label">Telefone</label>
+                            <input type="text" class="form-control" id="telefone" name="telefone" 
+                                   placeholder="(00) 00000-0000">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="dataNascimento" class="form-label">Data de Nascimento</label>
+                            <input type="date" class="form-control" id="dataNascimento" name="dataNascimento">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contatoEmergencia" class="form-label">Contato de Emergência</label>
+                            <input type="text" class="form-control" id="contatoEmergencia" name="contatoEmergencia">
+                        </div>
+                        <div class="col-md-12">
+                            <label for="endereco" class="form-label">Endereço</label>
+                            <input type="text" class="form-control" id="endereco" name="endereco">
+                        </div>
+                        <div class="col-md-12">
+                            <label for="historicoMedico" class="form-label">Histórico Médico</label>
+                            <textarea class="form-control" id="historicoMedico" name="historicoMedico" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Cadastrar Paciente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function viewPaciente(id) {
+            window.location.href = `/Psicologo/PacienteDetalhes/${id}`;
+        }
+
+        function editPaciente(id) {
+            window.location.href = `/Psicologo/EditarPaciente/${id}`;
+        }
+
+        function agendarConsulta(id) {
+            window.location.href = `/Psicologo/Agenda?paciente=${id}`;
+        }
+
+        function historicoConsultas(id) {
+            window.location.href = `/Psicologo/Consultas?paciente=${id}`;
+        }
+
+        function exportarPacientes() {
+            alert('Funcionalidade de exportação em desenvolvimento');
+        }
+
+        // Máscaras
+        document.getElementById('cpf')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value;
+        });
+
+        document.getElementById('telefone')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            e.target.value = value;
+        });
+    </script>
+}
+
+<style>
+    .paciente-card {
+        transition: transform 0.2s ease-in-out;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .paciente-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .stat-card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+</style>

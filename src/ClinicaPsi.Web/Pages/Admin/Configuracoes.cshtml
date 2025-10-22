@@ -1,0 +1,372 @@
+@page
+@model ClinicaPsi.Web.Pages.Admin.ConfiguracoesModel
+@{
+    ViewData["Title"] = "Configurações do Sistema";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="bi bi-gear text-primary me-2"></i>
+            Configurações do Sistema
+        </h1>
+        <p class="text-muted mb-0">Gerencie as configurações gerais da clínica</p>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        @TempData["WarningMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<form method="post">
+    <div class="row">
+        <!-- Informações da Clínica -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-building me-2"></i>
+                        Informações da Clínica
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="nomeClinica" class="form-label">Nome da Clínica</label>
+                        <input type="text" class="form-control" id="nomeClinica" 
+                               asp-for="Configuracoes.NomeClinica" required>
+                        <span asp-validation-for="Configuracoes.NomeClinica" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailContato" class="form-label">Email de Contato</label>
+                        <input type="email" class="form-control" id="emailContato" 
+                               asp-for="Configuracoes.EmailContato" required>
+                        <span asp-validation-for="Configuracoes.EmailContato" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefoneContato" class="form-label">Telefone de Contato</label>
+                        <input type="text" class="form-control" id="telefoneContato" 
+                               asp-for="Configuracoes.TelefoneContato" required>
+                        <span asp-validation-for="Configuracoes.TelefoneContato" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="enderecoCompleto" class="form-label">Endereço Completo</label>
+                        <textarea class="form-control" id="enderecoCompleto" rows="3" 
+                                  asp-for="Configuracoes.EnderecoCompleto" required></textarea>
+                        <span asp-validation-for="Configuracoes.EnderecoCompleto" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="horarioFuncionamento" class="form-label">Horário de Funcionamento</label>
+                        <input type="text" class="form-control" id="horarioFuncionamento" 
+                               asp-for="Configuracoes.HorarioFuncionamento" 
+                               placeholder="Ex: Segunda a Sexta: 8h às 18h">
+                        <span asp-validation-for="Configuracoes.HorarioFuncionamento" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurações de Consulta -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Configurações de Consulta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="valorConsultaPadrao" class="form-label">Valor Padrão da Consulta (R$)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" class="form-control" id="valorConsultaPadrao" 
+                                   asp-for="Configuracoes.ValorConsultaPadrao" 
+                                   step="0.01" min="0" required>
+                        </div>
+                        <span asp-validation-for="Configuracoes.ValorConsultaPadrao" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="duracaoConsultaPadrao" class="form-label">Duração Padrão (minutos)</label>
+                        <input type="number" class="form-control" id="duracaoConsultaPadrao" 
+                               asp-for="Configuracoes.DuracaoConsultaPadrao" 
+                               min="15" max="180" required>
+                        <span asp-validation-for="Configuracoes.DuracaoConsultaPadrao" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="intervaloEntreConsultas" class="form-label">Intervalo Entre Consultas (minutos)</label>
+                        <input type="number" class="form-control" id="intervaloEntreConsultas" 
+                               asp-for="Configuracoes.IntervaloEntreConsultas" 
+                               min="0" max="60" required>
+                        <span asp-validation-for="Configuracoes.IntervaloEntreConsultas" class="text-danger"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="horarioInicioAtendimento" class="form-label">Início do Atendimento</label>
+                            <input type="time" class="form-control" id="horarioInicioAtendimento" 
+                                   asp-for="Configuracoes.HorarioInicioAtendimento" required>
+                            <span asp-validation-for="Configuracoes.HorarioInicioAtendimento" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="horarioFimAtendimento" class="form-label">Fim do Atendimento</label>
+                            <input type="time" class="form-control" id="horarioFimAtendimento" 
+                                   asp-for="Configuracoes.HorarioFimAtendimento" required>
+                            <span asp-validation-for="Configuracoes.HorarioFimAtendimento" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="permitirAgendamentoSabado" 
+                                       asp-for="Configuracoes.PermitirAgendamentoSabado">
+                                <label class="form-check-label" for="permitirAgendamentoSabado">
+                                    Permitir Sábado
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="permitirAgendamentoDomingo" 
+                                       asp-for="Configuracoes.PermitirAgendamentoDomingo">
+                                <label class="form-check-label" for="permitirAgendamentoDomingo">
+                                    Permitir Domingo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sistema PsicoPontos -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star me-2"></i>
+                        Sistema PsicoPontos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="pontosConsultaRealizada" class="form-label">Pontos por Consulta Realizada</label>
+                        <input type="number" class="form-control" id="pontosConsultaRealizada" 
+                               asp-for="Configuracoes.PontosConsultaRealizada" 
+                               min="1" max="10" required>
+                        <span asp-validation-for="Configuracoes.PontosConsultaRealizada" class="text-danger"></span>
+                        <div class="form-text">Quantidade de pontos que o paciente ganha a cada consulta realizada.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pontosParaConsultaGratis" class="form-label">Pontos para Consulta Grátis</label>
+                        <input type="number" class="form-control" id="pontosParaConsultaGratis" 
+                               asp-for="Configuracoes.PontosParaConsultaGratis" 
+                               min="5" max="50" required>
+                        <span asp-validation-for="Configuracoes.PontosParaConsultaGratis" class="text-danger"></span>
+                        <div class="form-text">Quantidade de pontos necessários para uma consulta gratuita.</div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Configuração Atual:</strong> 
+                        @Model.Configuracoes.PontosConsultaRealizada ponto(s) por consulta = 
+                        @Model.Configuracoes.PontosParaConsultaGratis consultas para 1 grátis
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notificações -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bell me-2"></i>
+                        Notificações
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="diasLembreteConsulta" class="form-label">Lembrete da Consulta (dias antes)</label>
+                        <input type="number" class="form-control" id="diasLembreteConsulta" 
+                               asp-for="Configuracoes.DiasLembreteConsulta" 
+                               min="0" max="7" required>
+                        <span asp-validation-for="Configuracoes.DiasLembreteConsulta" class="text-danger"></span>
+                        <div class="form-text">Quantos dias antes da consulta enviar lembrete.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Canais de Notificação</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="emailNotificacoes" 
+                                   asp-for="Configuracoes.EmailNotificacoes">
+                            <label class="form-check-label" for="emailNotificacoes">
+                                <i class="bi bi-envelope me-2"></i>Email
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="whatsappNotificacoes" 
+                                   asp-for="Configuracoes.WhatsappNotificacoes">
+                            <label class="form-check-label" for="whatsappNotificacoes">
+                                <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="smsNotificacoes" 
+                                   asp-for="Configuracoes.SmsNotificacoes">
+                            <label class="form-check-label" for="smsNotificacoes">
+                                <i class="bi bi-phone me-2"></i>SMS
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurações do Sistema -->
+        <div class="col-lg-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-server me-2"></i>
+                        Configurações do Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="manterHistoricoCompleto" 
+                                       asp-for="Configuracoes.ManterHistoricoCompleto">
+                                <label class="form-check-label" for="manterHistoricoCompleto">
+                                    <i class="bi bi-archive me-2"></i>Manter Histórico Completo
+                                </label>
+                                <div class="form-text">Mantém todo o histórico de consultas e pontos.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="backupAutomatico" 
+                                       asp-for="Configuracoes.BackupAutomatico">
+                                <label class="form-check-label" for="backupAutomatico">
+                                    <i class="bi bi-cloud-arrow-up me-2"></i>Backup Automático
+                                </label>
+                                <div class="form-text">Realiza backup automático do sistema.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="frequenciaBackup" class="form-label">Frequência do Backup</label>
+                            <select class="form-select" id="frequenciaBackup" asp-for="Configuracoes.FrequenciaBackup">
+                                <option value="Diário">Diário</option>
+                                <option value="Semanal">Semanal</option>
+                                <option value="Mensal">Mensal</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Salvar Configurações
+                    </button>
+                    <a href="/admin" class="btn btn-outline-secondary btn-lg ms-2">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Voltar
+                    </a>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-success" formmethod="post" asp-page-handler="Backup">
+                        <i class="bi bi-download me-2"></i>
+                        Fazer Backup Agora
+                    </button>
+                    <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#modalResetarSistema">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Resetar Sistema
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Modal Resetar Sistema -->
+<div class="modal fade" id="modalResetarSistema" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Resetar Sistema
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>ATENÇÃO!</strong> Esta operação é irreversível.
+                </div>
+                <p>Resetar o sistema irá:</p>
+                <ul>
+                    <li>Apagar todos os dados de pacientes</li>
+                    <li>Remover todo o histórico de consultas</li>
+                    <li>Zerar todos os pontos</li>
+                    <li>Restaurar configurações padrão</li>
+                </ul>
+                <p>Tem certeza que deseja continuar?</p>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="confirmarReset" required>
+                    <label class="form-check-label" for="confirmarReset">
+                        Eu entendo que esta operação é irreversível
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" class="d-inline" asp-page-handler="ResetarSistema">
+                    <button type="submit" class="btn btn-danger" id="btnResetarSistema" disabled>
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Resetar Sistema
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Habilitar botão de reset apenas quando checkbox estiver marcado
+        document.getElementById('confirmarReset').addEventListener('change', function() {
+            document.getElementById('btnResetarSistema').disabled = !this.checked;
+        });
+    </script>
+}

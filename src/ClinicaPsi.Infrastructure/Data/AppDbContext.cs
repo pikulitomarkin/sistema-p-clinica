@@ -1,9 +1,10 @@
 using ClinicaPsi.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace ClinicaPsi.Infrastructure.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<ApplicationUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -12,6 +13,9 @@ public class AppDbContext : DbContext
     public DbSet<Consulta> Consultas => Set<Consulta>();
     public DbSet<HistoricoPontos> HistoricoPontos => Set<HistoricoPontos>();
     public DbSet<NotificacaoConsulta> NotificacoesConsultas => Set<NotificacaoConsulta>();
+    public DbSet<AuditoriaUsuario> AuditoriasUsuarios => Set<AuditoriaUsuario>();
+    public DbSet<ConfiguracaoSistema> ConfiguracoesSistema => Set<ConfiguracaoSistema>();
+    public DbSet<ProntuarioEletronico> ProntuariosEletronicos => Set<ProntuarioEletronico>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -118,5 +122,49 @@ public class AppDbContext : DbContext
                 Ativo = true
             }
         );
+
+        modelBuilder.Entity<AuditoriaUsuario>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.AdminId);
+            entity.HasIndex(e => e.UsuarioAfetadoId);
+            entity.HasIndex(e => e.DataHora);
+            entity.Property(e => e.AdminNome).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.UsuarioAfetadoNome).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.UsuarioAfetadoEmail).IsRequired().HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<ConfiguracaoSistema>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Chave).IsUnique();
+            entity.HasIndex(e => e.Categoria);
+            entity.Property(e => e.Chave).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.TipoValor).IsRequired().HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<ProntuarioEletronico>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.PacienteId);
+            entity.HasIndex(e => e.PsicologoId);
+            entity.HasIndex(e => e.ConsultaId);
+            entity.HasIndex(e => e.DataSessao);
+            
+            entity.HasOne(e => e.Paciente)
+                .WithMany()
+                .HasForeignKey(e => e.PacienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.Psicologo)
+                .WithMany()
+                .HasForeignKey(e => e.PsicologoId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(e => e.Consulta)
+                .WithMany()
+                .HasForeignKey(e => e.ConsultaId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
     }
 }

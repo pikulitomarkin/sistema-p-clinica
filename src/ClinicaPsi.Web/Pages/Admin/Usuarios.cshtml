@@ -1,0 +1,280 @@
+@page "/admin/usuarios"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using ClinicaPsi.Shared.Models
+@model ClinicaPsi.Web.Pages.Admin.UsuariosModel
+@attribute [Authorize(Roles = "Admin")]
+@{
+    ViewData["Title"] = "Gestão de Usuários - Admin";
+}
+
+<div class="container my-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin" class="text-success"><i class="bi bi-house"></i> Dashboard</a></li>
+            <li class="breadcrumb-item active">Gestão de Usuários</li>
+        </ol>
+    </nav>
+
+    <!-- Header da Página -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-success fw-bold">
+                <i class="bi bi-people-fill me-2"></i>
+                Gestão de Usuários
+            </h2>
+            <p class="text-muted">Gerencie pacientes, psicólogos e administradores do sistema</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/admin/usuarios/novo" class="btn btn-modern">
+                <i class="bi bi-person-plus me-2"></i>
+                Novo Usuário
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros e Busca -->
+    <div class="modern-card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Buscar por nome ou email</label>
+                    <input type="text" class="form-control" name="busca" value="@Model.Busca" placeholder="Digite o nome ou email...">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Tipo de usuário</label>
+                    <select class="form-select" name="tipoFiltro">
+                        <option value="">Todos os tipos</option>
+                        <option value="Admin" selected="@(Model.TipoFiltro == "Admin")">Administradores</option>
+                        <option value="Psicologo" selected="@(Model.TipoFiltro == "Psicologo")">Psicólogos</option>
+                        <option value="Cliente" selected="@(Model.TipoFiltro == "Cliente")">Clientes</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="statusFiltro">
+                        <option value="">Todos</option>
+                        <option value="true" selected="@(Model.StatusFiltro == true)">Ativos</option>
+                        <option value="false" selected="@(Model.StatusFiltro == false)">Inativos</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-modern w-100">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estatísticas Rápidas -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="modern-card text-center">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4 class="text-success">@Model.TotalAdmins</h4>
+                    <small class="text-muted">Administradores</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="modern-card text-center">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <h4 class="text-success">@Model.TotalPsicologos</h4>
+                    <small class="text-muted">Psicólogos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="modern-card text-center">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-person-heart"></i>
+                    </div>
+                    <h4 class="text-success">@Model.TotalClientes</h4>
+                    <small class="text-muted">Clientes</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="modern-card text-center">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h4 class="text-success">@Model.TotalUsuarios</h4>
+                    <small class="text-muted">Total de Usuários</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Usuários -->
+    <div class="modern-card">
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="bi bi-list-ul me-2"></i>
+                Lista de Usuários (@Model.Usuarios.Count registros)
+            </h6>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Usuarios.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Usuário</th>
+                                <th>Tipo</th>
+                                <th>Email</th>
+                                <th>Cadastro</th>
+                                <th>Status</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var usuario in Model.Usuarios)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                <i class="bi bi-person"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">@usuario.NomeCompleto</div>
+                                                <small class="text-muted">@usuario.UserName</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @switch (usuario.TipoUsuario.ToString())
+                                        {
+                                            case "Admin":
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-shield-check me-1"></i>Admin
+                                                </span>
+                                                break;
+                                            case "Psicologo":
+                                                <span class="badge bg-primary">
+                                                    <i class="bi bi-person-badge me-1"></i>Psicólogo
+                                                </span>
+                                                break;
+                                            case "Cliente":
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-person-heart me-1"></i>Cliente
+                                                </span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="text-muted">@usuario.Email</span>
+                                        @if (usuario.EmailConfirmed)
+                                        {
+                                            <i class="bi bi-check-circle text-success ms-1" title="Email confirmado"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-x-circle text-warning ms-1" title="Email não confirmado"></i>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            @usuario.DataCadastro.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        @if (usuario.Ativo)
+                                        {
+                                            <span class="badge bg-success">Ativo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Inativo</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="/admin/usuarios/editar/@usuario.Id" class="btn btn-outline-primary btn-sm" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="/admin/usuarios/detalhes/@usuario.Id" class="btn btn-outline-info btn-sm" title="Detalhes">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            @if (usuario.TipoUsuario != TipoUsuario.Admin)
+                                            {
+                                                <button type="button" class="btn btn-outline-danger btn-sm" title="Desativar" onclick="confirmarDesativacao('@usuario.Id', '@usuario.NomeCompleto')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="translucent-icon mx-auto mb-3">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h6 class="text-muted">Nenhum usuário encontrado</h6>
+                    <p class="text-muted mb-3">Tente ajustar os filtros de busca ou criar um novo usuário</p>
+                    <a href="/admin/usuarios/novo" class="btn btn-outline-modern">
+                        <i class="bi bi-person-plus me-2"></i>
+                        Criar Primeiro Usuário
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Desativação -->
+<div class="modal fade" id="modalDesativacao" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    Confirmar Desativação
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja desativar o usuário <strong id="nomeUsuario"></strong>?</p>
+                <p class="text-muted small">O usuário não poderá mais acessar o sistema, mas seus dados serão mantidos.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" style="display: inline;">
+                    <input type="hidden" name="usuarioId" id="usuarioIdDesativacao">
+                    <button type="submit" asp-page-handler="Desativar" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>
+                        Desativar Usuário
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmarDesativacao(usuarioId, nomeUsuario) {
+            document.getElementById('usuarioIdDesativacao').value = usuarioId;
+            document.getElementById('nomeUsuario').textContent = nomeUsuario;
+            new bootstrap.Modal(document.getElementById('modalDesativacao')).show();
+        }
+    </script>
+}

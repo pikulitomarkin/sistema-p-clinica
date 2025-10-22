@@ -78,4 +78,28 @@ public class PsicologoService
 
         return horarios;
     }
+
+    public async Task<Psicologo> CreateAsync(Psicologo psicologo)
+    {
+        _context.Psicologos.Add(psicologo);
+        await _context.SaveChangesAsync();
+        return psicologo;
+    }
+
+    public async Task<Psicologo> UpdateAsync(Psicologo psicologo)
+    {
+        _context.Entry(psicologo).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+        return psicologo;
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var psicologo = await GetByIdAsync(id);
+        if (psicologo != null)
+        {
+            psicologo.Ativo = false;
+            await UpdateAsync(psicologo);
+        }
+    }
 }

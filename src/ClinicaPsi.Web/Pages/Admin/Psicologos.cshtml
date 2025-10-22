@@ -1,0 +1,221 @@
+@page
+@model ClinicaPsi.Web.Pages.Admin.PsicologosModel
+@{
+    ViewData["Title"] = "Gestão de Psicólogos";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="gradient-text mb-0">
+        <i class="bi bi-person-badge me-2"></i>
+        Gestão de Psicólogos
+    </h2>
+    <button type="button" class="btn btn-primary btn-modern" data-bs-toggle="modal" data-bs-target="#addPsicologoModal">
+        <i class="bi bi-plus-circle me-2"></i>
+        Novo Psicólogo
+    </button>
+</div>
+
+<!-- Filtros -->
+<div class="card card-modern mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="searchTerm" class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="searchTerm" name="searchTerm" 
+                       value="@Model.SearchTerm" placeholder="Nome, CRP ou especialidade...">
+            </div>
+            <div class="col-md-3">
+                <label for="especialidade" class="form-label">Especialidade</label>
+                <select class="form-select" id="especialidade" name="especialidade">
+                    <option value="">Todas</option>
+                    <option value="Clínica" selected="@(Model.EspecialidadeFiltro == "Clínica")">Psicologia Clínica</option>
+                    <option value="Infantil" selected="@(Model.EspecialidadeFiltro == "Infantil")">Psicologia Infantil</option>
+                    <option value="Organizacional" selected="@(Model.EspecialidadeFiltro == "Organizacional")">Psicologia Organizacional</option>
+                    <option value="Neuropsicologia" selected="@(Model.EspecialidadeFiltro == "Neuropsicologia")">Neuropsicologia</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    <option value="true" selected="@(Model.StatusFiltro == true)">Ativo</option>
+                    <option value="false" selected="@(Model.StatusFiltro == false)">Inativo</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-search me-1"></i>
+                    Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Psicólogos -->
+<div class="card card-modern">
+    <div class="card-body">
+        @if (Model.Psicologos.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nome</th>
+                            <th>CRP</th>
+                            <th>Email</th>
+                            <th>Especialidades</th>
+                            <th>Valor Consulta</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var psicologo in Model.Psicologos)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3">
+                                            @psicologo.Nome.First()
+                                        </div>
+                                        <div>
+                                            <strong>@psicologo.Nome</strong>
+                                            <br>
+                                            <small class="text-muted">@psicologo.Telefone</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@psicologo.CRP</td>
+                                <td>@psicologo.Email</td>
+                                <td>
+                                    @string.Join(", ", psicologo.Especialidades.Split(','))
+                                </td>
+                                <td>@psicologo.ValorConsulta.ToString("C")</td>
+                                <td>
+                                    <span class="badge @(psicologo.Ativo ? "bg-success" : "bg-secondary")">
+                                        @(psicologo.Ativo ? "Ativo" : "Inativo")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-page="/Admin/EditarPsicologo" asp-route-id="@psicologo.Id" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                onclick="viewSchedule(@psicologo.Id)"
+                                                title="Ver Agenda">
+                                            <i class="bi bi-calendar"></i>
+                                        </button>
+                                        <form method="post" asp-page-handler="ToggleStatus" asp-route-id="@psicologo.Id" class="d-inline">
+                                            <button type="submit" class="btn btn-sm @(psicologo.Ativo ? "btn-outline-warning" : "btn-outline-success")"
+                                                    title="@(psicologo.Ativo ? "Desativar" : "Ativar")"
+                                                    onclick="return confirm('@(psicologo.Ativo ? "Desativar este psicólogo?" : "Ativar este psicólogo?")')">
+                                                <i class="bi bi-@(psicologo.Ativo ? "pause" : "play")"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-person-badge text-muted" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mt-3">Nenhum psicólogo encontrado</h5>
+                <p class="text-muted">Adicione o primeiro psicólogo ao sistema.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Adicionar Psicólogo -->
+<div class="modal fade" id="addPsicologoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-page-handler="AddPsicologo" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-plus me-2"></i>
+                        Novo Psicólogo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="NovoPsicologo.Nome" class="form-label">Nome Completo</label>
+                            <input asp-for="NovoPsicologo.Nome" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="NovoPsicologo.Email" class="form-label">Email</label>
+                            <input asp-for="NovoPsicologo.Email" type="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="NovoPsicologo.CRP" class="form-label">CRP</label>
+                            <input asp-for="NovoPsicologo.CRP" class="form-control" placeholder="Ex: 12/123456" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="NovoPsicologo.Telefone" class="form-label">Telefone</label>
+                            <input asp-for="NovoPsicologo.Telefone" class="form-control" placeholder="(11) 99999-9999" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Especialidades</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="especialidades" value="Psicologia Clínica" id="esp1">
+                                        <label class="form-check-label" for="esp1">Psicologia Clínica</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="especialidades" value="Psicologia Infantil" id="esp2">
+                                        <label class="form-check-label" for="esp2">Psicologia Infantil</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="especialidades" value="Psicologia Organizacional" id="esp3">
+                                        <label class="form-check-label" for="esp3">Psicologia Organizacional</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="especialidades" value="Neuropsicologia" id="esp4">
+                                        <label class="form-check-label" for="esp4">Neuropsicologia</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="NovoPsicologo.ValorConsulta" class="form-label">Valor da Consulta</label>
+                            <input asp-for="NovoPsicologo.ValorConsulta" type="number" step="0.01" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Senha Temporária</label>
+                            <input name="senha" type="password" class="form-control" placeholder="Mínimo 6 caracteres" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Cadastrar Psicólogo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewSchedule(id) {
+        // Implementar visualização de agenda
+        alert('Funcionalidade de agenda em desenvolvimento');
+    }
+</script>

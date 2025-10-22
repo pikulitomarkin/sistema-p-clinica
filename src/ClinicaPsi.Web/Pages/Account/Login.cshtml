@@ -1,0 +1,437 @@
+@page "/Account/Login"
+@model LoginModel
+@{
+    ViewData["Title"] = "Login - PsiiAnaSantos";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #2d5016, #4a7c59, #28a745);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 70px; /* Espaço para a navbar */
+            padding-bottom: 2rem; /* Espaço inferior */
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .login-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto 1rem;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .login-title {
+            color: white;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .login-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .login-body {
+            padding: 2.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid #e8f5e8;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+            background: white;
+        }
+        
+        .form-label {
+            color: #2d5016;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            border-radius: 10px;
+            padding: 0.875rem 2rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .login-btn:hover {
+            background: linear-gradient(135deg, #20c997, #28a745);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+        
+        .form-check-input:checked {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        
+        .form-check-label {
+            color: #495057;
+        }
+        
+        .login-footer {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .demo-card {
+            background: linear-gradient(135deg, rgba(32, 201, 151, 0.1), rgba(40, 167, 69, 0.1));
+            border: 2px solid rgba(40, 167, 69, 0.2);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            margin-top: 2rem;
+        }
+        
+        .demo-header {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            color: white;
+            padding: 1rem;
+            border-radius: 13px 13px 0 0;
+            text-align: center;
+        }
+        
+        .demo-body {
+            padding: 1.5rem;
+        }
+        
+        .demo-user {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #28a745;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .demo-user:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .demo-user:last-child {
+            margin-bottom: 0;
+        }
+        
+        .demo-role {
+            color: #28a745;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .demo-credentials {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .navbar-brand {
+            color: white !important;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .navbar-brand:hover {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        .top-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+        
+        .alert-danger {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+            border-radius: 10px;
+        }
+        
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            body {
+                padding-top: 60px;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .top-navbar {
+                height: 60px;
+            }
+            
+            .login-container {
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .login-header {
+                padding: 1.5rem;
+            }
+            
+            .login-body {
+                padding: 2rem 1.5rem;
+            }
+            
+            .demo-card {
+                margin-top: 1.5rem;
+            }
+            
+            .demo-user {
+                margin-bottom: 0.75rem;
+                padding: 0.75rem;
+            }
+        }
+        
+        @@media (max-width: 480px) {
+            .login-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .login-title {
+                font-size: 1.25rem;
+            }
+            
+            .login-body {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="navbar top-navbar">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <i class="bi bi-heart-fill me-2"></i>
+                PsiiAnaSantos
+            </a>
+            <div>
+                <a href="/" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-house me-1"></i>
+                    Início
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-5 col-lg-6 col-md-8">
+                <div class="login-container">
+                    <div class="login-header">
+                        <div class="login-icon">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <h1 class="login-title">Acesso ao Sistema</h1>
+                        <p class="login-subtitle">Entre com suas credenciais para continuar</p>
+                    </div>
+                    
+                    <div class="login-body">
+                        <form method="post">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="Input.Email" class="form-label">
+                                    <i class="bi bi-envelope me-2"></i>Email
+                                </label>
+                                <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="Digite seu email">
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="Input.Password" class="form-label">
+                                    <i class="bi bi-lock me-2"></i>Senha
+                                </label>
+                                <input asp-for="Input.Password" class="form-control" autocomplete="current-password" placeholder="Digite sua senha">
+                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="mb-4 form-check">
+                                <input asp-for="Input.RememberMe" class="form-check-input">
+                                <label asp-for="Input.RememberMe" class="form-check-label">
+                                    Lembrar de mim
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="login-btn">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                Entrar no Sistema
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="login-footer">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-check me-1"></i>
+                            Sistema seguro e protegido
+                        </small>
+                    </div>
+                </div>
+                <!-- Usuários Demo -->
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h6 class="mb-0">
+                            <i class="bi bi-people me-2"></i>
+                            Usuários Demo para Teste
+                        </h6>
+                    </div>
+                    <div class="demo-body">
+                        <div class="demo-user">
+                            <div class="demo-role">
+                                <i class="bi bi-shield-check me-2"></i>
+                                Admin (Ana)
+                            </div>
+                            <div class="demo-credentials">
+                                <strong>Email:</strong> ana.santos@psii.com<br>
+                                <strong>Senha:</strong> Ana123!
+                            </div>
+                        </div>
+                        
+                        <div class="demo-user">
+                            <div class="demo-role">
+                                <i class="bi bi-person-badge me-2"></i>
+                                Psicólogo
+                            </div>
+                            <div class="demo-credentials">
+                                <strong>Email:</strong> joao.silva@psii.com<br>
+                                <strong>Senha:</strong> Joao123!
+                            </div>
+                        </div>
+                        
+                        <div class="demo-user">
+                            <div class="demo-role">
+                                <i class="bi bi-person-heart me-2"></i>
+                                Cliente
+                            </div>
+                            <div class="demo-credentials">
+                                <strong>Email:</strong> cliente@demo.com<br>
+                                <strong>Senha:</strong> Cliente123!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Adicionar efeitos visuais
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animar entrada dos elementos
+            const elements = document.querySelectorAll('.login-container, .demo-card');
+            elements.forEach(function(element, index) {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(30px)';
+                setTimeout(function() {
+                    element.style.transition = 'all 0.6s ease';
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+            
+            // Adicionar efeito de clique nos usuários demo
+            const demoUsers = document.querySelectorAll('.demo-user');
+            demoUsers.forEach(function(user) {
+                user.addEventListener('click', function() {
+                    const credentials = user.querySelector('.demo-credentials');
+                    const emailText = credentials.textContent.match(/Email:\s*([^\s]+)/)[1];
+                    const passwordText = credentials.textContent.match(/Senha:\s*([^\s]+)/)[1];
+                    
+                    document.querySelector('input[name="Input.Email"]').value = emailText;
+                    document.querySelector('input[name="Input.Password"]').value = passwordText;
+                    
+                    // Feedback visual
+                    user.style.background = 'rgba(40, 167, 69, 0.1)';
+                    user.style.borderLeftColor = '#20c997';
+                    setTimeout(function() {
+                        user.style.background = 'white';
+                        user.style.borderLeftColor = '#28a745';
+                    }, 500);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

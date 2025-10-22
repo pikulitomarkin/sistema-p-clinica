@@ -1,0 +1,419 @@
+@page "/psicologo"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using ClinicaPsi.Shared.Models
+@using ClinicaPsi.Application.Services
+@inject UserManager<ApplicationUser> UserManager
+@inject ConsultaService ConsultaService
+@inject PacienteService PacienteService
+@model ClinicaPsi.Web.Pages.Psicologo.IndexModel
+@{
+    ViewData["Title"] = "Dashboard do Psicólogo";
+    Layout = "_AdminLayout";
+}
+
+@if (ViewData["DebugMessage"] != null)
+{
+    <div class="alert alert-warning">
+        <strong>Debug:</strong> @ViewData["DebugMessage"]
+    </div>
+}
+
+<!-- Hero Section Psicólogo -->
+<div class="hero-section" style="min-height: 40vh;">
+    <div class="container hero-content">
+        <div class="row align-items-center justify-content-center text-center">
+            <div class="col-lg-10">
+                <div class="mb-4 animate-fade-in">
+                    <div class="translucent-icon mx-auto" style="width: 100px; height: 100px; font-size: 2.5rem;">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                </div>
+                <h1 class="display-4 fw-bold text-white mb-3 animate-fade-in animate-delay-1">
+                    Área do Psicólogo
+                </h1>
+                <p class="lead text-white mb-4 animate-fade-in animate-delay-2">
+                    Gerencie sua agenda, consultas e pacientes
+                </p>
+                <div class="badge bg-light text-dark fs-6 mb-3 animate-fade-in animate-delay-2">
+                    <i class="bi bi-person-check"></i> Bem-vindo(a), @User.Identity?.Name
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Cards de Estatísticas do Psicólogo -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="modern-card text-center animate-fade-in animate-delay-1">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <h3 class="display-5 text-success mb-2">@Model.ConsultasHoje</h3>
+                    <p class="text-muted mb-2">Consultas Hoje</p>
+                    <small class="text-success">@DateTime.Today.ToString("dd/MM/yyyy")</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="modern-card text-center animate-fade-in animate-delay-2">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-calendar3"></i>
+                    </div>
+                    <h3 class="display-5 text-success mb-2">@Model.ConsultasProximos7Dias</h3>
+                    <p class="text-muted mb-2">Próximos 7 Dias</p>
+                    <small class="text-success">Consultas agendadas</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="modern-card text-center animate-fade-in animate-delay-3">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h3 class="display-5 text-success mb-2">@Model.TotalPacientes</h3>
+                    <p class="text-muted mb-2">Pacientes Ativos</p>
+                    <small class="text-success">Sob seus cuidados</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="modern-card text-center animate-fade-in animate-delay-3">
+                <div class="card-body">
+                    <div class="translucent-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <h3 class="display-5 text-success mb-2">@Model.ConsultasRealizadas</h3>
+                    <p class="text-muted mb-2">Consultas Realizadas</p>
+                    <small class="text-success">Este mês</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu de Ações do Psicólogo -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <div class="modern-card animate-fade-in">
+                <div class="card-header text-center">
+                    <div class="translucent-icon">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                    <h5 class="mb-0">Painel de Ações</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <!-- Agenda -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="modern-card border-0" style="background: var(--gradient-green-light);">
+                                <div class="card-body text-center">
+                                    <div class="translucent-icon">
+                                        <i class="bi bi-calendar-week"></i>
+                                    </div>
+                                    <h6 class="text-success fw-bold">Minha Agenda</h6>
+                                    <p class="small text-muted mb-3">Visualizar e gerenciar compromissos</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="/psicologo/agenda" class="btn btn-outline-modern btn-sm">
+                                            <i class="bi bi-calendar me-1"></i> Ver Agenda
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Consultas -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="modern-card border-0" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);">
+                                <div class="card-body text-center">
+                                    <div class="translucent-icon" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%); color: #0d6efd;">
+                                        <i class="bi bi-clipboard-check"></i>
+                                    </div>
+                                    <h6 class="text-primary fw-bold">Gerenciar Consultas</h6>
+                                    <p class="small text-muted mb-3">Agendar, cancelar e registrar sessões</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="/psicologo/consultas" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-plus-circle me-1"></i> Gerenciar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pacientes -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="modern-card border-0" style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);">
+                                <div class="card-body text-center">
+                                    <div class="translucent-icon" style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%); color: #ffc107;">
+                                        <i class="bi bi-person-lines-fill"></i>
+                                    </div>
+                                    <h6 class="text-warning fw-bold">Meus Pacientes</h6>
+                                    <p class="small text-muted mb-3">Histórico e fichas dos pacientes</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="/psicologo/pacientes" class="btn btn-outline-warning btn-sm">
+                                            <i class="bi bi-people me-1"></i> Ver Pacientes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Relatórios -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="modern-card border-0" style="background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%);">
+                                <div class="card-body text-center">
+                                    <div class="translucent-icon" style="background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%); color: #dc3545;">
+                                        <i class="bi bi-file-text"></i>
+                                    </div>
+                                    <h6 class="text-danger fw-bold">Relatórios</h6>
+                                    <p class="small text-muted mb-3">Relatórios de sessões e evolução</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="/psicologo/relatorios" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-graph-up me-1"></i> Ver Relatórios
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Perfil -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="modern-card border-0" style="background: linear-gradient(135deg, rgba(108, 117, 125, 0.1) 0%, rgba(108, 117, 125, 0.05) 100%);">
+                                <div class="card-body text-center">
+                                    <div class="translucent-icon" style="background: linear-gradient(135deg, rgba(108, 117, 125, 0.1) 0%, rgba(108, 117, 125, 0.05) 100%); color: #6c757d;">
+                                        <i class="bi bi-person-gear"></i>
+                                    </div>
+                                    <h6 class="text-secondary fw-bold">Meu Perfil</h6>
+                                    <p class="small text-muted mb-3">Dados pessoais e profissionais</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="/psicologo/perfil" class="btn btn-outline-secondary btn-sm">
+                                            <i class="bi bi-person me-1"></i> Editar Perfil
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Horários -->
+                        <div class="col-lg-4 col-md-6">
+                            <div class="modern-card border-0" style="background: linear-gradient(135deg, rgba(111, 66, 193, 0.1) 0%, rgba(111, 66, 193, 0.05) 100%);">
+                                <div class="card-body text-center">
+                                    <div class="translucent-icon" style="background: linear-gradient(135deg, rgba(111, 66, 193, 0.1) 0%, rgba(111, 66, 193, 0.05) 100%); color: #6f42c1;">
+                                        <i class="bi bi-clock"></i>
+                                    </div>
+                                    <h6 class="fw-bold" style="color: #6f42c1;">Horários de Atendimento</h6>
+                                    <p class="small text-muted mb-3">Configurar disponibilidade</p>
+                                    <div class="d-grid gap-2">
+                                        <a href="/psicologo/agenda" class="btn btn-sm" style="border-color: #6f42c1; color: #6f42c1;">
+                                            <i class="bi bi-calendar-week me-1"></i> Ver Agenda
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Próximas Consultas -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="modern-card animate-fade-in">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="translucent-icon me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                            <h6 class="mb-0">Próximas Consultas</h6>
+                        </div>
+                        <a href="/psicologo/agenda" class="btn btn-outline-modern btn-sm">
+                            <i class="bi bi-calendar me-1"></i> Ver Agenda Completa
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.ProximasConsultas.Any())
+                    {
+                        @for (int i = 0; i < Math.Min(5, Model.ProximasConsultas.Count); i++)
+                        {
+                            var consulta = Model.ProximasConsultas[i];
+                            <div class="d-flex align-items-center mb-3 p-3 rounded" style="background: var(--gradient-green-light);">
+                                <div class="me-3">
+                                    <div class="bg-success rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">@consulta.Paciente?.Nome</h6>
+                                    <div class="d-flex align-items-center text-muted small">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
+                                        <span class="mx-2">•</span>
+                                        <i class="bi bi-clock me-1"></i>
+                                        @consulta.DuracaoMinutos min
+                                        @if (consulta.Tipo == TipoConsulta.Gratuita)
+                                        {
+                                            <span class="mx-2">•</span>
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="bi bi-star me-1"></i>Gratuita
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="btn-group" role="group">
+                                        <a href="/psicologo/consultas/detalhes/@consulta.Id" class="btn btn-outline-success btn-sm" title="Ver detalhes">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="/psicologo/consultas/editar/@consulta.Id" class="btn btn-outline-primary btn-sm" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <div class="translucent-icon mx-auto mb-3">
+                                <i class="bi bi-calendar"></i>
+                            </div>
+                            <p class="text-muted">Nenhuma consulta agendada para os próximos dias</p>
+                            <a href="/psicologo/consultas/nova" class="btn btn-outline-modern">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Agendar Nova Consulta
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="modern-card animate-fade-in">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="translucent-icon me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+                        <h6 class="mb-0">Informações Úteis</h6>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-currency-dollar text-success me-2"></i>
+                            <strong>Valor por Consulta:</strong>
+                        </div>
+                        <span class="text-muted">R$ @(Model.ValorConsulta?.ToString("F2") ?? "0,00")</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-award text-warning me-2"></i>
+                            <strong>CRP:</strong>
+                        </div>
+                        <span class="text-muted">@(Model.CRP ?? "Não informado")</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-clock text-info me-2"></i>
+                            <strong>Horário de Atendimento:</strong>
+                        </div>
+                        <small class="text-muted">
+                            @if (Model.AtendeManha && Model.AtendeTarde)
+                            {
+                                <span>Manhã e Tarde</span>
+                            }
+                            else if (Model.AtendeManha)
+                            {
+                                <span>Apenas Manhã</span>
+                            }
+                            else if (Model.AtendeTarde)
+                            {
+                                <span>Apenas Tarde</span>
+                            }
+                            else
+                            {
+                                <span>Não configurado</span>
+                            }
+                        </small>
+                    </div>
+
+                    <div class="d-grid">
+                        <a href="/psicologo/perfil" class="btn btn-outline-modern btn-sm">
+                            <i class="bi bi-gear me-1"></i>
+                            Atualizar Informações
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acesso Rápido -->
+    <div class="row">
+        <div class="col-12">
+            <div class="modern-card animate-fade-in">
+                <div class="card-header text-center">
+                    <div class="translucent-icon">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <h5 class="mb-0">Acesso Rápido</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <a href="/psicologo/consultas/nova" class="btn btn-outline-success w-100">
+                                <i class="bi bi-plus-circle d-block mb-1"></i>
+                                <small>Nova Consulta</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <a href="/psicologo/agenda/hoje" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-calendar-day d-block mb-1"></i>
+                                <small>Agenda Hoje</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <a href="/psicologo/pacientes/buscar" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-search d-block mb-1"></i>
+                                <small>Buscar Paciente</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <a href="/psicologo/relatorios/mensal" class="btn btn-outline-info w-100">
+                                <i class="bi bi-graph-up d-block mb-1"></i>
+                                <small>Relatório Mensal</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <a href="/psicologo/configuracoes" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-gear d-block mb-1"></i>
+                                <small>Configurações</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <a href="/Account/Logout" class="btn btn-outline-dark w-100">
+                                <i class="bi bi-box-arrow-right d-block mb-1"></i>
+                                <small>Sair</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

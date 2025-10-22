@@ -1,0 +1,304 @@
+@page "/cliente/agendarconsulta"
+@using ClinicaPsi.Web.Extensions
+@model ClinicaPsi.Web.Pages.Cliente.AgendarConsultaModel
+@{
+    ViewData["Title"] = "Agendar Consulta";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="bi bi-calendar-plus me-2"></i>Agendar Consulta</h2>
+                    <p class="text-muted mb-0">Selecione o psicólogo, data e horário para sua consulta</p>
+                </div>
+                @if (Model.PacienteAtual?.ConsultasGratuitas > 0)
+                {
+                    <div class="alert alert-success border-0 shadow-sm">
+                        <i class="bi bi-gift me-2"></i>
+                        <strong>@Model.PacienteAtual.ConsultasGratuitas</strong> consulta(s) gratuita(s) disponível(is)!
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Formulário de Agendamento -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar2-check me-2"></i>Dados do Agendamento</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Psicólogo *</label>
+                                    <select asp-for="Input.PsicologoId" class="form-select" id="psicologoSelect" required>
+                                        <option value="">Selecione um psicólogo</option>
+                                        @foreach (var psicologo in Model.Psicologos)
+                                        {
+                                            <option value="@psicologo.Id" data-valor="@psicologo.ValorConsulta.ToString("C")">
+                                                @psicologo.Nome - @psicologo.Especialidades
+                                            </option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Input.PsicologoId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Data da Consulta *</label>
+                                    <input asp-for="Input.DataHorario" type="date" class="form-control" 
+                                           id="dataConsulta" min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                                    <span asp-validation-for="Input.DataHorario" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Horário Disponível *</label>
+                                    <select asp-for="Input.DataHorario" class="form-select" id="horarioSelect" required>
+                                        <option value="">Primeiro selecione o psicólogo e a data</option>
+                                    </select>
+                                    <span asp-validation-for="Input.DataHorario" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Duração</label>
+                                    <select asp-for="Input.DuracaoMinutos" class="form-select">
+                                        <option value="50">50 minutos (Padrão)</option>
+                                        <option value="25">25 minutos (Consulta rápida)</option>
+                                        <option value="90">90 minutos (Consulta estendida)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Tipo de Consulta</label>
+                                    <select asp-for="Input.Tipo" class="form-select" id="tipoConsulta">
+                                        <option value="@TipoConsulta.Normal">@TipoConsulta.Normal.GetDisplayName()</option>
+                                        <option value="@TipoConsulta.Avaliacao">@TipoConsulta.Avaliacao.GetDisplayName()</option>
+                                        <option value="@TipoConsulta.Retorno">@TipoConsulta.Retorno.GetDisplayName()</option>
+                                        @if (Model.PacienteAtual?.ConsultasGratuitas > 0)
+                                        {
+                                            <option value="@TipoConsulta.Gratuita">@TipoConsulta.Gratuita.GetDisplayName() (Disponível)</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Valor da Consulta</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                                        <input type="text" class="form-control" id="valorConsulta" readonly 
+                                               placeholder="Selecione o psicólogo">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Observações</label>
+                            <textarea asp-for="Input.Observacoes" class="form-control" rows="3" 
+                                      placeholder="Descreva brevemente o motivo da consulta ou informações importantes..."></textarea>
+                            <span asp-validation-for="Input.Observacoes" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-2"></i>Agendar Consulta
+                            </button>
+                            <a href="/Cliente/MinhasConsultas" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar com Informações -->
+        <div class="col-lg-4">
+            <!-- Meus PsicoPontos -->
+            @if (Model.PacienteAtual != null)
+            {
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="bi bi-star-fill me-2"></i>Meus PsicoPontos</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="display-4 text-success fw-bold">@Model.PacienteAtual.PsicoPontos</div>
+                        <p class="text-muted mb-2">pontos acumulados</p>
+                        @{
+                            var pontosParaGratuita = 10 - (Model.PacienteAtual.PsicoPontos % 10);
+                        }
+                        @if (pontosParaGratuita < 10)
+                        {
+                            <small class="text-success">
+                                <i class="bi bi-gift me-1"></i>
+                                Faltam @pontosParaGratuita pontos para uma consulta gratuita!
+                            </small>
+                        }
+                        else
+                        {
+                            <small class="text-muted">A cada 10 pontos, você ganha uma consulta gratuita!</small>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Consultas do Dia -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-calendar-day me-2"></i>Consultas de Hoje</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.ConsultasExistentes.Any())
+                    {
+                        @foreach (var consulta in Model.ConsultasExistentes.Take(5))
+                        {
+                            <div class="d-flex align-items-center mb-2 pb-2 border-bottom border-light">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-light rounded-circle p-2">
+                                        <i class="bi bi-clock text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bold">@consulta.DataHorario.ToString("HH:mm")</div>
+                                    <small class="text-muted">@consulta.Psicologo.Nome</small>
+                                </div>
+                                <span class="badge bg-secondary">@consulta.Status.GetDisplayName()</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-calendar-x display-6 opacity-50"></i>
+                            <p class="mb-0 mt-2">Nenhuma consulta agendada para hoje</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Dicas -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Dicas Importantes</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Chegue 10 minutos antes da consulta</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Você pode cancelar até 24h antes</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Cada consulta realizada = 1 PsicoPonto</small>
+                        </li>
+                        <li class="mb-0">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>10 PsicoPontos = 1 consulta gratuita</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const psicologoSelect = document.getElementById('psicologoSelect');
+        const dataConsulta = document.getElementById('dataConsulta');
+        const horarioSelect = document.getElementById('horarioSelect');
+        const valorConsulta = document.getElementById('valorConsulta');
+        const tipoConsulta = document.getElementById('tipoConsulta');
+
+        // Atualizar valor quando selecionar psicólogo
+        psicologoSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const valor = selectedOption.getAttribute('data-valor');
+            
+            if (valor) {
+                valorConsulta.value = valor;
+            } else {
+                valorConsulta.value = '';
+            }
+            
+            carregarHorarios();
+        });
+
+        // Carregar horários quando mudar a data
+        dataConsulta.addEventListener('change', carregarHorarios);
+
+        // Atualizar valor quando mudar tipo de consulta
+        tipoConsulta.addEventListener('change', function() {
+            if (this.value === '@TipoConsulta.Gratuita') {
+                valorConsulta.value = 'GRATUITA';
+            } else if (psicologoSelect.value) {
+                const selectedOption = psicologoSelect.options[psicologoSelect.selectedIndex];
+                const valor = selectedOption.getAttribute('data-valor');
+                valorConsulta.value = valor || '';
+            }
+        });
+
+        function carregarHorarios() {
+            const psicologoId = psicologoSelect.value;
+            const data = dataConsulta.value;
+
+            if (!psicologoId || !data) {
+                horarioSelect.innerHTML = '<option value="">Primeiro selecione o psicólogo e a data</option>';
+                return;
+            }
+
+            horarioSelect.innerHTML = '<option value="">Carregando horários...</option>';
+
+            fetch(`/Cliente/AgendarConsulta?handler=HorariosDisponiveis&psicologoId=${psicologoId}&data=${data}`)
+                .then(response => response.json())
+                .then(horarios => {
+                    horarioSelect.innerHTML = '';
+                    
+                    if (horarios.length === 0) {
+                        horarioSelect.innerHTML = '<option value="">Nenhum horário disponível</option>';
+                    } else {
+                        horarioSelect.innerHTML = '<option value="">Selecione um horário</option>';
+                        horarios.forEach(horario => {
+                            const option = document.createElement('option');
+                            option.value = horario.valor;
+                            option.textContent = horario.texto;
+                            horarioSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar horários:', error);
+                    horarioSelect.innerHTML = '<option value="">Erro ao carregar horários</option>';
+                });
+        }
+    });
+</script>

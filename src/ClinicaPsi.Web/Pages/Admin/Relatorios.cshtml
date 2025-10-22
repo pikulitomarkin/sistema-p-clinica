@@ -1,0 +1,359 @@
+@page
+@model ClinicaPsi.Web.Pages.Admin.RelatoriosModel
+@{
+    ViewData["Title"] = "Relatórios";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="gradient-text mb-0">
+        <i class="bi bi-graph-up me-2"></i>
+        Relatórios e Análises
+    </h2>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-primary" onclick="exportarPDF()">
+            <i class="bi bi-file-earmark-pdf me-2"></i>
+            Exportar PDF
+        </button>
+        <button type="button" class="btn btn-outline-success" onclick="exportarExcel()">
+            <i class="bi bi-file-earmark-excel me-2"></i>
+            Exportar Excel
+        </button>
+    </div>
+</div>
+
+<!-- Filtros de Período -->
+<div class="card card-modern mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="dataInicio" class="form-label">Data Início</label>
+                <input type="date" class="form-control" id="dataInicio" name="dataInicio" 
+                       value="@Model.DataInicio?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-3">
+                <label for="dataFim" class="form-label">Data Fim</label>
+                <input type="date" class="form-control" id="dataFim" name="dataFim" 
+                       value="@Model.DataFim?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-3">
+                <label for="tipoRelatorio" class="form-label">Tipo de Relatório</label>
+                <select class="form-select" id="tipoRelatorio" name="tipoRelatorio">
+                    <option value="geral" selected="@(Model.TipoRelatorio == "geral")">Relatório Geral</option>
+                    <option value="financeiro" selected="@(Model.TipoRelatorio == "financeiro")">Relatório Financeiro</option>
+                    <option value="psicologos" selected="@(Model.TipoRelatorio == "psicologos")">Performance de Psicólogos</option>
+                    <option value="pacientes" selected="@(Model.TipoRelatorio == "pacientes")">Análise de Pacientes</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-1"></i>
+                    Aplicar Filtros
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Cards de Resumo -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card card-modern gradient-card-green">
+            <div class="card-body text-center text-white">
+                <i class="bi bi-currency-dollar display-4 opacity-75"></i>
+                <h3 class="mt-2">@Model.ReceitaTotal.ToString("C")</h3>
+                <p class="mb-0">Receita Total</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-modern gradient-card-blue">
+            <div class="card-body text-center text-white">
+                <i class="bi bi-calendar-check display-4 opacity-75"></i>
+                <h3 class="mt-2">@Model.TotalConsultas</h3>
+                <p class="mb-0">Consultas Realizadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-modern gradient-card-purple">
+            <div class="card-body text-center text-white">
+                <i class="bi bi-people display-4 opacity-75"></i>
+                <h3 class="mt-2">@Model.NovosClientes</h3>
+                <p class="mb-0">Novos Clientes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-modern gradient-card-orange">
+            <div class="card-body text-center text-white">
+                <i class="bi bi-percent display-4 opacity-75"></i>
+                <h3 class="mt-2">@Model.TaxaRetorno.ToString("F1")%</h3>
+                <p class="mb-0">Taxa de Retorno</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.TipoRelatorio == "geral" || string.IsNullOrEmpty(Model.TipoRelatorio))
+{
+    <!-- Relatório Geral -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card card-modern">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart me-2"></i>
+                        Consultas por Período
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="consultasChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-modern">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart me-2"></i>
+                        Status das Consultas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" width="300" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.TipoRelatorio == "financeiro")
+{
+    <!-- Relatório Financeiro -->
+    <div class="card card-modern">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-cash-stack me-2"></i>
+                Detalhamento Financeiro
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Receita por Psicólogo</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Psicólogo</th>
+                                    <th>Consultas</th>
+                                    <th>Receita</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.ReceitaPorPsicologo)
+                                {
+                                    <tr>
+                                        <td>@item.Nome</td>
+                                        <td>@item.Consultas</td>
+                                        <td>@item.Receita.ToString("C")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Receita por Mês</h6>
+                    <canvas id="receitaMensalChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.TipoRelatorio == "psicologos")
+{
+    <!-- Performance de Psicólogos -->
+    <div class="card card-modern">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-person-badge me-2"></i>
+                Performance dos Psicólogos
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Psicólogo</th>
+                            <th>Consultas Realizadas</th>
+                            <th>Taxa de Cancelamento</th>
+                            <th>Avaliação Média</th>
+                            <th>Receita Gerada</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var psicologo in Model.PerformancePsicologos)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3">
+                                            @psicologo.Nome.First()
+                                        </div>
+                                        <strong>@psicologo.Nome</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">@psicologo.ConsultasRealizadas</span>
+                                </td>
+                                <td>
+                                    <span class="badge @(psicologo.TaxaCancelamento > 20 ? "bg-danger" : psicologo.TaxaCancelamento > 10 ? "bg-warning" : "bg-success")">
+                                        @psicologo.TaxaCancelamento.ToString("F1")%
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi bi-star@(i <= psicologo.AvaliacaoMedia ? "-fill" : "") text-warning"></i>
+                                        }
+                                        <span class="ms-2">(@psicologo.AvaliacaoMedia.ToString("F1"))</span>
+                                    </div>
+                                </td>
+                                <td>@psicologo.ReceitaGerada.ToString("C")</td>
+                                <td>
+                                    <span class="badge @(psicologo.Ativo ? "bg-success" : "bg-secondary")">
+                                        @(psicologo.Ativo ? "Ativo" : "Inativo")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.TipoRelatorio == "pacientes")
+{
+    <!-- Análise de Pacientes -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card card-modern">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>
+                        Faixa Etária dos Pacientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="faixaEtariaChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card card-modern">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-heart-pulse me-2"></i>
+                        PsicoPontos Distribuídos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h3 class="text-primary">@Model.TotalPontosDistribuidos</h3>
+                            <small class="text-muted">Total de Pontos</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-success">@Model.ConsultasGratuitasRealizadas</h3>
+                            <small class="text-muted">Consultas Gratuitas</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-info">@Model.MediaPontosPorPaciente.ToString("F1")</h3>
+                            <small class="text-muted">Média por Paciente</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de Consultas por Período
+    const consultasCtx = document.getElementById('consultasChart');
+    if (consultasCtx) {
+        new Chart(consultasCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.ConsultasPorPeriodo.Select(x => x.Data.ToString("dd/MM")))),
+                datasets: [{
+                    label: 'Consultas',
+                    data: @Html.Raw(Json.Serialize(Model.ConsultasPorPeriodo.Select(x => x.Quantidade))),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    // Gráfico de Status das Consultas
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Realizadas', 'Canceladas', 'No-Show', 'Agendadas'],
+                datasets: [{
+                    data: [@Model.ConsultasRealizadas, @Model.ConsultasCanceladas, @Model.ConsultasNoShow, @Model.ConsultasAgendadas],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(54, 162, 235, 0.8)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    function exportarPDF() {
+        alert('Funcionalidade de exportação PDF em desenvolvimento');
+    }
+
+    function exportarExcel() {
+        alert('Funcionalidade de exportação Excel em desenvolvimento');
+    }
+</script>
+
+<style>
+    .gradient-card-green {
+        background: linear-gradient(135deg, #28a745, #20c997);
+    }
+    .gradient-card-blue {
+        background: linear-gradient(135deg, #007bff, #6610f2);
+    }
+    .gradient-card-purple {
+        background: linear-gradient(135deg, #6f42c1, #e83e8c);
+    }
+    .gradient-card-orange {
+        background: linear-gradient(135deg, #fd7e14, #ffc107);
+    }
+</style>

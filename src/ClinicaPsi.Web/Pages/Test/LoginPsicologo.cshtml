@@ -1,0 +1,46 @@
+@page "/test/login-psicologo"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using ClinicaPsi.Shared.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@model ClinicaPsi.Web.Pages.Test.LoginPsicologoModel
+@{
+    ViewData["Title"] = "Login Psicólogo de Teste";
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Login Automático - Psicólogo</h4>
+                </div>
+                <div class="card-body">
+                    @if (ViewData["Message"] != null)
+                    {
+                        <div class="alert alert-info">
+                            @ViewData["Message"]
+                        </div>
+                    }
+
+                    <form method="post">
+                        <button type="submit" class="btn btn-primary">
+                            Fazer login como psicólogo (joao.silva@psii.com)
+                        </button>
+                    </form>
+
+                    <hr />
+
+                    <p><strong>Usuários disponíveis:</strong></p>
+                    <ul>
+                        <li>Admin: ana.santos@psii.com / Ana123!</li>
+                        <li>Psicólogo: joao.silva@psii.com / Joao123!</li>
+                        <li>Cliente: cliente@demo.com / Cliente123!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

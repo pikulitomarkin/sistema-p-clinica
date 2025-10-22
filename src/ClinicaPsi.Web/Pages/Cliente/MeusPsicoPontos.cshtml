@@ -1,0 +1,343 @@
+@page
+@using ClinicaPsi.Web.Extensions
+@model ClinicaPsi.Web.Pages.Cliente.MeusPsicoPontosModel
+@{
+    ViewData["Title"] = "Meus PsicoPontos";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="bi bi-star-fill me-2 text-warning"></i>Meus PsicoPontos</h2>
+                    <p class="text-muted mb-0">Acompanhe seus pontos e resgate consultas gratuitas</p>
+                </div>
+                <div class="text-end">
+                    <div class="display-4 text-primary fw-bold">@Model.TotalPontos</div>
+                    <small class="text-muted">pontos disponíveis</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Painel Principal de Pontos -->
+        <div class="col-lg-8">
+            <!-- Card de Progresso -->
+            <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="mb-3"><i class="bi bi-trophy-fill me-2"></i>Progresso para Consulta Gratuita</h4>
+                            
+                            @if (Model.PontosParaProximaGratuita == 0)
+                            {
+                                <div class="alert alert-success border-0 bg-white bg-opacity-25">
+                                    <i class="bi bi-gift me-2"></i>
+                                    <strong>Parabéns!</strong> Você pode resgatar uma consulta gratuita!
+                                </div>
+                                <form method="post" asp-page-handler="UsarPontos" class="d-inline">
+                                    <button type="submit" class="btn btn-light btn-lg">
+                                        <i class="bi bi-gift me-2"></i>Resgatar Consulta Gratuita
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <p class="mb-3">Faltam apenas <strong>@Model.PontosParaProximaGratuita pontos</strong> para sua próxima consulta gratuita!</p>
+                                
+                                <div class="progress mb-3" style="height: 12px;">
+                                    <div class="progress-bar @Model.GetProgressColorClass()" 
+                                         style="width: @((10 - Model.PontosParaProximaGratuita) * 10)%">
+                                    </div>
+                                </div>
+                                
+                                <small class="opacity-75">
+                                    @(10 - Model.PontosParaProximaGratuita) de 10 pontos conquistados
+                                </small>
+                            }
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="position-relative d-inline-block">
+                                <svg width="120" height="120" class="position-relative">
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="8"/>
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="white" stroke-width="8"
+                                            stroke-dasharray="@((10 - Model.PontosParaProximaGratuita) * 31.4) 314"
+                                            stroke-linecap="round" transform="rotate(-90 60 60)"/>
+                                </svg>
+                                <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                    <div class="h3 mb-0 fw-bold">@(10 - Model.PontosParaProximaGratuita)</div>
+                                    <small>/ 10</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas Resumo -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-check display-6 text-success mb-2"></i>
+                            <div class="h4 mb-1">@Model.TotalConsultasRealizadas</div>
+                            <small class="text-muted">Consultas Realizadas</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="bi bi-plus-circle-fill display-6 text-success mb-2"></i>
+                            <div class="h4 mb-1">@Model.TotalPontosGanhos</div>
+                            <small class="text-muted">Pontos Ganhos</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="bi bi-dash-circle-fill display-6 text-primary mb-2"></i>
+                            <div class="h4 mb-1">@Model.TotalPontosUsados</div>
+                            <small class="text-muted">Pontos Usados</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="bi bi-gift-fill display-6 text-info mb-2"></i>
+                            <div class="h4 mb-1">@Model.ConsultasGratuitasDisponiveis</div>
+                            <small class="text-muted">Consultas Gratuitas</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histórico de Movimentações -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Histórico de Movimentações</h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.HistoricoCompleto.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var movimento in Model.HistoricoCompleto.Take(15))
+                            {
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="rounded-circle p-2 @Model.GetTipoMovimentacaoBadgeClass(movimento.TipoMovimentacao)">
+                                                    <i class="bi @Model.GetTipoMovimentacaoIcon(movimento.TipoMovimentacao) text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-bold">@movimento.Descricao</div>
+                                                <small class="text-muted">
+                                                    @movimento.DataMovimentacao.ToString("dd/MM/yyyy HH:mm")
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge @Model.GetTipoMovimentacaoBadgeClass(movimento.TipoMovimentacao) fs-6">
+                                                @(movimento.TipoMovimentacao == TipoMovimentacaoPontos.Uso ? "-" : "+")@movimento.Pontos
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-star display-1 text-muted opacity-50"></i>
+                            <h5 class="text-muted mt-3">Nenhuma movimentação ainda</h5>
+                            <p class="text-muted">Realize consultas para começar a ganhar PsicoPontos!</p>
+                            <a href="/Cliente/AgendarConsulta" class="btn btn-primary">
+                                <i class="bi bi-calendar-plus me-2"></i>Agendar Consulta
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Ranking -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="bi bi-trophy me-2"></i>Seu Ranking</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-4 text-warning mb-2">#{Model.PosicaoRanking}</div>
+                    <p class="text-muted mb-3">de @Model.TotalPacientes pacientes</p>
+                    
+                    @if (Model.PosicaoRanking <= 3)
+                    {
+                        <div class="alert alert-warning border-0">
+                            <i class="bi bi-trophy-fill me-2"></i>
+                            <strong>Parabéns!</strong> Você está no TOP 3!
+                        </div>
+                    }
+                    else if (Model.PosicaoRanking <= 10)
+                    {
+                        <div class="alert alert-info border-0">
+                            <i class="bi bi-award me-2"></i>
+                            <strong>Muito bem!</strong> Você está no TOP 10!
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- TOP Pacientes -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-people me-2"></i>TOP 10 Pacientes</h6>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.TopPacientes.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @for (int i = 0; i < Math.Min(10, Model.TopPacientes.Count); i++)
+                            {
+                                var paciente = Model.TopPacientes[i];
+                                var posicao = i + 1;
+                                
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge @Model.GetRankingBadgeClass(posicao) me-2">
+                                                @posicao
+                                            </span>
+                                            <div>
+                                                <div class="fw-bold">@paciente.Nome</div>
+                                                <small class="text-muted">@paciente.ConsultasRealizadas consultas</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold text-primary">@paciente.PsicoPontos</div>
+                                            <small class="text-muted">pontos</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Consultas Gratuitas Utilizadas -->
+            @if (Model.ConsultasGratuitasHistorico.Any())
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-gift me-2"></i>Consultas Gratuitas Utilizadas</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @foreach (var consulta in Model.ConsultasGratuitasHistorico)
+                            {
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="fw-bold">@consulta.NomePsicologo</div>
+                                            <small class="text-muted">
+                                                @consulta.DataConsulta.ToString("dd/MM/yyyy") • 
+                                                @consulta.EspecialidadesPsicologo
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-success">
+                                            -@consulta.PontosUsados pts
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Como Funciona -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-question-circle me-2"></i>Como Funciona</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>+1 ponto por consulta realizada</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>10 pontos = 1 consulta gratuita</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Pontos nunca expiram</small>
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Consultas canceladas não geram pontos</small>
+                        </li>
+                        <li class="mb-0">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <small>Acompanhe seu ranking</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .progress-bar {
+        transition: width 0.6s ease;
+    }
+    
+    .rounded-circle {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+    }
+    
+    .list-group-item:first-child {
+        border-top: none;
+    }
+    
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+</style>

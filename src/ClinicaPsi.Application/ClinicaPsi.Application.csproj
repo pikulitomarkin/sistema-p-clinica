@@ -11,4 +11,8 @@
     <ProjectReference Include="..\ClinicaPsi.Shared\ClinicaPsi.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="QuestPDF" Version="2025.7.3" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,415 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@model ClinicaPsi.Web.Pages.Psicologo.ConsultasModel
+@{
+    ViewData["Title"] = "Consultas";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="gradient-text mb-0">
+        <i class="bi bi-clipboard-check me-2"></i>
+        Minhas Consultas
+    </h2>
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary btn-modern" data-bs-toggle="modal" data-bs-target="#novaConsultaModal">
+            <i class="bi bi-plus-circle me-2"></i>
+            Nova Consulta
+        </button>
+        <button type="button" class="btn btn-outline-primary" onclick="exportarConsultas()">
+            <i class="bi bi-download me-2"></i>
+            Exportar
+        </button>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card card-modern mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="paciente" class="form-label">Paciente</label>
+                <input type="text" class="form-control" id="paciente" name="paciente" 
+                       value="@Model.FiltroNomePaciente" placeholder="Nome do paciente">
+            </div>
+            <div class="col-md-2">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    @foreach (StatusConsulta status in Enum.GetValues<StatusConsulta>())
+                    {
+                        <option value="@status" selected="@(Model.FiltroStatus == status)">
+                            @status.GetDisplayName()
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="tipo" class="form-label">Tipo</label>
+                <select class="form-select" id="tipo" name="tipo">
+                    <option value="">Todos</option>
+                    @foreach (TipoConsulta tipo in Enum.GetValues<TipoConsulta>())
+                    {
+                        <option value="@tipo" selected="@(Model.FiltroTipo == tipo)">
+                            @tipo.GetDisplayName()
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="dataInicio" class="form-label">Data Início</label>
+                <input type="date" class="form-control" id="dataInicio" name="dataInicio" 
+                       value="@Model.FiltroDataInicio?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-2">
+                <label for="dataFim" class="form-label">Data Fim</label>
+                <input type="date" class="form-control" id="dataFim" name="dataFim" 
+                       value="@Model.FiltroDataFim?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Consultas -->
+<div class="card card-modern">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul me-2"></i>
+            Lista de Consultas (@Model.TotalConsultas)
+        </h5>
+        <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-secondary @(Model.Visualizacao == "lista" ? "active" : "")" 
+                    onclick="changeView('lista')">
+                <i class="bi bi-list"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary @(Model.Visualizacao == "cards" ? "active" : "")" 
+                    onclick="changeView('cards')">
+                <i class="bi bi-grid"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Consultas.Any())
+        {
+            @if (Model.Visualizacao == "lista")
+            {
+                <!-- Visualização em Lista -->
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Paciente</th>
+                                <th>Tipo</th>
+                                <th>Duração</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var consulta in Model.Consultas)
+                            {
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>@consulta.DataHorario.ToString("dd/MM/yyyy")</strong>
+                                        </div>
+                                        <small class="text-muted">
+                                            @consulta.DataHorario.ToString("HH:mm") - 
+                                            @consulta.DataHorario.AddMinutes(consulta.DuracaoMinutos).ToString("HH:mm")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>@consulta.Paciente?.Nome</strong>
+                                        </div>
+                                        <small class="text-muted">@consulta.Paciente?.Email</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@consulta.Tipo.GetDisplayName()</span>
+                                    </td>
+                                    <td>@consulta.DuracaoMinutos min</td>
+                                    <td>@consulta.Valor.ToString("C")</td>
+                                    <td>
+                                        <span class="badge status-@consulta.Status.ToString().ToLower()">
+                                            @consulta.Status.GetDisplayName()
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" onclick="viewConsulta(@consulta.Id)" 
+                                                    title="Visualizar">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            @if (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada)
+                                            {
+                                                <button class="btn btn-outline-success" onclick="editConsulta(@consulta.Id)" 
+                                                        title="Editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-outline-warning" onclick="cancelConsulta(@consulta.Id)" 
+                                                        title="Cancelar">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            }
+                                            @if (consulta.Status == StatusConsulta.Confirmada)
+                                            {
+                                                <button class="btn btn-outline-info" onclick="iniciarConsulta(@consulta.Id)" 
+                                                        title="Iniciar Consulta">
+                                                    <i class="bi bi-play-circle"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <!-- Visualização em Cards -->
+                <div class="p-3">
+                    <div class="row g-3">
+                        @foreach (var consulta in Model.Consultas)
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card consulta-card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <span class="badge status-@consulta.Status.ToString().ToLower()">
+                                            @consulta.Status.GetDisplayName()
+                                        </span>
+                                        <span class="badge bg-info">@consulta.Tipo.GetDisplayName()</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6 class="card-title">@consulta.Paciente?.Nome</h6>
+                                        <div class="mb-2">
+                                            <i class="bi bi-calendar me-1"></i>
+                                            <strong>@consulta.DataHorario.ToString("dd/MM/yyyy")</strong>
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="bi bi-clock me-1"></i>
+                                            @consulta.DataHorario.ToString("HH:mm") - 
+                                            @consulta.DataHorario.AddMinutes(consulta.DuracaoMinutos).ToString("HH:mm")
+                                        </div>
+                                        <div class="mb-2">
+                                            <i class="bi bi-hourglass me-1"></i>
+                                            @consulta.DuracaoMinutos minutos
+                                        </div>
+                                        <div class="mb-3">
+                                            <i class="bi bi-currency-dollar me-1"></i>
+                                            <strong>@consulta.Valor.ToString("C")</strong>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(consulta.Observacoes))
+                                        {
+                                            <div class="text-muted small mb-2">
+                                                <i class="bi bi-chat-left-text me-1"></i>
+                                                @consulta.Observacoes
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="btn-group w-100">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="viewConsulta(@consulta.Id)">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            @if (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada)
+                                            {
+                                                <button class="btn btn-outline-success btn-sm" onclick="editConsulta(@consulta.Id)">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            }
+                                            @if (consulta.Status == StatusConsulta.Confirmada)
+                                            {
+                                                <button class="btn btn-primary btn-sm" onclick="iniciarConsulta(@consulta.Id)">
+                                                    <i class="bi bi-play-circle me-1"></i>
+                                                    Iniciar
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Paginação -->
+            @if (Model.TotalPaginas > 1)
+            {
+                <div class="card-footer">
+                    <nav aria-label="Navegação de páginas">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item @(Model.PaginaAtual <= 1 ? "disabled" : "")">
+                                <a class="page-link" href="?pagina=@(Model.PaginaAtual - 1)&@Request.QueryString.Value?.Replace($"pagina={Model.PaginaAtual}", "")">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            
+                            @for (int i = Math.Max(1, Model.PaginaAtual - 2); i <= Math.Min(Model.TotalPaginas, Model.PaginaAtual + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                    <a class="page-link" href="?pagina=@i&@Request.QueryString.Value?.Replace($"pagina={Model.PaginaAtual}", "")">@i</a>
+                                </li>
+                            }
+                            
+                            <li class="page-item @(Model.PaginaAtual >= Model.TotalPaginas ? "disabled" : "")">
+                                <a class="page-link" href="?pagina=@(Model.PaginaAtual + 1)&@Request.QueryString.Value?.Replace($"pagina={Model.PaginaAtual}", "")">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-clipboard-x text-muted" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mt-3">Nenhuma consulta encontrada</h5>
+                <p class="text-muted">Ajuste os filtros ou crie uma nova consulta</p>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novaConsultaModal">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Criar Nova Consulta
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Nova Consulta -->
+<div class="modal fade" id="novaConsultaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form asp-page-handler="NovaConsulta" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Nova Consulta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Conteúdo similar ao modal da agenda -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="pacienteId" class="form-label">Paciente</label>
+                            <select class="form-select" id="pacienteId" name="pacienteId" required>
+                                <option value="">Selecione um paciente</option>
+                                @foreach (var paciente in Model.PacientesDisponiveis)
+                                {
+                                    <option value="@paciente.Id">@paciente.Nome</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tipoConsulta" class="form-label">Tipo</label>
+                            <select class="form-select" id="tipoConsulta" name="tipoConsulta" required>
+                                <option value="Normal">Consulta Normal</option>
+                                <option value="Retorno">Retorno</option>
+                                <option value="Avaliacao">Avaliação</option>
+                                <option value="Gratuita">Gratuita (PsicoPontos)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="dataConsulta" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="dataConsulta" name="dataConsulta" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="horaConsulta" class="form-label">Horário</label>
+                            <input type="time" class="form-control" id="horaConsulta" name="horaConsulta" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="duracao" class="form-label">Duração (minutos)</label>
+                            <select class="form-select" id="duracao" name="duracao">
+                                <option value="50" selected>50 minutos</option>
+                                <option value="30">30 minutos</option>
+                                <option value="60">60 minutos</option>
+                                <option value="90">90 minutos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="valor" class="form-label">Valor</label>
+                            <input type="number" step="0.01" class="form-control" id="valor" name="valor">
+                        </div>
+                        <div class="col-md-12">
+                            <label for="observacoes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Criar Consulta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function changeView(view) {
+            const url = new URL(window.location);
+            url.searchParams.set('visualizacao', view);
+            window.location = url;
+        }
+
+        function viewConsulta(id) {
+            window.location.href = `/Psicologo/ConsultaDetalhes/${id}`;
+        }
+
+        function editConsulta(id) {
+            window.location.href = `/Psicologo/EditarConsulta/${id}`;
+        }
+
+        function cancelConsulta(id) {
+            if (confirm('Tem certeza que deseja cancelar esta consulta?')) {
+                fetch(`/Psicologo/Consultas?handler=CancelarConsulta&id=${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    }
+                }).then(() => location.reload());
+            }
+        }
+
+        function iniciarConsulta(id) {
+            window.location.href = `/Psicologo/IniciarConsulta/${id}`;
+        }
+
+        function exportarConsultas() {
+            alert('Funcionalidade de exportação em desenvolvimento');
+        }
+    </script>
+}
+
+<style>
+    .consulta-card {
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .consulta-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .badge.status-agendada { background-color: #007bff; }
+    .badge.status-confirmada { background-color: #28a745; }
+    .badge.status-realizada { background-color: #6f42c1; }
+    .badge.status-cancelada { background-color: #dc3545; }
+    .badge.status-noshow { background-color: #fd7e14; }
+    .badge.status-reagendada { background-color: #20c997; }
+</style>

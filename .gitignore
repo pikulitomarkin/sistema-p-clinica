@@ -177,13 +177,81 @@ logs/
 
 # Publish
 publish/
-PublishProfiles/
+*.publish/
+*.PublishProfiles/
 
-# Azure
-*.pubxml
-*.publishproj
+# Test
+TestResults/
+*.TestResults/
+*.coverage
+*.coveragexml
+*.testsettings
+*.runsettings
+*.trx
+*.xunit.xml
+*.nunit.xml
+*.specflow*
 
-# Application specific
-appsettings.Development.json
-appsettings.Production.json
-clinicapsi.db
+# Docker
+Dockerfile*
+.dockerignore
+
+# Backup
+*.bak
+*.tmp
+*.old
+*.orig
+*.save
+*.backup
+*.bkp
+*.~
+
+# Logs
+*.log
+*.trace
+*.out
+*.err
+*.pid
+*.seed
+*.pid.lock
+*.pidfile
+*.pid.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node/npm
+node_modules/
+
+# OS
+.DS_Store
+*.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Outros
+Thumbs.db
+Desktop.ini
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Visual Studio Code
+.vscode/
+
+# EF Core Migrations
+Migrations/

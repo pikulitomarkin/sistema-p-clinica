@@ -1,3 +1,4 @@
+
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 
@@ -53,6 +54,8 @@ public class Paciente
     
     // Controle de sistema
     public DateTime DataCadastro { get; set; }
+    public DateTime DataCriacao { get; set; }
+    public DateTime? DataAtualizacao { get; set; }
     public bool Ativo { get; set; } = true;
     
     // Relacionamentos
@@ -99,7 +102,13 @@ public class Psicologo
     public bool AtendeSabado { get; set; } = false;
     public bool AtendeDomingo { get; set; } = false;
     
+    // Períodos de atendimento
+    public bool AtendeManha { get; set; } = true;
+    public bool AtendeTarde { get; set; } = true;
+    
     public DateTime DataCadastro { get; set; }
+    public DateTime DataCriacao { get; set; }
+    public DateTime? DataAtualizacao { get; set; }
     public bool Ativo { get; set; } = true;
     
     // Relacionamentos
@@ -137,6 +146,8 @@ public class Consulta
     
     // Controle de alterações
     public DateTime DataAgendamento { get; set; }
+    public DateTime DataCriacao { get; set; }
+    public DateTime? DataAtualizacao { get; set; }
     public DateTime? DataCancelamento { get; set; }
     
     [StringLength(500, ErrorMessage = "Motivo do cancelamento deve ter no máximo 500 caracteres")]
@@ -159,9 +170,18 @@ public class HistoricoPontos
     
     public int PontosAlterados { get; set; }
     
+    // Propriedade para compatibilidade
+    public int Pontos { get; set; }
+    
     [Required(ErrorMessage = "Motivo é obrigatório")]
     [StringLength(200, ErrorMessage = "Motivo deve ter no máximo 200 caracteres")]
     public string Motivo { get; set; } = string.Empty;
+    
+    // Propriedade para compatibilidade
+    [StringLength(200, ErrorMessage = "Descrição deve ter no máximo 200 caracteres")]
+    public string Descricao { get; set; } = string.Empty;
+    
+    public TipoMovimentacaoPontos TipoMovimentacao { get; set; } = TipoMovimentacaoPontos.Ganho;
     
     public DateTime DataMovimentacao { get; set; }
     
@@ -222,4 +242,279 @@ public enum TipoNotificacao
     WhatsApp = 2,
     SMS = 3,
     Push = 4
+}
+
+public enum TipoMovimentacaoPontos
+{
+    Ganho = 1,      // Ganho de pontos por consulta realizada
+    Uso = 2,        // Uso de pontos para consulta gratuita
+    Bonus = 3,      // Bônus promocional
+    Expiracao = 4   // Expiração de pontos (futuro)
+}
+
+public enum TipoUsuario
+{
+    Admin = 1,      // Dra. Ana Santos
+    Psicologo = 2,  // Outros psicólogos
+    Cliente = 3     // Pacientes/Clientes
+}
+
+public enum TipoAcaoAuditoria
+{
+    CriacaoUsuario = 1,
+    DesativacaoUsuario = 2,
+    ReativacaoUsuario = 3,
+    EdicaoUsuario = 4,
+    AlteracaoSenha = 5,
+    AlteracaoRole = 6,
+    ExclusaoUsuario = 7
+}
+
+/// <summary>
+/// Registro de auditoria para rastrear todas as ações administrativas sobre usuários
+/// </summary>
+public class AuditoriaUsuario
+{
+    public int Id { get; set; }
+    
+    /// <summary>
+    /// ID do administrador que realizou a ação
+    /// </summary>
+    [Required]
+    public string AdminId { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Nome do administrador
+    /// </summary>
+    [Required]
+    [StringLength(200)]
+    public string AdminNome { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// ID do usuário afetado pela ação
+    /// </summary>
+    [Required]
+    public string UsuarioAfetadoId { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Nome do usuário afetado
+    /// </summary>
+    [Required]
+    [StringLength(200)]
+    public string UsuarioAfetadoNome { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Email do usuário afetado
+    /// </summary>
+    [Required]
+    [EmailAddress]
+    [StringLength(200)]
+    public string UsuarioAfetadoEmail { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Tipo de ação realizada
+    /// </summary>
+    [Required]
+    public TipoAcaoAuditoria Acao { get; set; }
+    
+    /// <summary>
+    /// Data e hora da ação
+    /// </summary>
+    [Required]
+    public DateTime DataHora { get; set; } = DateTime.Now;
+    
+    /// <summary>
+    /// Detalhes adicionais da ação (JSON ou texto)
+    /// </summary>
+    public string? Detalhes { get; set; }
+    
+    /// <summary>
+    /// IP do administrador que realizou a ação
+    /// </summary>
+    [StringLength(50)]
+    public string? IpAddress { get; set; }
+    
+    /// <summary>
+    /// Dados anteriores (para edições)
+    /// </summary>
+    public string? DadosAnteriores { get; set; }
+    
+    /// <summary>
+    /// Dados novos (para edições)
+    /// </summary>
+    public string? DadosNovos { get; set; }
+}
+
+/// <summary>
+/// Configurações do sistema
+/// </summary>
+public class ConfiguracaoSistema
+{
+    public int Id { get; set; }
+    
+    /// <summary>
+    /// Chave da configuração (identificador único)
+    /// </summary>
+    [Required]
+    [StringLength(100)]
+    public string Chave { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Valor da configuração
+    /// </summary>
+    public string? Valor { get; set; }
+    
+    /// <summary>
+    /// Descrição da configuração
+    /// </summary>
+    [StringLength(500)]
+    public string? Descricao { get; set; }
+    
+    /// <summary>
+    /// Categoria da configuração (ex: Notificacoes, Backup, Sistema)
+    /// </summary>
+    [StringLength(50)]
+    public string? Categoria { get; set; }
+    
+    /// <summary>
+    /// Tipo do valor (string, boolean, number, json)
+    /// </summary>
+    [StringLength(20)]
+    public string TipoValor { get; set; } = "string";
+    
+    /// <summary>
+    /// Data de criação
+    /// </summary>
+    public DateTime DataCriacao { get; set; } = DateTime.Now;
+    
+    /// <summary>
+    /// Data da última atualização
+    /// </summary>
+    public DateTime DataAtualizacao { get; set; } = DateTime.Now;
+    
+    /// <summary>
+    /// Usuário que fez a última atualização
+    /// </summary>
+    [StringLength(100)]
+    public string? UsuarioAtualizacao { get; set; }
+}
+
+/// <summary>
+/// Prontuário Eletrônico - Registro de sessões clínicas
+/// </summary>
+public class ProntuarioEletronico
+{
+    public int Id { get; set; }
+    
+    /// <summary>
+    /// ID do paciente
+    /// </summary>
+    [Required]
+    public int PacienteId { get; set; }
+    
+    /// <summary>
+    /// Paciente relacionado
+    /// </summary>
+    public Paciente? Paciente { get; set; }
+    
+    /// <summary>
+    /// ID da consulta relacionada
+    /// </summary>
+    public int? ConsultaId { get; set; }
+    
+    /// <summary>
+    /// Consulta relacionada
+    /// </summary>
+    public Consulta? Consulta { get; set; }
+    
+    /// <summary>
+    /// ID do psicólogo que registrou
+    /// </summary>
+    [Required]
+    public int PsicologoId { get; set; }
+    
+    /// <summary>
+    /// Psicólogo que registrou
+    /// </summary>
+    public Psicologo? Psicologo { get; set; }
+    
+    /// <summary>
+    /// Data e hora da sessão
+    /// </summary>
+    [Required]
+    public DateTime DataSessao { get; set; }
+    
+    /// <summary>
+    /// Tipo de atendimento
+    /// </summary>
+    [StringLength(50)]
+    public string TipoAtendimento { get; set; } = "Individual";
+    
+    /// <summary>
+    /// Queixa principal relatada pelo paciente
+    /// </summary>
+    [Required]
+    public string QueixaPrincipal { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Observações da sessão
+    /// </summary>
+    [Required]
+    public string Observacoes { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Evolução do paciente
+    /// </summary>
+    public string? Evolucao { get; set; }
+    
+    /// <summary>
+    /// Intervenções realizadas
+    /// </summary>
+    public string? Intervencoes { get; set; }
+    
+    /// <summary>
+    /// Plano terapêutico
+    /// </summary>
+    public string? PlanoTerapeutico { get; set; }
+    
+    /// <summary>
+    /// Objetivos da próxima sessão
+    /// </summary>
+    public string? ProximaSessao { get; set; }
+    
+    /// <summary>
+    /// Estado emocional observado
+    /// </summary>
+    [StringLength(100)]
+    public string? EstadoEmocional { get; set; }
+    
+    /// <summary>
+    /// Medicamentos em uso (se relatado)
+    /// </summary>
+    public string? MedicamentosAtuais { get; set; }
+    
+    /// <summary>
+    /// Anexos (URLs ou caminhos de arquivos)
+    /// </summary>
+    public string? Anexos { get; set; }
+    
+    /// <summary>
+    /// Sessão está finalizada
+    /// </summary>
+    public bool Finalizado { get; set; } = false;
+    
+    /// <summary>
+    /// Data de criação do registro
+    /// </summary>
+    public DateTime DataCriacao { get; set; } = DateTime.Now;
+    
+    /// <summary>
+    /// Data da última atualização
+    /// </summary>
+    public DateTime DataAtualizacao { get; set; } = DateTime.Now;
+    
+    /// <summary>
+    /// Confidencial - acesso restrito
+    /// </summary>
+    public bool Confidencial { get; set; } = true;
 }

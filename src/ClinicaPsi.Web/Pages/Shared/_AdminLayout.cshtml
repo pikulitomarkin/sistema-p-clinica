@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PsiiAnaSantos</title>
+    <base href="~/" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="ClinicaPsi.Web.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="admin-sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="text-decoration-none">
+                <div class="d-flex align-items-center p-3">
+                    <div class="translucent-icon me-3" style="width: 50px; height: 50px; font-size: 1.5rem;">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    <div class="text-white">
+                        <h5 class="mb-0">PsiiAnaSantos</h5>
+                        <small class="opacity-75">Sistema Administrativo</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- Menu Geral -->
+            <div class="nav-section">
+                <div class="nav-section-title">
+                    <i class="bi bi-house me-2"></i>
+                    Início
+                </div>
+                <a href="/" class="nav-link">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Voltar ao Site
+                </a>
+            </div>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <!-- Menu Admin -->
+                <div class="nav-section">
+                    <div class="nav-section-title">
+                        <i class="bi bi-shield-check me-2"></i>
+                        Administração
+                    </div>
+                    <a href="/admin" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Admin/Index" ? "active" : "")">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Dashboard
+                    </a>
+                    <a href="/admin/usuarios" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Admin/Usuario") == true ? "active" : "")">
+                        <i class="bi bi-people me-2"></i>
+                        Gestão de Usuários
+                    </a>
+                    <a href="/admin/psicologos" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Admin/Psicologo") == true ? "active" : "")">
+                        <i class="bi bi-person-badge me-2"></i>
+                        Gestão de Psicólogos
+                    </a>
+                    <a href="/admin/consultas" class="nav-link">
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Gestão de Consultas
+                    </a>
+                    <a href="/admin/relatorios" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Admin/Relatorio") == true ? "active" : "")">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Relatórios
+                    </a>
+                    <a href="/admin/psicopontos" class="nav-link">
+                        <i class="bi bi-star me-2"></i>
+                        Sistema PsicoPontos
+                    </a>
+                    <a href="/admin/auditoria" class="nav-link">
+                        <i class="bi bi-shield-check me-2"></i>
+                        Auditoria
+                    </a>
+                    <a href="/admin/configuracoes" class="nav-link">
+                        <i class="bi bi-gear me-2"></i>
+                        Configurações
+                    </a>
+                </div>
+            }
+
+            @if (User.IsInRole("Psicologo") || User.IsInRole("Admin"))
+            {
+                <!-- Menu Psicólogo -->
+                <div class="nav-section">
+                    <div class="nav-section-title">
+                        <i class="bi bi-person-badge me-2"></i>
+                        Área do Psicólogo
+                    </div>
+                    <a href="/psicologo" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Psicologo/Index" ? "active" : "")">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Dashboard
+                    </a>
+                    <a href="/psicologo/agenda" class="nav-link">
+                        <i class="bi bi-calendar-week me-2"></i>
+                        Minha Agenda
+                    </a>
+                    <a href="/psicologo/consultas" class="nav-link">
+                        <i class="bi bi-clipboard-check me-2"></i>
+                        Consultas
+                    </a>
+                    <a href="/psicologo/pacientes" class="nav-link">
+                        <i class="bi bi-person-lines-fill me-2"></i>
+                        Meus Pacientes
+                    </a>
+                    <a href="/psicologo/relatorios" class="nav-link">
+                        <i class="bi bi-file-text me-2"></i>
+                        Relatórios
+                    </a>
+                    <a href="/psicologo/perfil" class="nav-link">
+                        <i class="bi bi-person-gear me-2"></i>
+                        Meu Perfil
+                    </a>
+                </div>
+            }
+
+            @if (User.IsInRole("Cliente"))
+            {
+                <!-- Menu Cliente -->
+                <div class="nav-section">
+                    <div class="nav-section-title">
+                        <i class="bi bi-person-heart me-2"></i>
+                        Área do Cliente
+                    </div>
+                    <a href="/cliente" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Cliente/Index" ? "active" : "")">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Minha Área
+                    </a>
+                    <a href="/Cliente/AgendarConsulta" class="nav-link">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Agendar Consulta
+                    </a>
+                    <a href="/Cliente/MinhasConsultas" class="nav-link">
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Minhas Consultas
+                    </a>
+                    <a href="/Cliente/Historico" class="nav-link">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Histórico
+                    </a>
+                    <a href="/Cliente/MeusPsicoPontos" class="nav-link">
+                        <i class="bi bi-star me-2"></i>
+                        Meus PsicoPontos
+                    </a>
+                    <a href="/Cliente/MeuPerfil" class="nav-link">
+                        <i class="bi bi-person-gear me-2"></i>
+                        Meu Perfil
+                    </a>
+                </div>
+            }
+
+            <!-- Menu Usuário -->
+            <div class="nav-section mt-auto">
+                <div class="nav-section-title">
+                    <i class="bi bi-person-circle me-2"></i>
+                    @User.Identity?.Name
+                </div>
+                <a href="/Account/Logout" class="nav-link text-warning">
+                    <i class="bi bi-box-arrow-right me-2"></i>
+                    Sair do Sistema
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+        <!-- Top Bar -->
+        <div class="admin-topbar">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item">
+                                    <a href="/" class="text-white">
+                                        <i class="bi bi-house"></i>
+                                    </a>
+                                </li>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <li class="breadcrumb-item">
+                                        <a href="/admin" class="text-white-50">Administração</a>
+                                    </li>
+                                }
+                                @if (User.IsInRole("Psicologo"))
+                                {
+                                    <li class="breadcrumb-item">
+                                        <a href="/psicologo" class="text-white-50">Psicólogo</a>
+                                    </li>
+                                }
+                                @if (User.IsInRole("Cliente"))
+                                {
+                                    <li class="breadcrumb-item">
+                                        <a href="/cliente" class="text-white-50">Cliente</a>
+                                    </li>
+                                }
+                                <li class="breadcrumb-item active text-white">
+                                    @(ViewData["Title"]?.ToString() ?? "Dashboard")
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <div class="d-flex align-items-center justify-content-end">
+                            <div class="me-3">
+                                <small class="text-white-50">Bem-vindo(a),</small>
+                                <div class="text-white fw-bold">@User.Identity?.Name</div>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li><a class="dropdown-item" href="/admin/perfil">
+                                            <i class="bi bi-person-gear me-2"></i>Meu Perfil</a></li>
+                                        <li><a class="dropdown-item" href="/admin/configuracoes">
+                                            <i class="bi bi-gear me-2"></i>Configurações</a></li>
+                                    }
+                                    @if (User.IsInRole("Psicologo"))
+                                    {
+                                        <li><a class="dropdown-item" href="/psicologo/perfil">
+                                            <i class="bi bi-person-gear me-2"></i>Meu Perfil</a></li>
+                                    }
+                                    @if (User.IsInRole("Cliente"))
+                                    {
+                                        <li><a class="dropdown-item" href="/cliente/perfil">
+                                            <i class="bi bi-person-gear me-2"></i>Meu Perfil</a></li>
+                                    }
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="/Account/Logout">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <main class="admin-main">
+            <!-- Alertas de Feedback -->
+            @if (TempData["Sucesso"] != null)
+            {
+                <div class="container-fluid mb-3">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        @TempData["Sucesso"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </div>
+            }
+
+            @if (TempData["Erro"] != null)
+            {
+                <div class="container-fluid mb-3">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        @TempData["Erro"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </div>
+            }
+
+            @if (TempData["Info"] != null)
+            {
+                <div class="container-fluid mb-3">
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="bi bi-info-circle me-2"></i>
+                        @TempData["Info"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </div>
+            }
+
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Admin Scripts -->
+    <script>
+        // Auto-hide alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert-dismissible');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+        });
+
+        // Add active states to navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+            
+            navLinks.forEach(function(link) {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
