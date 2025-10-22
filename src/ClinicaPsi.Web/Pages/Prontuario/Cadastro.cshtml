@@ -1,0 +1,75 @@
+@page "/prontuario/cadastro/{id:int?}"
+@model CadastroModel
+@{
+    ViewData["Title"] = Model.Edicao ? "Editar Prontuário" : "Novo Prontuário";
+}
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" enctype="multipart/form-data">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Paciente</label>
+            <select asp-for="Prontuario.PacienteId" class="form-select" required>
+                <option value="">Selecione...</option>
+                @foreach (var paciente in Model.Pacientes)
+                {
+                    <option value="@paciente.Id" selected="@(Model.Prontuario.PacienteId == paciente.Id)">@paciente.Nome</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Psicólogo</label>
+            <select asp-for="Prontuario.PsicologoId" class="form-select" required>
+                <option value="">Selecione...</option>
+                @foreach (var psicologo in Model.Psicologos)
+                {
+                    <option value="@psicologo.Id" selected="@(Model.Prontuario.PsicologoId == psicologo.Id)">@psicologo.Nome</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Data Sessão</label>
+            <input asp-for="Prontuario.DataSessao" type="date" class="form-control" required />
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Queixa Principal</label>
+            <input asp-for="Prontuario.QueixaPrincipal" class="form-control" required />
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">Observações</label>
+            <textarea asp-for="Prontuario.Observacoes" class="form-control"></textarea>
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">Evolução</label>
+            <textarea asp-for="Prontuario.Evolucao" class="form-control"></textarea>
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">Intervenções</label>
+            <textarea asp-for="Prontuario.Intervencoes" class="form-control"></textarea>
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">Plano Terapêutico</label>
+            <textarea asp-for="Prontuario.PlanoTerapeutico" class="form-control"></textarea>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Próxima Sessão</label>
+            <input asp-for="Prontuario.ProximaSessao" type="date" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Estado Emocional</label>
+            <input asp-for="Prontuario.EstadoEmocional" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Medicamentos Atuais</label>
+            <input asp-for="Prontuario.MedicamentosAtuais" class="form-control" />
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">Anexos</label>
+            <input asp-for="ArquivoAnexo" type="file" class="form-control" multiple />
+        </div>
+        <div class="col-md-12 mt-3">
+            <button type="submit" class="btn btn-success">Salvar</button>
+            <a href="/prontuario" class="btn btn-secondary ms-2">Cancelar</a>
+        </div>
+    </div>
+</form>

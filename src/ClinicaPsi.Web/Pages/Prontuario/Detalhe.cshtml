@@ -1,0 +1,45 @@
+@page "/prontuario/detalhe/{id:int}"
+@model DetalheModel
+@{
+    ViewData["Title"] = "Detalhes do Prontuário";
+}
+<h1>Detalhes do Prontuário</h1>
+
+@if (Model.Prontuario == null)
+{
+    <div class="alert alert-danger">Prontuário não encontrado.</div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Paciente:</strong> @Model.Prontuario.Paciente?.Nome <br />
+            <strong>Psicólogo:</strong> @Model.Prontuario.Psicologo?.Nome <br />
+            <strong>Data da Sessão:</strong> @Model.Prontuario.DataSessao.ToString("dd/MM/yyyy") <br />
+            <strong>Status:</strong> @(Model.Prontuario.Finalizado ? "Finalizado" : "Em andamento")
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Queixa Principal</dt>
+                <dd class="col-sm-9">@Model.Prontuario.QueixaPrincipal</dd>
+                <dt class="col-sm-3">Observações</dt>
+                <dd class="col-sm-9">@Model.Prontuario.Observacoes</dd>
+                <dt class="col-sm-3">Evolução</dt>
+                <dd class="col-sm-9">@Model.Prontuario.Evolucao</dd>
+                <dt class="col-sm-3">Intervenções</dt>
+                <dd class="col-sm-9">@Model.Prontuario.Intervencoes</dd>
+                <dt class="col-sm-3">Plano Terapêutico</dt>
+                <dd class="col-sm-9">@Model.Prontuario.PlanoTerapeutico</dd>
+                <dt class="col-sm-3">Próxima Sessão</dt>
+                <dd class="col-sm-9">@Model.Prontuario.ProximaSessao</dd>
+                <dt class="col-sm-3">Estado Emocional</dt>
+                <dd class="col-sm-9">@Model.Prontuario.EstadoEmocional</dd>
+                <dt class="col-sm-3">Medicamentos Atuais</dt>
+                <dd class="col-sm-9">@Model.Prontuario.MedicamentosAtuais</dd>
+                <dt class="col-sm-3">Anexos</dt>
+                <dd class="col-sm-9">@Model.Prontuario.Anexos</dd>
+            </dl>
+        </div>
+    </div>
+    <a class="btn btn-secondary" href="/prontuario">Voltar</a>
+}

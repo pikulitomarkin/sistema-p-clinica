@@ -1,0 +1,59 @@
+@page "/prontuario"
+@model IndexModel
+@{
+    ViewData["Title"] = "Prontuário Eletrônico";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Prontuário Eletrônico</h1>
+    <a class="btn btn-success" href="/prontuario/cadastro">
+        <i class="bi bi-plus-lg me-1"></i> Novo Prontuário
+    </a>
+</div>
+
+@if (Model.Prontuarios == null)
+{
+    <p>Carregando...</p>
+}
+else if (!Model.Prontuarios.Any())
+{
+    <div class="alert alert-info">Nenhum prontuário encontrado.</div>
+}
+else
+{
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Paciente</th>
+                <th>Psicólogo</th>
+                <th>Data Sessão</th>
+                <th>Queixa Principal</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var p in Model.Prontuarios)
+        {
+            <tr>
+                <td>@p.Paciente?.Nome</td>
+                <td>@p.Psicologo?.Nome</td>
+                <td>@p.DataSessao.ToString("dd/MM/yyyy")</td>
+                <td>@p.QueixaPrincipal</td>
+                <td>
+                    @if (p.Finalizado)
+                    {
+                        <span class="badge bg-success">Finalizado</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Em andamento</span>
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-primary" href="@Url.Page("/Prontuario/Detalhe", new { id = p.Id })">Ver</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

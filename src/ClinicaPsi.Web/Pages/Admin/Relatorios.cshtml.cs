@@ -57,6 +57,32 @@ namespace ClinicaPsi.Web.Pages.Admin
         public int ConsultasGratuitasRealizadas { get; set; }
         public decimal MediaPontosPorPaciente { get; set; }
 
+            public async Task<IActionResult> OnGetExportarPdfAsync(DateTime? dataInicio, DateTime? dataFim, string? tipoRelatorio)
+            {
+                DataFim = dataFim ?? DateTime.Today;
+                DataInicio = dataInicio ?? DataFim.Value.AddMonths(-1);
+                TipoRelatorio = tipoRelatorio ?? "geral";
+
+                await CarregarDadosResumo();
+                await CarregarDadosGraficos();
+                switch (TipoRelatorio)
+                {
+                    case "financeiro":
+                        await CarregarRelatorioFinanceiro();
+                        break;
+                    case "psicologos":
+                        await CarregarPerformancePsicologos();
+                        break;
+                    case "pacientes":
+                        await CarregarAnalysePacientes();
+                        break;
+                }
+
+                var pdfBytes = await _pdfService.GerarRelatorioAdminPdfAsync(this, DataInicio.Value, DataFim.Value, TipoRelatorio);
+                var fileName = $"Relatorio_{TipoRelatorio}_{DataInicio.Value:yyyyMMdd}_{DataFim.Value:yyyyMMdd}.pdf";
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+
         public async Task<IActionResult> OnGetAsync(DateTime? dataInicio, DateTime? dataFim, string? tipoRelatorio)
         {
             // Definir período padrão (último mês)
@@ -99,7 +125,7 @@ namespace ClinicaPsi.Web.Pages.Admin
             ReceitaTotal = consultas.Where(c => c.Status == StatusConsulta.Realizada).Sum(c => c.Valor);
             
             var pacientes = await _pacienteService.GetAllAsync();
-            NovosClientes = pacientes.Count(p => p.DataCadastro >= DataInicio && p.DataCadastro <= DataFim);
+            NovosClientes = pacientes.Count(p => p.DataCadastro >= DataInicio!.Value && p.DataCadastro <= DataFim!.Value);
             
             // Calcular taxa de retorno (pacientes com mais de uma consulta)
             var pacientesComConsultas = consultas.GroupBy(c => c.PacienteId).Count();

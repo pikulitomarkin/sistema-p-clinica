@@ -58,6 +58,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<PacienteService>();
 builder.Services.AddScoped<ConsultaService>();
 builder.Services.AddScoped<PsicologoService>();
+builder.Services.AddScoped<ProntuarioService>();
 builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<NotificacaoService>();
 builder.Services.AddScoped<PdfService>();

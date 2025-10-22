@@ -335,7 +335,12 @@
     }
 
     function exportarPDF() {
-        alert('Funcionalidade de exportação PDF em desenvolvimento');
+        // Monta a URL com os filtros atuais
+        const dataInicio = document.getElementById('dataInicio').value;
+        const dataFim = document.getElementById('dataFim').value;
+        const tipoRelatorio = document.getElementById('tipoRelatorio').value;
+        const url = `/Admin/Relatorios?handler=ExportarPdf&dataInicio=${dataInicio}&dataFim=${dataFim}&tipoRelatorio=${tipoRelatorio}`;
+        window.location.href = url;
     }
 
     function exportarExcel() {
