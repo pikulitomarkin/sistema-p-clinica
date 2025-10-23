@@ -3,17 +3,31 @@
 ![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?style=flat-square&logo=dotnet)
 ![Blazor](https://img.shields.io/badge/Blazor-Server-512BD4?style=flat-square&logo=blazor)
 ![EF Core](https://img.shields.io/badge/EF%20Core-9.0-512BD4?style=flat-square)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.0-336791?style=flat-square&logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-Production-2496ED?style=flat-square&logo=docker)
+![AWS](https://img.shields.io/badge/AWS-Cloud-FF9900?style=flat-square&logo=amazonaws)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
 [![Build Status](https://github.com/pikulitomarkin/sistema-p-clinica/workflows/.NET%20Build%20and%20Test/badge.svg)](https://github.com/pikulitomarkin/sistema-p-clinica/actions)
+
+> **Projeto concluído e em produção!**
+> Acesse: [www.psiianasantos.com.br](https://www.psiianasantos.com.br)
 
 Sistema completo de gestão desenvolvido em ASP.NET Core 9.0 com Blazor Server para clínicas de psicologia, oferecendo funcionalidades modernas de agendamento, gamificação e notificações inteligentes.
 
 ## 🔗 Links Importantes
 
+- **Site em produção**: [www.psiianasantos.com.br](https://www.psiianasantos.com.br)
 - **Repositório**: https://github.com/pikulitomarkin/sistema-p-clinica
 - **Issues**: https://github.com/pikulitomarkin/sistema-p-clinica/issues
 - **Wiki**: https://github.com/pikulitomarkin/sistema-p-clinica/wiki
+
+## 🚀 Status do Projeto
+
+- ✅ **Concluído**
+- 🚢 **Deploy em produção via Docker e AWS**
+- 🗄️ **Banco de dados: PostgreSQL**
+- 🌐 **Acesso público:** [www.psiianasantos.com.br](https://www.psiianasantos.com.br)
 
 ## ✨ Funcionalidades Principais
 
@@ -43,9 +57,7 @@ Sistema completo de gestão desenvolvido em ASP.NET Core 9.0 com Blazor Server p
 - Valores diferenciados por profissional
 
 ### 🔔 Sistema de Notificações
-- **WhatsApp**: Lembretes e confirmações
-- **Email**: Comunicações formais
-- **SMS**: Alertas urgentes
+- WhatsApp, Email, SMS
 - Notificações 24h antes da consulta
 - Confirmação automática de presença
 
@@ -63,84 +75,62 @@ O projeto segue os princípios da **Clean Architecture** com separação clara d
 ClinicaPsi/
 ├── src/
 │   ├── ClinicaPsi.Shared/           # Modelos e DTOs compartilhados
-│   │   └── Models/
-│   │       └── Entities.cs          # Entidades do domínio
-│   │
 │   ├── ClinicaPsi.Infrastructure/   # Acesso a dados e infraestrutura
-│   │   └── Data/
-│   │       └── AppDbContext.cs      # Contexto do EF Core
-│   │
 │   ├── ClinicaPsi.Application/      # Lógica de negócio
-│   │   └── Services/
-│   │       ├── PacienteService.cs
-│   │       ├── PsicologoService.cs
-│   │       └── ConsultaService.cs
-│   │
 │   └── ClinicaPsi.Web/              # Interface Blazor Server
-│       ├── Pages/                   # Páginas Razor
-│       ├── Shared/                  # Componentes compartilhados
-│       └── wwwroot/                 # Arquivos estáticos
-│
-├── .gitignore
+├── .github
 ├── README.md
 └── ClinicaPsi.sln
 ```
 
 ## 🚀 Tecnologias Utilizadas
 
-- **ASP.NET Core 9.0** - Framework principal
-- **Blazor Server** - Interface interativa e reativa
-- **Entity Framework Core 9.0** - ORM para acesso a dados
-- **SQLite** - Banco de dados leve e portátil
-- **Bootstrap 5.3** - Framework CSS responsivo
-- **SignalR** - Comunicação em tempo real
-- **Data Annotations** - Validações robustas
+- **ASP.NET Core 9.0**
+- **Blazor Server**
+- **Entity Framework Core 9.0**
+- **PostgreSQL** (produção via Docker/AWS)
+- **Bootstrap 5.3**
+- **SignalR**
+- **Docker**
+- **AWS EC2 / RDS**
 
-## 📋 Pré-requisitos
+## 📋 Pré-requisitos para Desenvolvimento
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- Docker
+- PostgreSQL (local ou cloud)
 - Editor de código (Visual Studio, VS Code, Rider)
-- Git (opcional)
+- Git
 
-## 🔧 Instalação e Configuração
-
-### 1. Clone o repositório
+## 🔧 Instalação e Execução Local
 
 ```bash
 git clone https://github.com/pikulitomarkin/sistema-p-clinica.git
 cd sistema-p-clinica
 ```
 
-### 2. Restaure as dependências
+### Usando Docker
+
+```bash
+docker-compose up --build
+```
+
+### Manualmente
 
 ```bash
 cd src/ClinicaPsi.Web
 dotnet restore
-```
-
-### 3. Execute o projeto
-
-```bash
 dotnet run
 ```
 
-### 4. Acesse o sistema
-
-Abra seu navegador em:
+Acesse em:
 - **HTTP**: http://localhost:5000
 - **HTTPS**: https://localhost:5001
 
 ## 🗄️ Banco de Dados
 
-O sistema utiliza **SQLite** e cria automaticamente o banco de dados na primeira execução.
-
-**Localização**: `src/ClinicaPsi.Web/clinicapsi.db`
-
-### Dados iniciais (Seed)
-
-O sistema já vem com 2 psicólogos cadastrados para teste:
-- Dr. João Silva - CRP 06/123456
-- Dra. Maria Santos - CRP 06/654321
+- **Produção:** PostgreSQL (AWS RDS)
+- **Desenvolvimento:** SQLite ou PostgreSQL local
 
 ## 📱 Funcionalidades Detalhadas
 
@@ -176,30 +166,6 @@ O sistema de pontos incentiva a continuidade do tratamento:
 - Sanitização de inputs
 - HTTPS obrigatório em produção
 
-## 📊 Modelos de Dados
-
-### Paciente
-- Dados pessoais (nome, CPF, email, telefone)
-- Data de nascimento
-- Endereço completo
-- Contatos de emergência
-- Histórico médico e medicamentos
-- Sistema de pontos
-
-### Psicólogo
-- Dados profissionais (nome, CRP, email)
-- Especialidades
-- Valor da consulta
-- Configuração de horários (manhã/tarde)
-- Dias de atendimento
-
-### Consulta
-- Paciente e psicólogo
-- Data e horário
-- Duração e valor
-- Status e tipo
-- Observações e relatório de sessão
-
 ## 🎨 Interface
 
 - Design moderno e responsivo
@@ -208,40 +174,14 @@ O sistema de pontos incentiva a continuidade do tratamento:
 - Feedback visual imediato
 - Navegação intuitiva
 
-## 🚦 Roadmap
-
-### Fase 1 - MVP ✅ (Concluído)
-- [x] Estrutura do projeto
-- [x] Modelos de dados
-- [x] Configuração do banco
-- [x] Dashboard básico
-
-### Fase 2 - Funcionalidades Core (Em Desenvolvimento)
-- [ ] CRUD completo de pacientes
-- [ ] CRUD completo de psicólogos
-- [ ] Sistema de agendamento
-- [ ] Gestão de consultas
-
-### Fase 3 - Recursos Avançados
-- [ ] Sistema de notificações
-- [ ] Integração WhatsApp
-- [ ] Relatórios e gráficos
-- [ ] Exportação de dados
-
-### Fase 4 - Melhorias
-- [ ] Sistema de autenticação
-- [ ] Níveis de acesso (Admin, Recepcionista, Psicólogo)
-- [ ] Backup automático
-- [ ] Tema escuro
-
 ## 🤝 Contribuindo
 
 Contribuições são bem-vindas! Para contribuir:
 
-1. Fork o projeto (https://github.com/pikulitomarkin/sistema-p-clinica/fork)
-2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'feat: Adiciona MinhaFeature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
+1. Fork o projeto
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
 5. Abra um Pull Request
 
 ## 📝 Convenções de Código
@@ -254,13 +194,7 @@ Contribuições são bem-vindas! Para contribuir:
 
 ## 🐛 Reportando Bugs
 
-Encontrou um bug? Por favor, abra uma [issue](https://github.com/pikulitomarkin/sistema-p-clinica/issues) com:
-
-- Descrição detalhada do problema
-- Passos para reproduzir
-- Comportamento esperado vs atual
-- Screenshots (se aplicável)
-- Ambiente (SO, versão do .NET, navegador)
+Abra uma [issue](https://github.com/pikulitomarkin/sistema-p-clinica/issues) com detalhes do problema.
 
 ## 📄 Licença
 
@@ -286,4 +220,4 @@ Desenvolvido com ❤️ para facilitar a gestão de clínicas de psicologia.
 
 ⭐ Se este projeto foi útil para você, considere dar uma estrela no [GitHub](https://github.com/pikulitomarkin/sistema-p-clinica)!
 
-**Feito com .NET 9.0 e Blazor** 🚀
+**Feito com .NET 9.0, Blazor, Docker, AWS e PostgreSQL** 🚀
