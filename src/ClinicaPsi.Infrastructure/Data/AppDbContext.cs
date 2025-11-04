@@ -21,6 +21,21 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(modelBuilder);
 
+        // Configurar PostgreSQL para usar timestamp sem timezone globalmente
+        if (Database.IsNpgsql())
+        {
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entity.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetColumnType("timestamp without time zone");
+                    }
+                }
+            }
+        }
+
         modelBuilder.Entity<Paciente>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -29,7 +44,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.Nome).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
             entity.Property(e => e.CPF).IsRequired().HasMaxLength(11);
-            entity.Property(e => e.DataCadastro).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.DataCadastro).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<Psicologo>(entity =>
@@ -39,14 +54,14 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(e => e.Email);
             entity.Property(e => e.Nome).IsRequired().HasMaxLength(100);
             entity.Property(e => e.ValorConsulta).HasPrecision(10, 2);
-            entity.Property(e => e.DataCadastro).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.DataCadastro).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<Consulta>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Valor).HasPrecision(10, 2);
-            entity.Property(e => e.DataAgendamento).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.DataAgendamento).HasDefaultValueSql("CURRENT_TIMESTAMP");
             
             entity.HasOne(e => e.Paciente)
                 .WithMany(p => p.Consultas)
@@ -64,7 +79,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<HistoricoPontos>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.DataMovimentacao).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.DataMovimentacao).HasDefaultValueSql("CURRENT_TIMESTAMP");
             
             entity.HasOne(e => e.Paciente)
                 .WithMany(p => p.HistoricoPontos)
@@ -80,7 +95,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<NotificacaoConsulta>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.DataEnvio).HasDefaultValueSql("datetime('now')");
+            entity.Property(e => e.DataEnvio).HasDefaultValueSql("CURRENT_TIMESTAMP");
             
             entity.HasOne(e => e.Consulta)
                 .WithMany(c => c.Notificacoes)

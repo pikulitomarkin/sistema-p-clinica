@@ -8,8 +8,57 @@ public static class DbInitializer
 {
     public static async Task SeedAsync(AppDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
-        // Aplicar migrations pendentes
-        await context.Database.MigrateAsync();
+        // Aplicar migrações pendentes se necessário
+        var connectionString = context.Database.GetConnectionString();
+        if (connectionString?.Contains("Host=") == true) // PostgreSQL
+        {
+            // APENAS criar se não existir (NÃO deletar em produção!)
+            var canConnect = await context.Database.CanConnectAsync();
+            if (!canConnect)
+            {
+                await context.Database.EnsureCreatedAsync();
+                Console.WriteLine("Database PostgreSQL criado com sucesso!");
+            }
+            else
+            {
+                // Aplicar migrações pendentes
+                await context.Database.MigrateAsync();
+                Console.WriteLine("Migrações aplicadas com sucesso!");
+            }
+            
+            // Criar roles via Identity (não usa DateTime problemático)
+            await CreateRolesAsync(roleManager);
+            
+            // Criar usuário admin "marcos" usando UserManager
+            var marcosUser = new ApplicationUser
+            {
+                UserName = "marcos@admin.com",
+                Email = "marcos@admin.com",
+                NomeCompleto = "Marcos Admin",
+                TipoUsuario = TipoUsuario.Admin,
+                EmailConfirmed = true,
+                Ativo = true
+            };
+
+            var result = await userManager.CreateAsync(marcosUser, "marcos123");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(marcosUser, "Admin");
+                Console.WriteLine("Usuario admin marcos criado com sucesso!");
+            }
+            else
+            {
+                Console.WriteLine($"Erro ao criar usuario marcos: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            }
+            
+            Console.WriteLine("SEED COMPLETO - Somente usuario admin criado");
+            return;
+        }
+        else
+        {
+            // SQLite - aplicar migrations normalmente
+            await context.Database.MigrateAsync();
+        }
 
         // Criar roles se não existirem
         await CreateRolesAsync(roleManager);
@@ -133,7 +182,7 @@ public static class DbInitializer
                     AtendeSexta = true,
                     AtendeSabado = false,
                     AtendeDomingo = false,
-                    DataCadastro = DateTime.Parse("2024-01-01"),
+                    DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-01"), DateTimeKind.Utc),
                     Ativo = true
                 },
                 new Psicologo
@@ -155,7 +204,7 @@ public static class DbInitializer
                     AtendeSexta = true,
                     AtendeSabado = false,
                     AtendeDomingo = false,
-                    DataCadastro = DateTime.Parse("2024-01-01"),
+                    DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-01"), DateTimeKind.Utc),
                     Ativo = true
                 }
             };
@@ -176,14 +225,14 @@ public static class DbInitializer
                     Email = "cliente@demo.com",
                     CPF = "12345678901",
                     Telefone = "(11) 91234-5678",
-                    DataNascimento = DateTime.Parse("1990-05-15"),
+                    DataNascimento = DateTime.SpecifyKind(DateTime.Parse("1990-05-15"), DateTimeKind.Utc),
                     Endereco = "Rua das Flores, 123 - São Paulo, SP",
                     ContatoEmergencia = "Maria Demo",
                     TelefoneEmergencia = "(11) 91234-9876",
                     PsicoPontos = 25,
                     ConsultasRealizadas = 8,
                     ConsultasGratuitas = 2,
-                    DataCadastro = DateTime.Parse("2024-01-15"),
+                    DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-15"), DateTimeKind.Utc),
                     Ativo = true
                 },
                 new Paciente
@@ -192,14 +241,14 @@ public static class DbInitializer
                     Email = "joao.cliente@email.com",
                     CPF = "98765432100",
                     Telefone = "(11) 99876-5432",
-                    DataNascimento = DateTime.Parse("1985-10-20"),
+                    DataNascimento = DateTime.SpecifyKind(DateTime.Parse("1985-10-20"), DateTimeKind.Utc),
                     Endereco = "Av. Paulista, 456 - São Paulo, SP",
                     ContatoEmergencia = "Ana Cliente",
                     TelefoneEmergencia = "(11) 99876-1234",
                     PsicoPontos = 15,
                     ConsultasRealizadas = 5,
                     ConsultasGratuitas = 1,
-                    DataCadastro = DateTime.Parse("2024-02-01"),
+                    DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-02-01"), DateTimeKind.Utc),
                     Ativo = true
                 }
             };
