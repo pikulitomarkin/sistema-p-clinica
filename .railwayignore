@@ -1,0 +1,67 @@
+# Railway ignore - não fazer upload destes arquivos
+
+# Diretórios de build
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# Logs
+*.log
+logs/
+
+# Bancos de dados locais
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker (não precisa no Railway)
+docker-compose.yml
+Dockerrun.aws.json
+
+# AWS específico
+aws/
+terraform/
+*.tf
+*.tfstate*
+task-definition*.json
+ecs-*.json
+
+# Scripts AWS
+deploy-aws.ps1
+configure-ssl.ps1
+cleanup-task-definition.json
+
+# Documentação AWS
+CUSTOS-AWS.md
+DEPLOY-INSTRUCTIONS.md
+COMO-LIBERAR-ELASTIC-IP.md
+CONFIGURAR-WHATSAPP-WEBHOOK.md
+DOMAIN-QUICK-START.md
+HOSTGATOR-DOMAIN-SETUP.md
+USEFUL-COMMANDS.md
+rds-setup.md
+MIGRATION-CHECKLIST.md
+PRODUCTION_CHECKLIST.md
+INCIDENTE-*.md
+DEPLOY-SUMMARY-*.md
+RESUMO-SESSAO-*.md
+
+# Outros
+nginx/
+docs/
+*.md
+!README.md
