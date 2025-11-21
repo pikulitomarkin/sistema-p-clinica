@@ -8,23 +8,23 @@ public static class DbInitializer
 {
     public static async Task SeedAsync(AppDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
-        // Aplicar migrações pendentes se necessário
+        // Criar banco de dados se não existir
         var connectionString = context.Database.GetConnectionString();
+        
+        try
+        {
+            // Garantir que o banco existe (sem migrations)
+            await context.Database.EnsureCreatedAsync();
+            Console.WriteLine("Database criado/verificado com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao criar database: {ex.Message}");
+            throw;
+        }
+
         if (connectionString?.Contains("Host=") == true) // PostgreSQL
         {
-            // APENAS criar se não existir (NÃO deletar em produção!)
-            var canConnect = await context.Database.CanConnectAsync();
-            if (!canConnect)
-            {
-                await context.Database.EnsureCreatedAsync();
-                Console.WriteLine("Database PostgreSQL criado com sucesso!");
-            }
-            else
-            {
-                // Aplicar migrações pendentes
-                await context.Database.MigrateAsync();
-                Console.WriteLine("Migrações aplicadas com sucesso!");
-            }
             
             // Criar roles via Identity (não usa DateTime problemático)
             await CreateRolesAsync(roleManager);
@@ -53,11 +53,6 @@ public static class DbInitializer
             
             Console.WriteLine("SEED COMPLETO - Somente usuario admin criado");
             return;
-        }
-        else
-        {
-            // SQLite - aplicar migrations normalmente
-            await context.Database.MigrateAsync();
         }
 
         // Criar roles se não existirem
