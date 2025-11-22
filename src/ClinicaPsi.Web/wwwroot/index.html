@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Psi - Psicóloga Iana Santos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; text-align: center; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .header p { font-size: 1.2rem; opacity: 0.9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .section { margin: 3rem 0; }
+        .section h2 { color: #667eea; margin-bottom: 1.5rem; font-size: 2rem; }
+        .profile { display: flex; gap: 2rem; align-items: start; flex-wrap: wrap; }
+        .profile-text { flex: 1; min-width: 300px; }
+        .curriculo { background: #f8f9fa; padding: 2rem; border-radius: 8px; margin: 2rem 0; }
+        .curriculo h3 { color: #764ba2; margin: 1.5rem 0 1rem 0; }
+        .curriculo ul { margin-left: 2rem; }
+        .curriculo li { margin: 0.5rem 0; }
+        .especialidades { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .card h3 { color: #667eea; margin-bottom: 1rem; }
+        .cta-buttons { display: flex; gap: 1rem; margin: 2rem 0; flex-wrap: wrap; }
+        .btn { padding: 1rem 2rem; border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block; transition: transform 0.2s; }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #764ba2; color: white; }
+        .footer { background: #333; color: white; text-align: center; padding: 2rem 0; margin-top: 4rem; }
+        @media (max-width: 768px) { .header h1 { font-size: 1.8rem; } .profile { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1> Clínica Psi</h1>
+        <p>Psicóloga Iana Santos - CRP XX/XXXXX</p>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>Bem-vindo</h2>
+            <div class="profile">
+                <div class="profile-text">
+                    <p>Olá! Sou a psicóloga Iana Santos, especializada em atendimento clínico com abordagens humanistas e cognitivo-comportamentais.</p>
+                    <p style="margin-top: 1rem;">Ofereço um espaço acolhedor e seguro para você cuidar da sua saúde mental e emocional.</p>
+                    
+                    <div class="cta-buttons">
+                        <a href="/Account/Login" class="btn btn-primary">Acesso Pacientes</a>
+                        <a href="/Agendamento" class="btn btn-secondary">Agendar Consulta</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Especialidades</h2>
+            <div class="especialidades">
+                <div class="card">
+                    <h3> Ansiedade e Depressão</h3>
+                    <p>Tratamento especializado para transtornos de ansiedade, síndrome do pânico e depressão.</p>
+                </div>
+                <div class="card">
+                    <h3> Relacionamentos</h3>
+                    <p>Terapia de casal e orientação para relacionamentos interpessoais saudáveis.</p>
+                </div>
+                <div class="card">
+                    <h3> Terapia Familiar</h3>
+                    <p>Atendimento familiar para resolução de conflitos e fortalecimento de vínculos.</p>
+                </div>
+                <div class="card">
+                    <h3> Orientação Profissional</h3>
+                    <p>Apoio em transições de carreira e desenvolvimento pessoal.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="curriculo">
+            <h2>Currículo Profissional</h2>
+            
+            <h3> Formação Acadêmica</h3>
+            <ul>
+                <li><strong>Graduação:</strong> Psicologia - Universidade Federal</li>
+                <li><strong>Pós-graduação:</strong> Terapia Cognitivo-Comportamental</li>
+                <li><strong>Especialização:</strong> Psicologia Clínica e Hospitalar</li>
+            </ul>
+
+            <h3> Experiência Profissional</h3>
+            <ul>
+                <li>8+ anos de experiência em atendimento clínico</li>
+                <li>Atendimento em consultório particular</li>
+                <li>Experiência em hospitais e clínicas multidisciplinares</li>
+                <li>Supervisão e orientação de estagiários</li>
+            </ul>
+
+            <h3> Cursos e Certificações</h3>
+            <ul>
+                <li>Certificação em Terapia Cognitivo-Comportamental</li>
+                <li>Formação em Terapia Focada em Esquemas</li>
+                <li>Curso de Atendimento em Crises e Emergências</li>
+                <li>Workshop de Mindfulness e Terapias de Terceira Onda</li>
+            </ul>
+
+            <h3> Abordagens Terapêuticas</h3>
+            <ul>
+                <li>Terapia Cognitivo-Comportamental (TCC)</li>
+                <li>Abordagem Humanista</li>
+                <li>Terapia Focada em Esquemas</li>
+                <li>Mindfulness e ACT (Terapia de Aceitação e Compromisso)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Como Funciona</h2>
+            <div class="card">
+                <ol style="margin-left: 1.5rem;">
+                    <li style="margin: 1rem 0;"><strong>Agende sua consulta:</strong> Entre em contato ou use nosso sistema online</li>
+                    <li style="margin: 1rem 0;"><strong>Primeira sessão:</strong> Avaliação inicial e construção do vínculo terapêutico</li>
+                    <li style="margin: 1rem 0;"><strong>Acompanhamento:</strong> Sessões regulares conforme sua necessidade</li>
+                    <li style="margin: 1rem 0;"><strong>Evolução:</strong> Monitoramento contínuo do seu progresso</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="section" style="text-align: center; background: #f8f9fa; padding: 2rem; border-radius: 8px;">
+            <h2>Pronto para Cuidar da sua Saúde Mental?</h2>
+            <p style="margin: 1rem 0 2rem 0;">Entre em contato e agende sua primeira consulta.</p>
+            <div class="cta-buttons" style="justify-content: center;">
+                <a href="/Account/Login" class="btn btn-primary">Acesso ao Sistema</a>
+                <a href="/Agendamento" class="btn btn-secondary">Agendar Agora</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2025 Clínica Psi - Psicóloga Iana Santos</p>
+        <p style="margin-top: 0.5rem; opacity: 0.8;">Todos os direitos reservados</p>
+    </div>
+</body>
+</html>

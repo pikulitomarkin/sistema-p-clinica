@@ -143,6 +143,7 @@ else
     app.UseDeveloperExceptionPage();
 }
 
+app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
@@ -152,8 +153,10 @@ app.UseAuthorization();
 app.MapHealthChecks("/health");
 
 // Endpoint raiz
-app.MapGet("/", () => Results.Redirect("/Account/Login"));
+// Página inicial agora é index.html (UseDefaultFiles)
 
 app.MapRazorPages();
 
 app.Run();
+
+
