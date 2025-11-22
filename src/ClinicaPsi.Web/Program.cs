@@ -3,6 +3,7 @@ using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using System;
 
 // Configurar Npgsql para aceitar DateTime sem UTC
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -16,13 +17,41 @@ builder.Services.AddRazorPages();
 // Health checks simples
 builder.Services.AddHealthChecks();
 
+// Função para converter DATABASE_URL (formato URI) para connection string Npgsql
+string ConvertDatabaseUrl(string databaseUrl)
+{
+    try 
+    {
+        var uri = new Uri(databaseUrl);
+        var userInfo = uri.UserInfo.Split(':');
+        return $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Prefer;Trust Server Certificate=true";
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erro ao converter DATABASE_URL: {ex.Message}");
+        return databaseUrl; // Retorna original se falhar
+    }
+}
+
 // Configurar banco de dados - Prioriza DATABASE_URL (Railway), depois appsettings
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
-    ?? builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Data Source=clinicapsi.db";
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+string connectionString;
+
+if (!string.IsNullOrEmpty(databaseUrl) && databaseUrl.StartsWith("postgresql://"))
+{
+    Console.WriteLine("DATABASE_URL detectada, convertendo para formato Npgsql...");
+    connectionString = ConvertDatabaseUrl(databaseUrl);
+    Console.WriteLine($"Connection string convertida: {connectionString.Substring(0, Math.Min(50, connectionString.Length))}...");
+}
+else
+{
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? "Data Source=clinicapsi.db";
+}
 
 // Detectar tipo de banco baseado na connection string
-var usePostgreSql = connectionString.Contains("Host=") || connectionString.Contains("postgres");
+var usePostgreSql = connectionString.Contains("Host=") || connectionString.Contains("postgresql");
+Console.WriteLine($"Usando PostgreSQL: {usePostgreSql}");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -93,7 +122,7 @@ try
     {
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();     
         await DbInitializer.SeedAsync(context, userManager, roleManager);
     }
 }
@@ -102,7 +131,9 @@ catch (Exception ex)
     Console.WriteLine($"ERRO CRITICO na inicializacao do banco: {ex.Message}");
     Console.WriteLine($"Stack trace: {ex.StackTrace}");
     // Continua mesmo com erro para poder ver logs
-}// Configurar pipeline HTTP
+}
+
+// Configurar pipeline HTTP
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
