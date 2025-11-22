@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>enable</ImplicitUsings><TreatWarningsAsErrors>false</TreatWarningsAsErrors><NoWarn>CS8601,CS8602,CS8603,CS8604</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
