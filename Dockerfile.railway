@@ -1,4 +1,4 @@
-# Build Stage
+﻿# Build Stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /source
 
@@ -34,12 +34,11 @@ COPY --from=build /app/publish .
 # Create data directory
 RUN mkdir -p /app/data
 
-# Set environment variables
+# Set environment
 ENV ASPNETCORE_ENVIRONMENT=Production
-ENV ASPNETCORE_URLS=http://+:8080
 
-# Expose port (Railway usa PORT variável)
-EXPOSE 8080
+# Railway provides PORT at runtime - don't hardcode
+# ASPNETCORE_URLS will be set in CMD using Railway's PORT variable
 
-# Run app
-CMD ASPNETCORE_URLS=http://+:$PORT dotnet ClinicaPsi.Web.dll
+# Run app - Railway injects PORT variable
+CMD dotnet ClinicaPsi.Web.dll --urls http://0.0.0.0:$PORT
