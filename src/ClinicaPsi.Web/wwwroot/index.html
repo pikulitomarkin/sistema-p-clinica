@@ -7,37 +7,56 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: "Poppins", sans-serif; line-height: 1.6; color: #2d3748; background: #f7fafc; }
-        .hero { background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 50%, #52b788 100%); color: white; padding: 4rem 2rem; text-align: center; }
-        .hero h1 { font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700; }
+        body { 
+            font-family: "Poppins", sans-serif; 
+            background: linear-gradient(180deg, #1b4332 0%, #2d6a4f 30%, #40916c 60%, #52b788 85%, #74c69d 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .hero { text-align: center; padding: 3rem 2rem 2rem 2rem; }
+        .photo-container {
+            width: 200px; height: 200px; margin: 0 auto 2rem auto; border-radius: 50%; overflow: hidden;
+            border: 5px solid rgba(255, 255, 255, 0.9); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #95d5b2, #74c69d);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .photo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-placeholder { font-size: 5rem; color: rgba(255, 255, 255, 0.9); }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
         .hero .subtitle { font-size: 1.3rem; opacity: 0.95; margin-bottom: 0.3rem; }
         .hero .crp { font-size: 0.95rem; opacity: 0.85; margin-bottom: 1.5rem; }
-        .hero-description { max-width: 700px; margin: 0 auto; font-size: 1.05rem; line-height: 1.7; opacity: 0.9; }
+        .hero-description { max-width: 700px; margin: 0 auto; font-size: 1.05rem; line-height: 1.7; opacity: 0.95; }
+        .photo-hint { text-align: center; font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem; }
         .container { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
-        .section { margin: 4rem 0; }
-        .section h2 { color: #1b4332; font-size: 2rem; margin-bottom: 2rem; text-align: center; font-weight: 700; }
+        .section { margin: 3rem 0; }
+        .section h2 { font-size: 2rem; margin-bottom: 2rem; text-align: center; font-weight: 700; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); }
         .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin: 2rem 0; }
-        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(45, 106, 79, 0.1); transition: all 0.3s ease; border-left: 4px solid #52b788; }
-        .card:hover { transform: translateY(-8px); box-shadow: 0 8px 25px rgba(45, 106, 79, 0.2); }
+        .card { background: #1b4332; color: white; padding: 2rem; border-radius: 15px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); transition: all 0.3s ease; cursor: pointer; }
+        .card:hover { background: white; color: #1b4332; transform: translateY(-8px) scale(1.02); box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4); }
         .card-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
-        .card h3 { color: #2d6a4f; font-size: 1.3rem; margin-bottom: 0.8rem; font-weight: 600; }
-        .card p { color: #4a5568; line-height: 1.6; font-size: 0.95rem; }
-        .curriculo-section { background: linear-gradient(135deg, #d8f3dc 0%, #b7e4c7 100%); padding: 4rem 2rem; margin: 4rem 0; }
-        .curriculo-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(27, 67, 50, 0.1); margin-bottom: 1.5rem; }
-        .curriculo-card h3 { color: #1b4332; font-size: 1.4rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .card h3 { font-size: 1.3rem; margin-bottom: 0.8rem; font-weight: 600; }
+        .card p { line-height: 1.6; font-size: 0.95rem; opacity: 0.9; }
+        .card:hover p { opacity: 1; }
+        .curriculo-section { padding: 3rem 0; }
+        .curriculo-card { background: #1b4332; color: white; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); margin-bottom: 1.5rem; transition: all 0.3s ease; cursor: pointer; }
+        .curriculo-card:hover { background: white; color: #1b4332; transform: translateY(-5px); box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4); }
+        .curriculo-card h3 { font-size: 1.4rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
         .curriculo-card ul { list-style: none; padding-left: 0; }
-        .curriculo-card li { margin: 0.8rem 0; color: #2d3748; line-height: 1.6; padding-left: 1.5rem; position: relative; }
-        .curriculo-card li::before { content: ">"; position: absolute; left: 0; color: #52b788; font-weight: bold; }
-        .access-section { background: #f0f7f4; padding: 4rem 2rem; }
+        .curriculo-card li { margin: 0.8rem 0; line-height: 1.6; padding-left: 1.5rem; position: relative; }
+        .curriculo-card li::before { content: ">"; position: absolute; left: 0; font-weight: bold; color: #74c69d; }
+        .curriculo-card:hover li::before { color: #52b788; }
+        .access-section { padding: 3rem 0; }
         .access-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1200px; margin: 2rem auto 0; }
-        .access-card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 6px 20px rgba(45, 106, 79, 0.15); text-align: center; transition: all 0.3s ease; border-top: 4px solid #52b788; }
-        .access-card:hover { transform: translateY(-10px); box-shadow: 0 10px 30px rgba(45, 106, 79, 0.25); }
+        .access-card { background: #1b4332; color: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); text-align: center; transition: all 0.3s ease; cursor: pointer; }
+        .access-card:hover { background: white; color: #1b4332; transform: translateY(-10px) scale(1.03); box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4); }
         .access-icon { font-size: 3.5rem; margin-bottom: 1rem; }
-        .access-card h3 { color: #1b4332; font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 700; }
-        .access-card p { color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6; }
-        .btn { display: inline-block; padding: 0.9rem 2rem; background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%); color: white; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(45, 106, 79, 0.3); }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(45, 106, 79, 0.4); }
-        .footer { background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%); color: white; text-align: center; padding: 3rem 2rem; }
+        .access-card h3 { font-size: 1.6rem; margin-bottom: 0.8rem; font-weight: 700; }
+        .access-card p { margin-bottom: 1.5rem; line-height: 1.6; opacity: 0.9; }
+        .access-card:hover p { opacity: 1; }
+        .btn { display: inline-block; padding: 0.9rem 2rem; background: #2d6a4f; color: white; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+        .access-card:hover .btn { background: #1b4332; color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+        .footer { background: rgba(27, 67, 50, 0.8); backdrop-filter: blur(10px); text-align: center; padding: 3rem 2rem; margin-top: 3rem; }
         .footer h3 { font-size: 1.8rem; margin-bottom: 1rem; }
         .footer p { opacity: 0.9; margin: 0.5rem 0; font-size: 1rem; }
         .footer .copyright { margin-top: 2rem; opacity: 0.7; font-size: 0.9rem; border-top: 1px solid rgba(255, 255, 255, 0.2); padding-top: 1.5rem; }
@@ -47,11 +66,14 @@
             .section h2 { font-size: 1.6rem; }
             .cards-grid { grid-template-columns: 1fr; }
             .access-grid { grid-template-columns: 1fr; }
+            .photo-container { width: 180px; height: 180px; }
         }
     </style>
 </head>
 <body>
     <div class="hero">
+        <div class="photo-container"><div class="photo-placeholder"></div></div>
+        <p class="photo-hint">Adicione sua foto em: wwwroot/images/psicologa.jpg</p>
         <h1>Clinica Psi</h1>
         <p class="subtitle">Psicologa Iana Santos</p>
         <p class="crp">CRP XX/XXXXX</p>
@@ -86,7 +108,7 @@
     <div class="access-section">
         <div class="container">
             <h2>Acesso ao Sistema</h2>
-            <p style="text-align: center; color: #2d6a4f; font-size: 1.1rem; margin-bottom: 1rem;">Escolha seu perfil para acessar a plataforma</p>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 1rem; opacity: 0.95;">Escolha seu perfil para acessar a plataforma</p>
             <div class="access-grid">
                 <div class="access-card"><div class="access-icon"></div><h3>Paciente</h3><p>Acesse seu prontuario, historico de consultas e agende sessoes.</p><a href="/Account/Login?role=paciente" class="btn">Acessar como Paciente</a></div>
                 <div class="access-card"><div class="access-icon"></div><h3>Psicologo(a)</h3><p>Gerencie prontuarios, consultas e visualize sua agenda completa.</p><a href="/Account/Login?role=psicologo" class="btn">Acessar como Psicologo</a></div>
