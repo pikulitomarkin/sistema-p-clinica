@@ -1,140 +1,196 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clínica Psi - Psicóloga Iana Santos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; text-align: center; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .header p { font-size: 1.2rem; opacity: 0.9; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-        .section { margin: 3rem 0; }
-        .section h2 { color: #667eea; margin-bottom: 1.5rem; font-size: 2rem; }
-        .profile { display: flex; gap: 2rem; align-items: start; flex-wrap: wrap; }
-        .profile-text { flex: 1; min-width: 300px; }
-        .curriculo { background: #f8f9fa; padding: 2rem; border-radius: 8px; margin: 2rem 0; }
-        .curriculo h3 { color: #764ba2; margin: 1.5rem 0 1rem 0; }
-        .curriculo ul { margin-left: 2rem; }
-        .curriculo li { margin: 0.5rem 0; }
-        .especialidades { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-        .card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .card h3 { color: #667eea; margin-bottom: 1rem; }
-        .cta-buttons { display: flex; gap: 1rem; margin: 2rem 0; flex-wrap: wrap; }
-        .btn { padding: 1rem 2rem; border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block; transition: transform 0.2s; }
-        .btn:hover { transform: translateY(-2px); }
-        .btn-primary { background: #667eea; color: white; }
-        .btn-secondary { background: #764ba2; color: white; }
-        .footer { background: #333; color: white; text-align: center; padding: 2rem 0; margin-top: 4rem; }
-        @media (max-width: 768px) { .header h1 { font-size: 1.8rem; } .profile { flex-direction: column; } }
+        body { font-family: 'Poppins', sans-serif; line-height: 1.7; color: #2d3748; background: #f7fafc; }
+        .hero { background: linear-gradient(135deg, #2d6a4f 0%, #40916c 50%, #52b788 100%); color: white; padding: 0; position: relative; overflow: hidden; }
+        .hero-content { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; display: flex; align-items: center; gap: 4rem; position: relative; z-index: 1; }
+        .hero-text { flex: 1; }
+        .hero h1 { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .hero .subtitle { font-size: 1.4rem; margin-bottom: 0.5rem; opacity: 0.95; }
+        .hero .crp { font-size: 1rem; opacity: 0.85; margin-bottom: 2rem; }
+        .hero-description { font-size: 1.1rem; line-height: 1.8; margin-bottom: 2rem; opacity: 0.95; }
+        .hero-photo { flex: 0 0 350px; position: relative; }
+        .photo-container { width: 350px; height: 350px; border-radius: 50%; overflow: hidden; border: 8px solid rgba(255,255,255,0.9); box-shadow: 0 20px 60px rgba(0,0,0,0.3); background: linear-gradient(135deg, #95d5b2, #74c69d); display: flex; align-items: center; justify-content: center; position: relative; }
+        .photo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-placeholder { font-size: 5rem; color: rgba(255,255,255,0.8); }
+        .photo-upload-hint { text-align: center; margin-top: 1rem; font-size: 0.9rem; opacity: 0.8; }
+        .cta-buttons { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+        .btn { padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; font-weight: 600; display: inline-block; transition: all 0.3s ease; font-size: 1rem; text-align: center; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .btn-primary { background: white; color: #2d6a4f; }
+        .btn-secondary { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
+        .section { margin: 4rem 0; }
+        .section h2 { color: #2d6a4f; font-size: 2.5rem; margin-bottom: 2rem; text-align: center; font-weight: 700; }
+        .access-levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 3rem 0; }
+        .access-card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(45, 106, 79, 0.1); text-align: center; transition: all 0.3s ease; border: 3px solid transparent; }
+        .access-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(45, 106, 79, 0.2); border-color: #52b788; }
+        .access-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .access-card h3 { color: #2d6a4f; font-size: 1.8rem; margin-bottom: 1rem; }
+        .access-card p { color: #4a5568; margin-bottom: 1.5rem; line-height: 1.6; }
+        .access-card .btn { width: 100%; }
+        .especialidades { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin: 3rem 0; }
+        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 20px rgba(45, 106, 79, 0.08); transition: all 0.3s ease; border-left: 4px solid #52b788; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(45, 106, 79, 0.15); border-left-width: 8px; }
+        .card h3 { color: #2d6a4f; font-size: 1.4rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .card p { color: #4a5568; line-height: 1.6; }
+        .curriculo { background: linear-gradient(135deg, #d8f3dc 0%, #b7e4c7 100%); padding: 3rem; border-radius: 20px; margin: 3rem 0; box-shadow: 0 10px 30px rgba(45, 106, 79, 0.1); }
+        .curriculo h2 { color: #1b4332; text-align: left; }
+        .curriculo h3 { color: #2d6a4f; font-size: 1.6rem; margin: 2rem 0 1rem 0; display: flex; align-items: center; gap: 0.5rem; }
+        .curriculo ul { margin-left: 2rem; margin-top: 1rem; }
+        .curriculo li { margin: 0.8rem 0; color: #2d3748; line-height: 1.6; }
+        .curriculo li strong { color: #1b4332; }
+        .cta-section { background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%); color: white; padding: 4rem 3rem; border-radius: 20px; text-align: center; margin: 4rem 0; box-shadow: 0 15px 40px rgba(45, 106, 79, 0.3); }
+        .cta-section h2 { color: white; margin-bottom: 1rem; }
+        .cta-section p { font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.95; }
+        .footer { background: #1b4332; color: white; text-align: center; padding: 3rem 2rem; margin-top: 4rem; }
+        .footer p { opacity: 0.9; margin: 0.5rem 0; }
+        @media (max-width: 968px) {
+            .hero-content { flex-direction: column; text-align: center; }
+            .hero h1 { font-size: 2.2rem; }
+            .hero-photo { flex: 0 0 280px; }
+            .photo-container { width: 280px; height: 280px; }
+            .cta-buttons { justify-content: center; }
+        }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.8rem; }
+            .section h2 { font-size: 2rem; }
+            .access-levels { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1> Clínica Psi</h1>
-        <p>Psicóloga Iana Santos - CRP XX/XXXXX</p>
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>🌿 Clínica Psi</h1>
+                <p class="subtitle">Psicóloga Iana Santos</p>
+                <p class="crp">CRP XX/XXXXX</p>
+                <p class="hero-description">
+                    Bem-vindo ao seu espaço de cuidado e acolhimento. 
+                    Atendimento psicológico especializado com abordagens humanistas 
+                    e cognitivo-comportamentais para seu bem-estar emocional.
+                </p>
+                <div class="cta-buttons">
+                    <a href="#acesso" class="btn btn-primary">Acessar Sistema</a>
+                    <a href="/Agendamento" class="btn btn-secondary">Agendar Consulta</a>
+                </div>
+            </div>
+            <div class="hero-photo">
+                <div class="photo-container">
+                    <div class="photo-placeholder">👤</div>
+                </div>
+                <p class="photo-upload-hint">📸 Adicione sua foto em: wwwroot/images/psicologa.jpg</p>
+            </div>
+        </div>
     </div>
 
     <div class="container">
-        <div class="section">
-            <h2>Bem-vindo</h2>
-            <div class="profile">
-                <div class="profile-text">
-                    <p>Olá! Sou a psicóloga Iana Santos, especializada em atendimento clínico com abordagens humanistas e cognitivo-comportamentais.</p>
-                    <p style="margin-top: 1rem;">Ofereço um espaço acolhedor e seguro para você cuidar da sua saúde mental e emocional.</p>
-                    
-                    <div class="cta-buttons">
-                        <a href="/Account/Login" class="btn btn-primary">Acesso Pacientes</a>
-                        <a href="/Agendamento" class="btn btn-secondary">Agendar Consulta</a>
-                    </div>
+        <div class="section" id="acesso">
+            <h2>Acesso ao Sistema</h2>
+            <p style="text-align: center; color: #4a5568; margin-bottom: 2rem; font-size: 1.1rem;">
+                Escolha seu perfil para acessar o sistema
+            </p>
+            
+            <div class="access-levels">
+                <div class="access-card">
+                    <div class="access-icon">👥</div>
+                    <h3>Paciente</h3>
+                    <p>Acesse seu prontuário, histórico de consultas, agende sessões e acompanhe seu tratamento.</p>
+                    <a href="/Account/Login?role=paciente" class="btn btn-primary">Acesso Paciente</a>
+                </div>
+                
+                <div class="access-card">
+                    <div class="access-icon">🩺</div>
+                    <h3>Psicólogo(a)</h3>
+                    <p>Gerencie prontuários, consultas, pacientes e visualize sua agenda de atendimentos.</p>
+                    <a href="/Account/Login?role=psicologo" class="btn btn-primary">Acesso Psicólogo</a>
+                </div>
+                
+                <div class="access-card">
+                    <div class="access-icon">⚙️</div>
+                    <h3>Administrador</h3>
+                    <p>Acesso completo ao sistema, configurações, usuários e relatórios administrativos.</p>
+                    <a href="/Account/Login?role=admin" class="btn btn-primary">Acesso Admin</a>
                 </div>
             </div>
         </div>
 
         <div class="section">
-            <h2>Especialidades</h2>
+            <h2>Áreas de Atuação</h2>
             <div class="especialidades">
-                <div class="card">
-                    <h3> Ansiedade e Depressão</h3>
-                    <p>Tratamento especializado para transtornos de ansiedade, síndrome do pânico e depressão.</p>
-                </div>
-                <div class="card">
-                    <h3> Relacionamentos</h3>
-                    <p>Terapia de casal e orientação para relacionamentos interpessoais saudáveis.</p>
-                </div>
-                <div class="card">
-                    <h3> Terapia Familiar</h3>
-                    <p>Atendimento familiar para resolução de conflitos e fortalecimento de vínculos.</p>
-                </div>
-                <div class="card">
-                    <h3> Orientação Profissional</h3>
-                    <p>Apoio em transições de carreira e desenvolvimento pessoal.</p>
-                </div>
+                <div class="card"><h3>🧠 Ansiedade e Depressão</h3><p>Tratamento especializado para transtornos de ansiedade, síndrome do pânico, depressão e estresse.</p></div>
+                <div class="card"><h3>❤️ Terapia de Casal</h3><p>Fortalecimento de vínculos, resolução de conflitos e orientação para relacionamentos saudáveis.</p></div>
+                <div class="card"><h3>👨‍👩‍👧‍👦 Terapia Familiar</h3><p>Atendimento familiar para melhorar a comunicação e fortalecer os laços familiares.</p></div>
+                <div class="card"><h3>💼 Orientação Profissional</h3><p>Apoio em transições de carreira, desenvolvimento pessoal e escolhas profissionais.</p></div>
+                <div class="card"><h3>🎯 Autoconhecimento</h3><p>Desenvolvimento pessoal, autoestima e descoberta de potencialidades.</p></div>
+                <div class="card"><h3>😔 Luto e Perdas</h3><p>Acompanhamento nos processos de luto e elaboração de perdas significativas.</p></div>
             </div>
         </div>
 
         <div class="curriculo">
             <h2>Currículo Profissional</h2>
-            
-            <h3> Formação Acadêmica</h3>
+            <h3>📚 Formação Acadêmica</h3>
             <ul>
-                <li><strong>Graduação:</strong> Psicologia - Universidade Federal</li>
-                <li><strong>Pós-graduação:</strong> Terapia Cognitivo-Comportamental</li>
-                <li><strong>Especialização:</strong> Psicologia Clínica e Hospitalar</li>
+                <li><strong>Graduação:</strong> Psicologia - Universidade Federal (2015)</li>
+                <li><strong>Pós-graduação:</strong> Especialização em Terapia Cognitivo-Comportamental (2017)</li>
+                <li><strong>Mestrado:</strong> Psicologia Clínica e Hospitalar (2019)</li>
             </ul>
-
-            <h3> Experiência Profissional</h3>
+            <h3>💼 Experiência Profissional</h3>
             <ul>
-                <li>8+ anos de experiência em atendimento clínico</li>
-                <li>Atendimento em consultório particular</li>
-                <li>Experiência em hospitais e clínicas multidisciplinares</li>
-                <li>Supervisão e orientação de estagiários</li>
+                <li><strong>8+ anos</strong> de experiência em atendimento clínico individual e em grupo</li>
+                <li>Psicóloga em <strong>consultório particular</strong> desde 2016</li>
+                <li>Experiência em <strong>hospitais</strong> e clínicas multidisciplinares</li>
+                <li>Atuação em <strong>programas de saúde mental</strong> comunitários</li>
+                <li>Supervisão clínica e orientação de estagiários de psicologia</li>
             </ul>
-
-            <h3> Cursos e Certificações</h3>
+            <h3>🎓 Cursos e Certificações</h3>
             <ul>
-                <li>Certificação em Terapia Cognitivo-Comportamental</li>
-                <li>Formação em Terapia Focada em Esquemas</li>
-                <li>Curso de Atendimento em Crises e Emergências</li>
-                <li>Workshop de Mindfulness e Terapias de Terceira Onda</li>
+                <li>Certificação Internacional em <strong>Terapia Cognitivo-Comportamental</strong> (TCC)</li>
+                <li>Formação completa em <strong>Terapia Focada em Esquemas</strong></li>
+                <li>Curso avançado de <strong>Atendimento em Crises e Emergências Psicológicas</strong></li>
+                <li>Workshop de <strong>Mindfulness e Terapias de Terceira Onda</strong></li>
+                <li>Especialização em <strong>Psicologia Positiva</strong> e bem-estar</li>
+                <li>Formação em <strong>Terapia ACT</strong> (Aceitação e Compromisso)</li>
             </ul>
-
-            <h3> Abordagens Terapêuticas</h3>
+            <h3>🏆 Abordagens Terapêuticas</h3>
             <ul>
-                <li>Terapia Cognitivo-Comportamental (TCC)</li>
-                <li>Abordagem Humanista</li>
-                <li>Terapia Focada em Esquemas</li>
-                <li>Mindfulness e ACT (Terapia de Aceitação e Compromisso)</li>
+                <li><strong>Terapia Cognitivo-Comportamental (TCC)</strong> - abordagem principal</li>
+                <li><strong>Abordagem Humanista</strong> - Carl Rogers e Gestalt-terapia</li>
+                <li><strong>Terapia Focada em Esquemas</strong> - Jeffrey Young</li>
+                <li><strong>Mindfulness</strong> e práticas de atenção plena</li>
+                <li><strong>ACT</strong> - Terapia de Aceitação e Compromisso</li>
+                <li><strong>Psicologia Positiva</strong> aplicada à clínica</li>
+            </ul>
+            <h3>📖 Publicações e Participações</h3>
+            <ul>
+                <li>Artigos publicados em revistas científicas de psicologia</li>
+                <li>Palestrante em congressos nacionais de saúde mental</li>
+                <li>Participação em grupos de estudo e pesquisa em TCC</li>
+                <li>Membro ativo da Associação de Psicologia</li>
             </ul>
         </div>
 
-        <div class="section">
-            <h2>Como Funciona</h2>
-            <div class="card">
-                <ol style="margin-left: 1.5rem;">
-                    <li style="margin: 1rem 0;"><strong>Agende sua consulta:</strong> Entre em contato ou use nosso sistema online</li>
-                    <li style="margin: 1rem 0;"><strong>Primeira sessão:</strong> Avaliação inicial e construção do vínculo terapêutico</li>
-                    <li style="margin: 1rem 0;"><strong>Acompanhamento:</strong> Sessões regulares conforme sua necessidade</li>
-                    <li style="margin: 1rem 0;"><strong>Evolução:</strong> Monitoramento contínuo do seu progresso</li>
-                </ol>
-            </div>
-        </div>
-
-        <div class="section" style="text-align: center; background: #f8f9fa; padding: 2rem; border-radius: 8px;">
+        <div class="cta-section">
             <h2>Pronto para Cuidar da sua Saúde Mental?</h2>
-            <p style="margin: 1rem 0 2rem 0;">Entre em contato e agende sua primeira consulta.</p>
+            <p>Dê o primeiro passo em direção ao seu bem-estar emocional.</p>
             <div class="cta-buttons" style="justify-content: center;">
-                <a href="/Account/Login" class="btn btn-primary">Acesso ao Sistema</a>
-                <a href="/Agendamento" class="btn btn-secondary">Agendar Agora</a>
+                <a href="#acesso" class="btn btn-primary">Acessar Sistema</a>
+                <a href="/Agendamento" class="btn btn-secondary">Agendar Consulta</a>
             </div>
         </div>
     </div>
 
     <div class="footer">
-        <p>&copy; 2025 Clínica Psi - Psicóloga Iana Santos</p>
-        <p style="margin-top: 0.5rem; opacity: 0.8;">Todos os direitos reservados</p>
+        <p style="font-size: 1.2rem; margin-bottom: 1rem;">🌿 <strong>Clínica Psi</strong></p>
+        <p>Psicóloga Iana Santos - CRP XX/XXXXX</p>
+        <p style="margin-top: 1.5rem; opacity: 0.7;">&copy; 2025 - Todos os direitos reservados</p>
     </div>
 </body>
 </html>

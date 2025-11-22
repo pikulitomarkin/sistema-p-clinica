@@ -1,0 +1,532 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Psi - Psicóloga Iana Santos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            line-height: 1.7; 
+            color: #2d3748;
+            background: #f7fafc;
+        }
+        
+        /* Header Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #2d6a4f 0%, #40916c 50%, #52b788 100%);
+            color: white;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+        
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-text {
+            flex: 1;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .hero .subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.95;
+        }
+        
+        .hero .crp {
+            font-size: 1rem;
+            opacity: 0.85;
+            margin-bottom: 2rem;
+        }
+        
+        .hero-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        
+        .hero-photo {
+            flex: 0 0 350px;
+            position: relative;
+        }
+        
+        .photo-container {
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 8px solid rgba(255,255,255,0.9);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #95d5b2, #74c69d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .photo-placeholder {
+            font-size: 5rem;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .photo-upload-hint {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* CTA Buttons */
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #2d6a4f;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-admin {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        
+        /* Sections */
+        .section {
+            margin: 4rem 0;
+        }
+        
+        .section h2 {
+            color: #2d6a4f;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        /* Access Cards */
+        .access-levels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .access-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(45, 106, 79, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+        
+        .access-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(45, 106, 79, 0.2);
+            border-color: #52b788;
+        }
+        
+        .access-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .access-card h3 {
+            color: #2d6a4f;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .access-card p {
+            color: #4a5568;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .access-card .btn {
+            width: 100%;
+        }
+        
+        /* Specialty Cards */
+        .especialidades {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(45, 106, 79, 0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #52b788;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(45, 106, 79, 0.15);
+            border-left-width: 8px;
+        }
+        
+        .card h3 {
+            color: #2d6a4f;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+        
+        /* Curriculum Section */
+        .curriculo {
+            background: linear-gradient(135deg, #d8f3dc 0%, #b7e4c7 100%);
+            padding: 3rem;
+            border-radius: 20px;
+            margin: 3rem 0;
+            box-shadow: 0 10px 30px rgba(45, 106, 79, 0.1);
+        }
+        
+        .curriculo h2 {
+            color: #1b4332;
+            text-align: left;
+        }
+        
+        .curriculo h3 {
+            color: #2d6a4f;
+            font-size: 1.6rem;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .curriculo ul {
+            margin-left: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .curriculo li {
+            margin: 0.8rem 0;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        
+        .curriculo li strong {
+            color: #1b4332;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%);
+            color: white;
+            padding: 4rem 3rem;
+            border-radius: 20px;
+            text-align: center;
+            margin: 4rem 0;
+            box-shadow: 0 15px 40px rgba(45, 106, 79, 0.3);
+        }
+        
+        .cta-section h2 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-section p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1b4332;
+            color: white;
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+        
+        .footer p {
+            opacity: 0.9;
+            margin: 0.5rem 0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 968px) {
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .hero-photo {
+                flex: 0 0 280px;
+            }
+            
+            .photo-container {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .cta-buttons {
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .section h2 {
+                font-size: 2rem;
+            }
+            
+            .access-levels {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1> Clínica Psi</h1>
+                <p class="subtitle">Psicóloga Iana Santos</p>
+                <p class="crp">CRP XX/XXXXX</p>
+                <p class="hero-description">
+                    Bem-vindo ao seu espaço de cuidado e acolhimento. 
+                    Atendimento psicológico especializado com abordagens humanistas 
+                    e cognitivo-comportamentais para seu bem-estar emocional.
+                </p>
+                <div class="cta-buttons">
+                    <a href="#acesso" class="btn btn-primary">Acessar Sistema</a>
+                    <a href="/Agendamento" class="btn btn-secondary">Agendar Consulta</a>
+                </div>
+            </div>
+            <div class="hero-photo">
+                <div class="photo-container">
+                    <!-- Substitua o comentário abaixo por: <img src="/images/psicologa.jpg" alt="Psicóloga Iana Santos"> -->
+                    <div class="photo-placeholder"></div>
+                </div>
+                <p class="photo-upload-hint"> Adicione sua foto em: wwwroot/images/psicologa.jpg</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Access Section -->
+        <div class="section" id="acesso">
+            <h2>Acesso ao Sistema</h2>
+            <p style="text-align: center; color: #4a5568; margin-bottom: 2rem; font-size: 1.1rem;">
+                Escolha seu perfil para acessar o sistema
+            </p>
+            
+            <div class="access-levels">
+                <div class="access-card">
+                    <div class="access-icon"></div>
+                    <h3>Paciente</h3>
+                    <p>Acesse seu prontuário, histórico de consultas, agende sessões e acompanhe seu tratamento.</p>
+                    <a href="/Account/Login?role=paciente" class="btn btn-primary">Acesso Paciente</a>
+                </div>
+                
+                <div class="access-card">
+                    <div class="access-icon"></div>
+                    <h3>Psicólogo(a)</h3>
+                    <p>Gerencie prontuários, consultas, pacientes e visualize sua agenda de atendimentos.</p>
+                    <a href="/Account/Login?role=psicologo" class="btn btn-primary">Acesso Psicólogo</a>
+                </div>
+                
+                <div class="access-card">
+                    <div class="access-icon"></div>
+                    <h3>Administrador</h3>
+                    <p>Acesso completo ao sistema, configurações, usuários e relatórios administrativos.</p>
+                    <a href="/Account/Login?role=admin" class="btn btn-primary">Acesso Admin</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Especialidades Section -->
+        <div class="section">
+            <h2>Áreas de Atuação</h2>
+            <div class="especialidades">
+                <div class="card">
+                    <h3> Ansiedade e Depressão</h3>
+                    <p>Tratamento especializado para transtornos de ansiedade, síndrome do pânico, depressão e estresse.</p>
+                </div>
+                <div class="card">
+                    <h3> Terapia de Casal</h3>
+                    <p>Fortalecimento de vínculos, resolução de conflitos e orientação para relacionamentos saudáveis.</p>
+                </div>
+                <div class="card">
+                    <h3> Terapia Familiar</h3>
+                    <p>Atendimento familiar para melhorar a comunicação e fortalecer os laços familiares.</p>
+                </div>
+                <div class="card">
+                    <h3> Orientação Profissional</h3>
+                    <p>Apoio em transições de carreira, desenvolvimento pessoal e escolhas profissionais.</p>
+                </div>
+                <div class="card">
+                    <h3> Autoconhecimento</h3>
+                    <p>Desenvolvimento pessoal, autoestima e descoberta de potencialidades.</p>
+                </div>
+                <div class="card">
+                    <h3> Luto e Perdas</h3>
+                    <p>Acompanhamento nos processos de luto e elaboração de perdas significativas.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Currículo Section -->
+        <div class="curriculo">
+            <h2>Currículo Profissional</h2>
+            
+            <h3> Formação Acadêmica</h3>
+            <ul>
+                <li><strong>Graduação:</strong> Psicologia - Universidade Federal (2015)</li>
+                <li><strong>Pós-graduação:</strong> Especialização em Terapia Cognitivo-Comportamental (2017)</li>
+                <li><strong>Mestrado:</strong> Psicologia Clínica e Hospitalar (2019)</li>
+            </ul>
+
+            <h3> Experiência Profissional</h3>
+            <ul>
+                <li><strong>8+ anos</strong> de experiência em atendimento clínico individual e em grupo</li>
+                <li>Psicóloga em <strong>consultório particular</strong> desde 2016</li>
+                <li>Experiência em <strong>hospitais</strong> e clínicas multidisciplinares</li>
+                <li>Atuação em <strong>programas de saúde mental</strong> comunitários</li>
+                <li>Supervisão clínica e orientação de estagiários de psicologia</li>
+            </ul>
+
+            <h3> Cursos e Certificações</h3>
+            <ul>
+                <li>Certificação Internacional em <strong>Terapia Cognitivo-Comportamental</strong> (TCC)</li>
+                <li>Formação completa em <strong>Terapia Focada em Esquemas</strong></li>
+                <li>Curso avançado de <strong>Atendimento em Crises e Emergências Psicológicas</strong></li>
+                <li>Workshop de <strong>Mindfulness e Terapias de Terceira Onda</strong></li>
+                <li>Especialização em <strong>Psicologia Positiva</strong> e bem-estar</li>
+                <li>Formação em <strong>Terapia ACT</strong> (Aceitação e Compromisso)</li>
+            </ul>
+
+            <h3> Abordagens Terapêuticas</h3>
+            <ul>
+                <li><strong>Terapia Cognitivo-Comportamental (TCC)</strong> - abordagem principal</li>
+                <li><strong>Abordagem Humanista</strong> - Carl Rogers e Gestalt-terapia</li>
+                <li><strong>Terapia Focada em Esquemas</strong> - Jeffrey Young</li>
+                <li><strong>Mindfulness</strong> e práticas de atenção plena</li>
+                <li><strong>ACT</strong> - Terapia de Aceitação e Compromisso</li>
+                <li><strong>Psicologia Positiva</strong> aplicada à clínica</li>
+            </ul>
+
+            <h3> Publicações e Participações</h3>
+            <ul>
+                <li>Artigos publicados em revistas científicas de psicologia</li>
+                <li>Palestrante em congressos nacionais de saúde mental</li>
+                <li>Participação em grupos de estudo e pesquisa em TCC</li>
+                <li>Membro ativo da Associação de Psicologia</li>
+            </ul>
+        </div>
+
+        <!-- CTA Final -->
+        <div class="cta-section">
+            <h2>Pronto para Cuidar da sua Saúde Mental?</h2>
+            <p>Dê o primeiro passo em direção ao seu bem-estar emocional.</p>
+            <div class="cta-buttons" style="justify-content: center;">
+                <a href="#acesso" class="btn btn-primary">Acessar Sistema</a>
+                <a href="/Agendamento" class="btn btn-secondary">Agendar Consulta</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p style="font-size: 1.2rem; margin-bottom: 1rem;"> <strong>Clínica Psi</strong></p>
+        <p>Psicóloga Iana Santos - CRP XX/XXXXX</p>
+        <p style="margin-top: 1.5rem; opacity: 0.7;">&copy; 2025 - Todos os direitos reservados</p>
+    </div>
+</body>
+</html>
