@@ -1,7 +1,6 @@
 using ClinicaPsi.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 
 namespace ClinicaPsi.Infrastructure.Data;
 
@@ -22,21 +21,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configurar PostgreSQL para usar timestamp sem timezone globalmente
-        if (Database.IsNpgsql())
-        {
-            foreach (var entity in modelBuilder.Model.GetEntityTypes())
-            {
-                foreach (var property in entity.GetProperties())
-                {
-                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
-                    {
-                        property.SetColumnType("timestamp without time zone");
-                    }
-                }
-            }
-        }
-
+        // Configuração simplificada - EnsureCreated cuidará da estrutura
         modelBuilder.Entity<Paciente>(entity =>
         {
             entity.HasKey(e => e.Id);
