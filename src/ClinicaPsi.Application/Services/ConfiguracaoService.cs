@@ -112,6 +112,14 @@ public class ConfiguracaoService
         return true;
     }
 
+    /// <summary>
+    /// Remove uma configuração (alias para ExcluirAsync)
+    /// </summary>
+    public async Task<bool> RemoverAsync(string chave)
+    {
+        return await ExcluirAsync(chave);
+    }
+
     #endregion
 
     #region Métodos de Acesso Tipado
@@ -196,7 +204,7 @@ public class ConfiguracaoService
             
             // Sistema
             { "Sistema.Nome", ("PsiiAnaSantos", "Nome do sistema", "Sistema", "string") },
-            { "Sistema.Email", ("psiana@psiianasantos.com.br", "Email principal do sistema", "Sistema", "string") },
+            { "Sistema.Email", ("psiianasantos@psiianasantos.com.br", "Email principal do sistema", "Sistema", "string") },
             { "Sistema.Telefone", ("(42) 99936-9724", "Telefone de contato", "Sistema", "string") },
             { "Sistema.Endereco", ("Rua Orlando Ferreira Neto, 39 - Jd Itapoã, Londrina - PR, 86043-470", "Endereço da clínica", "Sistema", "string") },
             

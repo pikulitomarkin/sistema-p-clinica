@@ -1,0 +1,49 @@
+{
+  "family": "clinicapsi-cleanup",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::507363615495:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::507363615495:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "cleanup-container",
+      "image": "507363615495.dkr.ecr.us-east-1.amazonaws.com/clinicapsi:latest",
+      "essential": true,
+      "command": [
+        "/bin/bash",
+        "-c",
+        "rm -f /mnt/efs/clinicapsi.db /mnt/efs/clinicapsi.db-shm /mnt/efs/clinicapsi.db-wal && ls -la /mnt/efs/ && sleep 10"
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "efs-data",
+          "containerPath": "/mnt/efs",
+          "readOnly": false
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/clinicapsi-cleanup",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "cleanup",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ],
+  "volumes": [
+    {
+      "name": "efs-data",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "fs-059bb5b59fe64d817",
+        "transitEncryption": "ENABLED",
+        "authorizationConfig": {
+          "iam": "DISABLED"
+        }
+      }
+    }
+  ]
+}

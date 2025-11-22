@@ -190,7 +190,7 @@ public static class PdfExemploGenerator
             {
                 column.Item().Text(text => text.Span("Contato:").FontSize(10).Bold());
                 column.Item().Text(text => text.Span("(42) 99936-9724").FontSize(9));
-                column.Item().Text(text => text.Span("psiana@psiianasantos.com.br").FontSize(9));
+                column.Item().Text(text => text.Span("psiianasantos@psiianasantos.com.br").FontSize(9));
                 column.Item().Text(text =>
                 {
                     text.Span("Data: ").Bold().FontSize(9);

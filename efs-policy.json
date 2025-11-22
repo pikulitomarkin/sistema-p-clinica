@@ -1,0 +1,14 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticfilesystem:ClientMount",
+        "elasticfilesystem:ClientWrite",
+        "elasticfilesystem:ClientRootAccess"
+      ],
+      "Resource": "arn:aws:elasticfilesystem:us-east-1:507363615495:file-system/fs-059bb5b59fe64d817"
+    }
+  ]
+}

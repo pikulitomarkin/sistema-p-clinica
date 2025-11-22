@@ -127,7 +127,7 @@ Acumule 10 pontos e ganhe 1 consulta gratuita! 🎉
 Atenciosamente,
 PsiiAnaSantos - Clínica de Psicologia
 📞 (42) 99936-9724
-📧 psiana@psiianasantos.com.br
+📧 psiianasantos@psiianasantos.com.br
 ";
 
             // Enviar notificações
@@ -180,7 +180,7 @@ Motivo: {motivo}
 
 Para reagendar, entre em contato:
 📞 (42) 99936-9724
-📧 psiana@psiianasantos.com.br
+📧 psiianasantos@psiianasantos.com.br
 
 Atenciosamente,
 PsiiAnaSantos

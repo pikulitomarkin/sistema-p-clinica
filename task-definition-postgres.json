@@ -1,0 +1,67 @@
+{
+  "family": "clinicapsi-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::507363615495:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::507363615495:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "clinicapsi-container",
+  "image": "507363615495.dkr.ecr.us-east-1.amazonaws.com/clinicapsi:v3.5.1-ui",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "efs-data",
+          "containerPath": "/mnt/efs",
+          "readOnly": false
+        }
+      ],
+      "environment": [
+        {
+          "name": "ASPNETCORE_ENVIRONMENT",
+          "value": "Production"
+        },
+        {
+          "name": "ConnectionStrings__DefaultConnection",
+          "value": "Host=clinicapsi-db.cqbooyc6uuiz.us-east-1.rds.amazonaws.com;Port=5432;Database=clinicapsi;Username=psiadmin;Password=1212Ervadoce;SSL Mode=Require;Trust Server Certificate=true"
+        }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/clinicapsi",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ],
+  "volumes": [
+    {
+      "name": "efs-data",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "fs-059bb5b59fe64d817",
+        "transitEncryption": "ENABLED",
+        "authorizationConfig": {
+          "iam": "DISABLED"
+        }
+      }
+    }
+  ]
+}

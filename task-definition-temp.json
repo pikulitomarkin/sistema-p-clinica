@@ -1,0 +1,81 @@
+{
+    "family":  "clinicapsi-task",
+    "taskRoleArn":  "arn:aws:iam::507363615495:role/ecsTaskRole",
+    "executionRoleArn":  "arn:aws:iam::507363615495:role/ecsTaskExecutionRole",
+    "networkMode":  "awsvpc",
+    "containerDefinitions":  [
+                                 {
+                                     "name":  "clinicapsi-container",
+                                     "image":  "507363615495.dkr.ecr.us-east-1.amazonaws.com/clinicapsi:v3.6.6-db-fix",
+                                     "cpu":  0,
+                                     "portMappings":  [
+                                                          {
+                                                              "containerPort":  80,
+                                                              "hostPort":  80,
+                                                              "protocol":  "tcp"
+                                                          }
+                                                      ],
+                                     "essential":  true,
+                                     "environment":  [
+                                                         {
+                                                             "name":  "ASPNETCORE_ENVIRONMENT",
+                                                             "value":  "Production"
+                                                         },
+                                                         {
+                                                             "name":  "ConnectionStrings__DefaultConnection",
+                                                             "value":  "Host=clinicapsi-db.cqbooyc6uuiz.us-east-1.rds.amazonaws.com;Port=5432;Database=clinicapsi;Username=psiadmin;Password=1212Ervadoce;SSL Mode=Require;Trust Server Certificate=true"
+                                                         }
+                                                     ],
+                                     "mountPoints":  [
+                                                         {
+                                                             "sourceVolume":  "efs-data",
+                                                             "containerPath":  "/mnt/efs",
+                                                             "readOnly":  false
+                                                         }
+                                                     ],
+                                     "volumesFrom":  [
+
+                                                     ],
+                                     "logConfiguration":  {
+                                                              "logDriver":  "awslogs",
+                                                              "options":  {
+                                                                              "awslogs-group":  "/ecs/clinicapsi",
+                                                                              "awslogs-create-group":  "true",
+                                                                              "awslogs-region":  "us-east-1",
+                                                                              "awslogs-stream-prefix":  "ecs"
+                                                                          }
+                                                          },
+                                     "healthCheck":  {
+                                                         "command":  [
+                                                                         "CMD-SHELL",
+                                                                         "curl -f http://localhost/health || exit 1"
+                                                                     ],
+                                                         "interval":  30,
+                                                         "timeout":  5,
+                                                         "retries":  3,
+                                                         "startPeriod":  60
+                                                     },
+                                     "systemControls":  [
+
+                                                        ]
+                                 }
+                             ],
+    "requiresCompatibilities":  [
+                                    "FARGATE"
+                                ],
+    "cpu":  "512",
+    "memory":  "1024",
+    "volumes":  [
+                    {
+                        "name":  "efs-data",
+                        "efsVolumeConfiguration":  {
+                                                       "fileSystemId":  "fs-059bb5b59fe64d817",
+                                                       "rootDirectory":  "/",
+                                                       "transitEncryption":  "ENABLED",
+                                                       "authorizationConfig":  {
+                                                                                   "iam":  "DISABLED"
+                                                                               }
+                                                   }
+                    }
+                ]
+}

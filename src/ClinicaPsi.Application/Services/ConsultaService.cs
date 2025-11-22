@@ -171,4 +171,12 @@ public class ConsultaService
             .OrderBy(c => c.DataHorario)
             .ToListAsync();
     }
+
+    public async Task<Consulta?> GetByIdAsync(int id)
+    {
+        return await _context.Consultas
+            .Include(c => c.Paciente)
+            .Include(c => c.Psicologo)
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
 }

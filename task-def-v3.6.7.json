@@ -1,0 +1,45 @@
+{
+  "family": "clinicapsi-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::507363615495:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "clinicapsi-container",
+      "image": "507363615495.dkr.ecr.us-east-1.amazonaws.com/clinicapsi:v3.6.7-migration-fix",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "ASPNETCORE_URLS",
+          "value": "http://+:80"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/clinicapsi",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

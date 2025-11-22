@@ -1,0 +1,32 @@
+{
+  "ServiceName": "clinicapsi-app",
+  "SourceConfiguration": {
+    "ImageRepository": {
+      "ImageIdentifier": "507363615495.dkr.ecr.us-east-1.amazonaws.com/clinicapsi:latest",
+      "ImageRepositoryType": "ECR",
+      "ImageConfiguration": {
+        "Port": "80",
+        "RuntimeEnvironmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Production",
+          "ConnectionStrings__DefaultConnection": "Data Source=/app/data/clinicapsi.db"
+        }
+      }
+    },
+    "AutoDeploymentsEnabled": true,
+    "AuthenticationConfiguration": {
+      "AccessRoleArn": "arn:aws:iam::507363615495:role/AppRunnerECRAccessRole"
+    }
+  },
+  "InstanceConfiguration": {
+    "Cpu": "1 vCPU",
+    "Memory": "2 GB"
+  },
+  "HealthCheckConfiguration": {
+    "Protocol": "HTTP",
+    "Path": "/health",
+    "Interval": 10,
+    "Timeout": 5,
+    "HealthyThreshold": 1,
+    "UnhealthyThreshold": 5
+  }
+}
