@@ -1,6 +1,7 @@
 using ClinicaPsi.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 
 namespace ClinicaPsi.Infrastructure.Data;
 
