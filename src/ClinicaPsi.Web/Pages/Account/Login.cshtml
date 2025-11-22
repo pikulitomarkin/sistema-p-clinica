@@ -143,57 +143,6 @@
             border-top: 1px solid #e9ecef;
         }
         
-        .demo-card {
-            background: linear-gradient(135deg, rgba(32, 201, 151, 0.1), rgba(40, 167, 69, 0.1));
-            border: 2px solid rgba(40, 167, 69, 0.2);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            margin-top: 2rem;
-        }
-        
-        .demo-header {
-            background: linear-gradient(135deg, #20c997, #17a2b8);
-            color: white;
-            padding: 1rem;
-            border-radius: 13px 13px 0 0;
-            text-align: center;
-        }
-        
-        .demo-body {
-            padding: 1.5rem;
-        }
-        
-        .demo-user {
-            background: white;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid #28a745;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .demo-user:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-        }
-        
-        .demo-user:last-child {
-            margin-bottom: 0;
-        }
-        
-        .demo-role {
-            color: #28a745;
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .demo-credentials {
-            font-size: 0.85rem;
-            color: #6c757d;
-        }
-        
         .navbar-brand {
             color: white !important;
             text-decoration: none;
@@ -249,15 +198,6 @@
             
             .login-body {
                 padding: 2rem 1.5rem;
-            }
-            
-            .demo-card {
-                margin-top: 1.5rem;
-            }
-            
-            .demo-user {
-                margin-bottom: 0.75rem;
-                padding: 0.75rem;
             }
         }
         
@@ -348,49 +288,6 @@
                         </small>
                     </div>
                 </div>
-                <!-- Usuários Demo -->
-                <div class="demo-card">
-                    <div class="demo-header">
-                        <h6 class="mb-0">
-                            <i class="bi bi-people me-2"></i>
-                            Usuários Demo para Teste
-                        </h6>
-                    </div>
-                    <div class="demo-body">
-                        <div class="demo-user">
-                            <div class="demo-role">
-                                <i class="bi bi-shield-check me-2"></i>
-                                Admin (Ana)
-                            </div>
-                            <div class="demo-credentials">
-                                <strong>Email:</strong> ana.santos@psii.com<br>
-                                <strong>Senha:</strong> Ana123!
-                            </div>
-                        </div>
-                        
-                        <div class="demo-user">
-                            <div class="demo-role">
-                                <i class="bi bi-person-badge me-2"></i>
-                                Psicólogo
-                            </div>
-                            <div class="demo-credentials">
-                                <strong>Email:</strong> joao.silva@psii.com<br>
-                                <strong>Senha:</strong> Joao123!
-                            </div>
-                        </div>
-                        
-                        <div class="demo-user">
-                            <div class="demo-role">
-                                <i class="bi bi-person-heart me-2"></i>
-                                Cliente
-                            </div>
-                            <div class="demo-credentials">
-                                <strong>Email:</strong> cliente@demo.com<br>
-                                <strong>Senha:</strong> Cliente123!
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -399,38 +296,15 @@
     <script>
         // Adicionar efeitos visuais
         document.addEventListener('DOMContentLoaded', function() {
-            // Animar entrada dos elementos
-            const elements = document.querySelectorAll('.login-container, .demo-card');
-            elements.forEach(function(element, index) {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(30px)';
-                setTimeout(function() {
-                    element.style.transition = 'all 0.6s ease';
-                    element.style.opacity = '1';
-                    element.style.transform = 'translateY(0)';
-                }, index * 200);
-            });
-            
-            // Adicionar efeito de clique nos usuários demo
-            const demoUsers = document.querySelectorAll('.demo-user');
-            demoUsers.forEach(function(user) {
-                user.addEventListener('click', function() {
-                    const credentials = user.querySelector('.demo-credentials');
-                    const emailText = credentials.textContent.match(/Email:\s*([^\s]+)/)[1];
-                    const passwordText = credentials.textContent.match(/Senha:\s*([^\s]+)/)[1];
-                    
-                    document.querySelector('input[name="Input.Email"]').value = emailText;
-                    document.querySelector('input[name="Input.Password"]').value = passwordText;
-                    
-                    // Feedback visual
-                    user.style.background = 'rgba(40, 167, 69, 0.1)';
-                    user.style.borderLeftColor = '#20c997';
-                    setTimeout(function() {
-                        user.style.background = 'white';
-                        user.style.borderLeftColor = '#28a745';
-                    }, 500);
-                });
-            });
+            // Animar entrada do elemento
+            const loginContainer = document.querySelector('.login-container');
+            loginContainer.style.opacity = '0';
+            loginContainer.style.transform = 'translateY(30px)';
+            setTimeout(function() {
+                loginContainer.style.transition = 'all 0.6s ease';
+                loginContainer.style.opacity = '1';
+                loginContainer.style.transform = 'translateY(0)';
+            }, 100);
         });
     </script>
 </body>

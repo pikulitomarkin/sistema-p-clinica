@@ -1,7 +1,4 @@
 @page "/"
-@using ClinicaPsi.Application.Services
-@inject PacienteService PacienteService
-@inject ConsultaService ConsultaService
 @{
     ViewData["Title"] = "PsiiAnaSantos - Psicóloga Psi. Ana Santos";
 }
@@ -28,7 +25,7 @@
                     Transformando vidas através da psicoterapia humanizada e baseada em evidências científicas
                 </p>
                 <div class="d-flex flex-wrap gap-3 justify-content-center animate-fade-in animate-delay-3">
-                    <a href="/Agendamento" class="btn btn-modern">
+                    <a href="/Account/Login" class="btn btn-modern">
                         <i class="bi bi-calendar-check me-2"></i> Agendar Consulta
                     </a>
                     <a href="#psicopontos" class="btn btn-outline-modern">
@@ -105,57 +102,6 @@
                         <h6 class="text-success fw-bold">2022 - 2024</h6>
                         <small class="text-muted">Estágio em Psicologia Clínica - Centro Universitário Campo Real</small>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cards de Estatísticas -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-3">
-            <div class="modern-card text-center animate-fade-in animate-delay-1">
-                <div class="card-body">
-                    <div class="translucent-icon">
-                        <i class="bi bi-people-fill"></i>
-                    </div>
-                    <h3 class="display-5 text-success mb-2">0</h3>
-                    <p class="text-muted mb-0">Pacientes Ativos</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="modern-card text-center animate-fade-in animate-delay-2">
-                <div class="card-body">
-                    <div class="translucent-icon">
-                        <i class="bi bi-calendar-check-fill"></i>
-                    </div>
-                    <h3 class="display-5 text-success mb-2">0</h3>
-                    <p class="text-muted mb-0">Consultas Hoje</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="modern-card text-center animate-fade-in animate-delay-3">
-                <div class="card-body">
-                    <div class="translucent-icon">
-                        <i class="bi bi-calendar3"></i>
-                    </div>
-                    <h3 class="display-5 text-success mb-2">0</h3>
-                    <p class="text-muted mb-0">Próximos 7 Dias</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="modern-card text-center animate-fade-in animate-delay-3">
-                <div class="card-body">
-                    <div class="translucent-icon">
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                    <h3 class="display-5 text-success mb-2">0</h3>
-                    <p class="text-muted mb-0">PsicoPontos Total</p>
                 </div>
             </div>
         </div>
@@ -243,7 +189,7 @@
                                 <i class="bi bi-envelope-fill text-success me-2"></i>
                                 <strong>E-mail:</strong>
                             </div>
-                            <small class="text-muted">psiana@psiianasantos.com.br</small>
+                            <small class="text-muted">psiianasantos@psiianasantos.com.br</small>
                         </div>
                         <div class="mb-3">
                             <div class="d-flex align-items-center mb-2">

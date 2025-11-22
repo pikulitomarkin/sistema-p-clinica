@@ -76,7 +76,11 @@
                         <i class="bi bi-shield-check me-2"></i>
                         Auditoria
                     </a>
-                    <a href="/admin/configuracoes" class="nav-link">
+                    <a href="/admin/whatsapp" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Admin/WhatsApp") == true ? "active" : "")">
+                        <i class="bi bi-whatsapp me-2"></i>
+                        WhatsApp Bot
+                    </a>
+                    <a href="/admin/configuracoes" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Admin/Configuracoes") == true ? "active" : "")">
                         <i class="bi bi-gear me-2"></i>
                         Configurações
                     </a>

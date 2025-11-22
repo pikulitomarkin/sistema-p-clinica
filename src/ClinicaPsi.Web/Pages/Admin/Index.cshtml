@@ -12,17 +12,7 @@
 @{
     ViewData["Title"] = "Dashboard Administrativo";
     Layout = "_AdminLayout";
-}
-
-@{
-    // Estatísticas do sistema
-    var totalUsuarios = await UserManager.Users.CountAsync();
-    var totalPacientes = (await PacienteService.GetAllAsync()).Count;
-    var totalPsicologos = (await UserManager.GetUsersInRoleAsync("Psicologo")).Count;
-    var totalConsultas = (await ConsultaService.GetAllAsync()).Count;
-    
-    // Próximas consultas
-    var proximasConsultas = await ConsultaService.GetProximasConsultasAsync(7);
+// ...existing code...
     var consultasHoje = await ConsultaService.GetConsultasHojeListAsync();
 }
 
@@ -51,53 +41,10 @@
     </div>
 </div>
 
-<!-- Statistics Cards -->
-<div class="row g-4 mb-4">
-    <div class="col-xl-3 col-md-6">
-        <div class="admin-stats-card">
-            <div class="stats-icon">
-                <i class="bi bi-people"></i>
-            </div>
-            <div class="stats-number">@totalUsuarios</div>
-            <div class="stats-label">Total de Usuários</div>
-        </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6">
-        <div class="admin-stats-card">
-            <div class="stats-icon">
-                <i class="bi bi-person-heart"></i>
-            </div>
-            <div class="stats-number">@totalPacientes</div>
-            <div class="stats-label">Pacientes Cadastrados</div>
-        </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6">
-        <div class="admin-stats-card">
-            <div class="stats-icon">
-                <i class="bi bi-person-badge"></i>
-            </div>
-            <div class="stats-number">@totalPsicologos</div>
-            <div class="stats-label">Psicólogos Ativos</div>
-        </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6">
-        <div class="admin-stats-card">
-            <div class="stats-icon">
-                <i class="bi bi-calendar-check"></i>
-            </div>
-            <div class="stats-number">@totalConsultas</div>
-            <div class="stats-label">Total de Consultas</div>
-        </div>
-    </div>
-</div>
-
 <!-- Main Content Grid -->
 <div class="row g-4">
-    <!-- Quick Actions -->
     <div class="col-lg-8">
+        <!-- Apenas ações rápidas e atividades recentes -->
         <div class="admin-card">
             <div class="admin-card-header">
                 <h5 class="mb-0">
@@ -120,6 +67,12 @@
                         </a>
                     </div>
                     <div class="col-md-6">
+                        <a href="/admin/whatsapp" class="admin-action-btn w-100 justify-content-center" style="background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);">
+                            <i class="bi bi-whatsapp"></i>
+                            WhatsApp Bot
+                        </a>
+                    </div>
+                    <div class="col-md-6">
                         <a href="/admin/psicopontos" class="admin-action-btn-secondary w-100 justify-content-center">
                             <i class="bi bi-star"></i>
                             Sistema PsicoPontos
@@ -134,8 +87,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Recent Activity -->
         <div class="admin-card mt-4">
             <div class="admin-card-header">
                 <h5 class="mb-0">
@@ -168,107 +119,6 @@
                             <small class="text-muted">Layout administrativo implementado</small>
                         </div>
                         <small class="text-muted">Hoje</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Right Sidebar -->
-    <div class="col-lg-4">
-        <!-- Today's Schedule -->
-        <div class="admin-card">
-            <div class="admin-card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-calendar-day me-2"></i>
-                    Agenda de Hoje
-                </h5>
-            </div>
-            <div class="admin-card-body">
-                @if (consultasHoje?.Any() == true)
-                {
-                    @foreach (var consulta in consultasHoje)
-                    {
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="me-3">
-                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
-                                    <i class="bi bi-clock text-white small"></i>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">@consulta.DataHorario.ToString("HH:mm")</h6>
-                                <small class="text-muted">Paciente: @consulta.Paciente?.Nome</small>
-                            </div>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <div class="text-center text-muted py-3">
-                        <i class="bi bi-calendar-x display-6"></i>
-                        <p class="mt-2 mb-0">Nenhuma consulta agendada para hoje</p>
-                    </div>
-                }
-            </div>
-        </div>
-        
-        <!-- System Status -->
-        <div class="admin-card mt-4">
-            <div class="admin-card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-cpu me-2"></i>
-                    Status do Sistema
-                </h5>
-            </div>
-            <div class="admin-card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Banco de Dados</span>
-                    <span class="badge bg-success">
-                        <i class="bi bi-check-circle me-1"></i>
-                        Online
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Sistema de Login</span>
-                    <span class="badge bg-success">
-                        <i class="bi bi-check-circle me-1"></i>
-                        Ativo
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Notificações</span>
-                    <span class="badge bg-warning">
-                        <i class="bi bi-exclamation-triangle me-1"></i>
-                        Pendente
-                    </span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>Backup</span>
-                    <span class="badge bg-secondary">
-                        <i class="bi bi-clock me-1"></i>
-                        Agendado
-                    </span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Quick Stats -->
-        <div class="admin-card mt-4">
-            <div class="admin-card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-graph-up-arrow me-2"></i>
-                    Estatísticas Rápidas
-                </h5>
-            </div>
-            <div class="admin-card-body">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <h4 class="text-success mb-1">@proximasConsultas?.Count()</h4>
-                        <small class="text-muted">Próximas 7 dias</small>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="text-info mb-1">0</h4>
-                        <small class="text-muted">PsicoPontos Ativos</small>
                     </div>
                 </div>
             </div>

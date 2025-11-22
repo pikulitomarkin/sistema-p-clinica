@@ -9,7 +9,7 @@ using ClinicaPsi.Application.Services;
 
 namespace ClinicaPsi.Web.Pages.Admin
 {
-    [Authorize]
+    [Authorize(Policy = "AdminPolicy")]
     public class ConfiguracoesModel : PageModel
     {
         private readonly AppDbContext _context;
@@ -44,7 +44,7 @@ namespace ClinicaPsi.Web.Pages.Admin
             Configuracoes = new ConfiguracoesGerais
             {
                 NomeClinica = await _configuracaoService.ObterValorStringAsync("Sistema.Nome", "PsiiAnaSantos - Clínica de Psicologia"),
-                EmailContato = await _configuracaoService.ObterValorStringAsync("Sistema.Email", "psiana@psiianasantos.com.br"),
+                EmailContato = await _configuracaoService.ObterValorStringAsync("Sistema.Email", "psiianasantos@psiianasantos.com.br"),
                 TelefoneContato = await _configuracaoService.ObterValorStringAsync("Sistema.Telefone", "(42) 99936-9724"),
                 EnderecoCompleto = await _configuracaoService.ObterValorStringAsync("Sistema.Endereco", "Rua Orlando Ferreira Neto, 39 - Jd Itapoã, Londrina - PR, 86043-470"),
                 HorarioFuncionamento = "Segunda a Sexta: 9h às 17h",
