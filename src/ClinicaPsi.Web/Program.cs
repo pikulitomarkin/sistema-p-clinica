@@ -3,15 +3,68 @@ using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.DataProtection;
+using System.Text.Json;
+
+// CRÍTICO: Configurar Npgsql ANTES de tudo para aceitar DateTime sem UTC
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configurar Data Protection para usar EFS (armazenamento compartilhado)
+// Isso garante que múltiplas instâncias possam compartilhar as chaves de criptografia
+try
+{
+    var dataProtectionPath = Path.Combine("/mnt/efs", "DataProtection-Keys");
+    if (Directory.Exists("/mnt/efs"))
+    {
+        Directory.CreateDirectory(dataProtectionPath);
+        builder.Services.AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionPath))
+            .SetApplicationName("ClinicaPsi");
+    }
+    else
+    {
+        // Fallback para diretório local se EFS não estiver montado
+        builder.Services.AddDataProtection()
+            .SetApplicationName("ClinicaPsi");
+    }
+}
+catch
+{
+    // Em caso de erro, usar configuração padrão
+    builder.Services.AddDataProtection()
+        .SetApplicationName("ClinicaPsi");
+}
 
 // Adicionar serviços
 builder.Services.AddRazorPages();
 
-// Configurar banco de dados
-builder.Services.AddDbContext<AppDbContext>(options => 
-    options.UseSqlite("Data Source=psii-ana-santos.db"));
+// Health checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>();
+
+// Configurar banco de dados - Prioriza DATABASE_URL (Railway), depois appsettings
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Data Source=clinicapsi.db";
+// Detectar tipo de banco baseado na connection string
+var usePostgreSql = connectionString.Contains("Host=") || connectionString.Contains("Server=") && connectionString.Contains("Database=");
+    
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    if (usePostgreSql)
+    {
+        options.UseNpgsql(connectionString)
+            .EnableSensitiveDataLogging() // Para debug
+            .LogTo(Console.WriteLine); // Log SQL commands
+    }
+    else
+    {
+        options.UseSqlite(connectionString);
+    }
+});
 
 // Configurar Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -63,6 +116,16 @@ builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<NotificacaoService>();
 builder.Services.AddScoped<PdfService>();
 builder.Services.AddScoped<ConfiguracaoService>();
+builder.Services.AddScoped<WhatsAppService>();
+builder.Services.AddScoped<OpenAIService>();
+builder.Services.AddScoped<WhatsAppBotService>();
+
+// Configurar HttpClient para WhatsApp
+builder.Services.AddHttpClient("WhatsApp", client =>
+{
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 // Serviço em background para notificações
 builder.Services.AddHostedService<ClinicaPsi.Web.Services.NotificacaoBackgroundService>();
@@ -86,13 +149,104 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// COMENTADO: WhatsApp webhook precisa aceitar HTTP  
+// app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Health check endpoint (DEVE vir após UseRouting)
+app.MapHealthChecks("/health");
+
 app.MapRazorPages();
+
+// Webhook endpoint para WhatsApp
+// GET -> validação inicial (hub.challenge)
+app.MapGet("/api/whatsapp/webhook", (HttpRequest req) =>
+{
+    var query = req.Query;
+    var mode = query["hub.mode"].ToString();
+    var challenge = query["hub.challenge"].ToString();
+    var token = query["hub.verify_token"].ToString();
+
+    var expected = builder.Configuration["WhatsApp:VerifyToken"] ?? string.Empty;
+    if (!string.IsNullOrEmpty(mode) && mode == "subscribe" && token == expected)
+    {
+        return Results.Text(challenge);
+    }
+
+    return Results.BadRequest();
+});
+
+// POST -> recebimento de mensagens; validação opcional por HMAC se AppSecret estiver configurado
+app.MapPost("/api/whatsapp/webhook", async (HttpRequest req, IServiceProvider sp) =>
+{
+    var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("WhatsAppWebhook");
+
+    // Ler body como bytes para permitir verificação de assinatura
+    byte[] bodyBytes;
+    using (var ms = new MemoryStream())
+    {
+        await req.Body.CopyToAsync(ms);
+        bodyBytes = ms.ToArray();
+    }
+
+    // Verificar assinatura (X-Hub-Signature-256) se AppSecret estiver presente
+    var appSecret = builder.Configuration["WhatsApp:AppSecret"];
+    if (!string.IsNullOrEmpty(appSecret))
+    {
+        if (!req.Headers.TryGetValue("X-Hub-Signature-256", out var sigHeaders))
+        {
+            logger.LogWarning("Assinatura ausente no webhook WhatsApp");
+            return Results.BadRequest();
+        }
+
+        var provided = sigHeaders.FirstOrDefault() ?? string.Empty; // formato: sha256=HEX
+        try
+        {
+            using var hmac = new System.Security.Cryptography.HMACSHA256(System.Text.Encoding.UTF8.GetBytes(appSecret));
+            var computed = hmac.ComputeHash(bodyBytes);
+            var computedHex = BitConverter.ToString(computed).Replace("-", string.Empty).ToLowerInvariant();
+            if (!provided.EndsWith(computedHex, StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogWarning("Assinatura inválida no webhook WhatsApp");
+                return Results.BadRequest();
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro verificando assinatura do webhook");
+            return Results.BadRequest();
+        }
+    }
+
+    try
+    {
+        using var doc = JsonDocument.Parse(bodyBytes);
+        var root = doc.RootElement;
+
+        // Meta/WhatsApp envia objeto complexo; tentamos localizar texto e telefone
+        var entry = root.GetProperty("entry")[0];
+        var changes = entry.GetProperty("changes")[0];
+        var value = changes.GetProperty("value");
+        var messages = value.GetProperty("messages")[0];
+        var from = messages.GetProperty("from").GetString();
+        var text = "";
+        if (messages.TryGetProperty("text", out var t))
+            text = t.GetProperty("body").GetString() ?? "";
+
+        var bot = sp.GetRequiredService<WhatsAppBotService>();
+        _ = Task.Run(() => bot.ProcessIncomingMessageAsync(from ?? string.Empty, text));
+
+        return Results.Ok();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Erro processando webhook WhatsApp");
+        return Results.BadRequest();
+    }
+});
 
 app.Run();
