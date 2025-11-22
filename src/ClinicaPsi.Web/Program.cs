@@ -87,19 +87,29 @@ try {
 var app = builder.Build();
 
 // Inicializar banco de dados e dados padrao
-using (var scope = app.Services.CreateScope())
+try
 {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await DbInitializer.SeedAsync(context, userManager, roleManager);
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        await DbInitializer.SeedAsync(context, userManager, roleManager);
+    }
 }
-
-// Configurar pipeline HTTP
+catch (Exception ex)
+{
+    Console.WriteLine($"ERRO CRITICO na inicializacao do banco: {ex.Message}");
+    Console.WriteLine($"Stack trace: {ex.StackTrace}");
+    // Continua mesmo com erro para poder ver logs
+}// Configurar pipeline HTTP
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    app.UseHsts();
+}
+else
+{
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseStaticFiles();
@@ -109,6 +119,10 @@ app.UseAuthorization();
 
 // Health check endpoint
 app.MapHealthChecks("/health");
+
+// Endpoint raiz
+app.MapGet("/", () => Results.Redirect("/Account/Login"));
+
 app.MapRazorPages();
 
 app.Run();
