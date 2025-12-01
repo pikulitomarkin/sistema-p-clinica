@@ -14,6 +14,7 @@ public class DetalheModel : PageModel
     private readonly PacienteService _pacienteService;
     private readonly PsicologoService _psicologoService;
     private readonly ConsultaService _consultaService;
+    private readonly PdfService _pdfService;
     private readonly ILogger<DetalheModel> _logger;
 
     public DetalheModel(
@@ -21,12 +22,14 @@ public class DetalheModel : PageModel
         PacienteService pacienteService,
         PsicologoService psicologoService,
         ConsultaService consultaService,
+        PdfService pdfService,
         ILogger<DetalheModel> logger)
     {
         _prontuarioService = prontuarioService;
         _pacienteService = pacienteService;
         _psicologoService = psicologoService;
         _consultaService = consultaService;
+        _pdfService = pdfService;
         _logger = logger;
     }
 
@@ -126,6 +129,31 @@ public class DetalheModel : PageModel
             MensagemErro = "Erro ao adicionar evolução: " + ex.Message;
             _logger.LogError(ex, "Erro ao adicionar evolução");
             return Page();
+        }
+    }
+
+    public async Task<IActionResult> OnGetDownloadPdfAsync(int id)
+    {
+        try
+        {
+            _logger.LogInformation($"Gerando PDF do prontuário {id}");
+            
+            var pdfBytes = await _pdfService.GerarProntuarioPdfAsync(id);
+            
+            var prontuario = await _prontuarioService.ObterPorIdAsync(id);
+            var paciente = prontuario != null ? await _pacienteService.GetByIdAsync(prontuario.PacienteId) : null;
+            
+            var fileName = $"Prontuario_{id}_{paciente?.Nome?.Replace(" ", "_") ?? "Paciente"}_{DateTime.Now:yyyyMMdd}.pdf";
+            
+            _logger.LogInformation($"PDF gerado com sucesso para prontuário {id}");
+            
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Erro ao gerar PDF do prontuário {id}");
+            TempData["ErrorMessage"] = "Erro ao gerar PDF: " + ex.Message;
+            return RedirectToPage(new { id });
         }
     }
 }

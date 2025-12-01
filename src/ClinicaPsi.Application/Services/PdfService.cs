@@ -239,6 +239,132 @@ namespace ClinicaPsi.Application.Services
                 // ... conteúdo do relatório administrativo ...
             });
         }
+
+        /// <summary>
+        /// Gera PDF do prontuário eletrônico
+        /// </summary>
+        public async Task<byte[]> GerarProntuarioPdfAsync(int prontuarioId)
+        {
+            var prontuario = await _context.ProntuariosEletronicos
+                .Include(p => p.Paciente)
+                .Include(p => p.Psicologo)
+                .FirstOrDefaultAsync(p => p.Id == prontuarioId);
+
+            if (prontuario == null)
+                throw new Exception("Prontuário não encontrado");
+
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(2, Unit.Centimetre);
+                    page.PageColor(Colors.White);
+                    page.DefaultTextStyle(x => x.FontSize(11).FontFamily("Arial"));
+
+                    // Header
+                    page.Header().Column(col =>
+                    {
+                        col.Item().AlignCenter().Text("PRONTUÁRIO ELETRÔNICO").FontSize(18).Bold().FontColor(Colors.Green.Medium);
+                        col.Item().AlignCenter().Text("Clínica PsiiAnaSantos").FontSize(12).FontColor(Colors.Grey.Medium);
+                        col.Item().PaddingTop(5).LineHorizontal(2).LineColor(Colors.Green.Medium);
+                    });
+
+                    // Content
+                    page.Content().PaddingTop(10).Column(col =>
+                    {
+                        col.Spacing(8);
+
+                        // Dados do Paciente
+                        col.Item().Text("DADOS DO PACIENTE").FontSize(14).Bold().FontColor(Colors.Green.Medium);
+                        col.Item().Background(Colors.Grey.Lighten4).Padding(10).Column(c =>
+                        {
+                            c.Item().Row(row =>
+                            {
+                                row.RelativeItem().Text($"Nome: {prontuario.Paciente?.Nome ?? "N/A"}").Bold();
+                                row.ConstantItem(150).Text($"Data: {prontuario.DataSessao:dd/MM/yyyy}").AlignRight();
+                            });
+                            c.Item().Text($"CPF: {prontuario.Paciente?.CPF ?? "N/A"}");
+                            c.Item().Text($"Telefone: {prontuario.Paciente?.Telefone ?? "N/A"}");
+                        });
+
+                        // Dados do Profissional
+                        col.Item().PaddingTop(10).Text("PROFISSIONAL RESPONSÁVEL").FontSize(14).Bold().FontColor(Colors.Green.Medium);
+                        col.Item().Background(Colors.Grey.Lighten4).Padding(10).Column(c =>
+                        {
+                            c.Item().Text($"Psicólogo(a): {prontuario.Psicologo?.Nome ?? "N/A"}").Bold();
+                            c.Item().Text($"CRP: {prontuario.Psicologo?.CRP ?? "N/A"}");
+                        });
+
+                        // Tipo de Atendimento
+                        col.Item().PaddingTop(10).Text($"Tipo de Atendimento: {prontuario.TipoAtendimento}").FontSize(12).SemiBold();
+
+                        // Queixa Principal
+                        if (!string.IsNullOrEmpty(prontuario.QueixaPrincipal))
+                        {
+                            col.Item().PaddingTop(10).Text("QUEIXA PRINCIPAL").FontSize(14).Bold().FontColor(Colors.Green.Medium);
+                            col.Item().Background(Colors.Grey.Lighten5).Padding(10).Text(prontuario.QueixaPrincipal).FontSize(10);
+                        }
+
+                        // Intervenções Realizadas
+                        if (!string.IsNullOrEmpty(prontuario.Intervencoes))
+                        {
+                            col.Item().PaddingTop(10).Text("INTERVENÇÕES REALIZADAS").FontSize(14).Bold().FontColor(Colors.Green.Medium);
+                            col.Item().Background(Colors.Grey.Lighten5).Padding(10).Text(prontuario.Intervencoes).FontSize(10);
+                        }
+
+                        // Plano Terapêutico
+                        if (!string.IsNullOrEmpty(prontuario.PlanoTerapeutico))
+                        {
+                            col.Item().PaddingTop(10).Text("PLANO TERAPÊUTICO").FontSize(14).Bold().FontColor(Colors.Green.Medium);
+                            col.Item().Background(Colors.Grey.Lighten5).Padding(10).Text(prontuario.PlanoTerapeutico).FontSize(10);
+                        }
+
+                        // Observações
+                        if (!string.IsNullOrEmpty(prontuario.Observacoes))
+                        {
+                            col.Item().PaddingTop(10).Text("OBSERVAÇÕES").FontSize(14).Bold().FontColor(Colors.Green.Medium);
+                            col.Item().Background(Colors.Grey.Lighten5).Padding(10).Text(prontuario.Observacoes).FontSize(10);
+                        }
+
+                        // Evolução
+                        if (!string.IsNullOrEmpty(prontuario.Evolucao))
+                        {
+                            col.Item().PaddingTop(10).Text("EVOLUÇÃO").FontSize(14).Bold().FontColor(Colors.Green.Medium);
+                            col.Item().Background(Colors.Grey.Lighten5).Padding(10).Text(prontuario.Evolucao).FontSize(10);
+                        }
+
+                        // Status
+                        col.Item().PaddingTop(15).Row(row =>
+                        {
+                            row.RelativeItem().Text($"Status: {(prontuario.Finalizado ? "FINALIZADO" : "EM ANDAMENTO")}")
+                                .Bold()
+                                .FontColor(prontuario.Finalizado ? Colors.Green.Medium : Colors.Orange.Medium);
+                            
+                            row.ConstantItem(200).Text($"Gerado em: {DateTime.Now:dd/MM/yyyy HH:mm}")
+                                .FontSize(9)
+                                .FontColor(Colors.Grey.Medium)
+                                .AlignRight();
+                        });
+                    });
+
+                    // Footer
+                    page.Footer().AlignCenter().Column(col =>
+                    {
+                        col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                        col.Item().PaddingTop(5).Text($"Documento gerado em: {DateTime.Now:dd/MM/yyyy HH:mm}")
+                            .FontSize(9)
+                            .FontColor(Colors.Grey.Medium);
+                        col.Item().Text("Este documento é confidencial e protegido pelo sigilo profissional")
+                            .FontSize(8)
+                            .FontColor(Colors.Grey.Medium)
+                            .Italic();
+                    });
+                });
+            });
+
+            return document.GeneratePdf();
+        }
     }
 
     public class ReceitaPorPsicologoDto
