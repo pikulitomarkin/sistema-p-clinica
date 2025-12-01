@@ -97,36 +97,64 @@ namespace ClinicaPsi.Web.Pages.Admin
 
         public async Task<IActionResult> OnPostAddPsicologoAsync(string senha, string[] especialidades)
         {
+            _logger.LogInformation("Iniciando cadastro de psicólogo: {Email}", NovoPsicologo?.Email);
+            
             if (!ModelState.IsValid)
             {
+                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                _logger.LogWarning("ModelState inválido: {Errors}", errors);
+                TempData["ErrorMessage"] = $"Dados inválidos: {errors}";
+                await OnGetAsync(null, null, null);
+                return Page();
+            }
+
+            if (string.IsNullOrEmpty(senha) || senha.Length < 6)
+            {
+                _logger.LogWarning("Senha inválida ou muito curta");
+                TempData["ErrorMessage"] = "A senha deve ter no mínimo 6 caracteres.";
+                await OnGetAsync(null, null, null);
+                return Page();
+            }
+
+            if (especialidades == null || especialidades.Length == 0)
+            {
+                _logger.LogWarning("Nenhuma especialidade selecionada");
+                TempData["ErrorMessage"] = "Selecione pelo menos uma especialidade.";
                 await OnGetAsync(null, null, null);
                 return Page();
             }
 
             try
             {
+                _logger.LogInformation("Criando usuário Identity para {Email}", NovoPsicologo.Email);
+                
                 // Criar usuário no Identity
                 var user = new ApplicationUser
                 {
                     UserName = NovoPsicologo.Email,
                     Email = NovoPsicologo.Email,
+                    NomeCompleto = NovoPsicologo.Nome,
                     TipoUsuario = TipoUsuario.Psicologo,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    Ativo = true
                 };
 
                 var result = await _userManager.CreateAsync(user, senha);
                 if (!result.Succeeded)
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
+                    var errorMessages = string.Join("; ", result.Errors.Select(e => e.Description));
+                    _logger.LogError("Erro ao criar usuário Identity: {Errors}", errorMessages);
+                    TempData["ErrorMessage"] = $"Erro ao criar usuário: {errorMessages}";
                     await OnGetAsync(null, null, null);
                     return Page();
                 }
 
+                _logger.LogInformation("Usuário criado com sucesso. Adicionando à role Psicologo...");
+                
                 // Adicionar à role
                 await _userManager.AddToRoleAsync(user, "Psicologo");
+                
+                _logger.LogInformation("Role adicionada. Criando registro de psicólogo...");
 
                 // Criar psicólogo
                 var psicologo = new PsicologoEntity
@@ -138,7 +166,8 @@ namespace ClinicaPsi.Web.Pages.Admin
                     ValorConsulta = NovoPsicologo.ValorConsulta,
                     Especialidades = string.Join(", ", especialidades),
                     Ativo = true,
-                    DataCadastro = DateTime.Now,
+                    DataCadastro = DateTime.UtcNow,
+                    DataCriacao = DateTime.UtcNow,
                     // Horários padrão
                     HorarioInicioManha = new TimeSpan(8, 0, 0),
                     HorarioFimManha = new TimeSpan(12, 0, 0),
@@ -155,14 +184,16 @@ namespace ClinicaPsi.Web.Pages.Admin
                 };
 
                 await _psicologoService.CreateAsync(psicologo);
+                
+                _logger.LogInformation("Psicólogo cadastrado com sucesso! ID: {Id}, Nome: {Nome}", psicologo.Id, psicologo.Nome);
 
-                TempData["SuccessMessage"] = "Psicólogo cadastrado com sucesso!";
+                TempData["SuccessMessage"] = $"Psicólogo {psicologo.Nome} cadastrado com sucesso!";
                 return RedirectToPage();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao criar psicólogo");
-                ModelState.AddModelError(string.Empty, "Erro interno do servidor.");
+                _logger.LogError(ex, "Erro ao criar psicólogo: {Message}", ex.Message);
+                TempData["ErrorMessage"] = $"Erro ao criar psicólogo: {ex.Message}";
                 await OnGetAsync(null, null, null);
                 return Page();
             }
