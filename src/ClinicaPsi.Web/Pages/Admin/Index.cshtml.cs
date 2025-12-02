@@ -37,20 +37,34 @@ namespace ClinicaPsi.Web.Pages.Admin
         {
             try
             {
-                // Carregar estatísticas
+                // Carregar estatísticas básicas
                 var pacientes = await _pacienteService.GetAllAsync();
-                TotalPacientes = pacientes.Count();
+                TotalPacientes = pacientes?.Count() ?? 0;
 
                 var psicologos = await _psicologoService.GetAllAsync();
-                TotalPsicologos = psicologos.Count();
+                TotalPsicologos = psicologos?.Count() ?? 0;
 
-                var consultasHoje = await _consultaService.GetConsultasByDateAsync(DateTime.Today);
-                ConsultasHoje = consultasHoje.Count();
+                try
+                {
+                    var consultasHoje = await _consultaService.GetConsultasByDateAsync(DateTime.Today);
+                    ConsultasHoje = consultasHoje?.Count() ?? 0;
+                }
+                catch
+                {
+                    ConsultasHoje = 0;
+                }
 
-                // Calcular receita mensal (consultas realizadas no mês atual)
-                var inicioMes = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-                var consultasRealizadas = await _consultaService.GetConsultasRealizadasAsync(inicioMes, DateTime.Now);
-                ReceitaMensal = consultasRealizadas.Sum(c => c.Valor);
+                try
+                {
+                    // Calcular receita mensal (consultas realizadas no mês atual)
+                    var inicioMes = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                    var consultasRealizadas = await _consultaService.GetConsultasRealizadasAsync(inicioMes, DateTime.Now);
+                    ReceitaMensal = consultasRealizadas?.Sum(c => c.Valor) ?? 0;
+                }
+                catch
+                {
+                    ReceitaMensal = 0;
+                }
 
                 // Simular últimas atividades (posteriormente será implementado um log real)
                 UltimasAtividades = new List<ActivityLog>
@@ -58,23 +72,9 @@ namespace ClinicaPsi.Web.Pages.Admin
                     new ActivityLog 
                     { 
                         Data = DateTime.Now.AddHours(-2), 
-                        Descricao = "Novo paciente cadastrado: Maria Silva",
-                        Tipo = "NovoUsuario",
-                        Usuario = "Sistema"
-                    },
-                    new ActivityLog 
-                    { 
-                        Data = DateTime.Now.AddHours(-3), 
-                        Descricao = "Consulta agendada para João Santos",
-                        Tipo = "NovaConsulta",
-                        Usuario = "Dra. Ana Santos"
-                    },
-                    new ActivityLog 
-                    { 
-                        Data = DateTime.Now.AddDays(-1), 
-                        Descricao = "Cliente resgatou consulta gratuita com PsicoPontos",
-                        Tipo = "PsicoPontos",
-                        Usuario = "Sistema"
+                        Descricao = "Sistema inicializado",
+                        Tipo = "Sistema",
+                        Usuario = "Admin"
                     }
                 };
 
@@ -82,8 +82,14 @@ namespace ClinicaPsi.Web.Pages.Admin
             }
             catch (Exception ex)
             {
-                // Log do erro (implementar logger posteriormente)
-                ModelState.AddModelError("", "Erro ao carregar dados do dashboard: " + ex.Message);
+                // Log do erro - permitir acesso mesmo com erro
+                TotalPacientes = 0;
+                TotalPsicologos = 0;
+                ConsultasHoje = 0;
+                ReceitaMensal = 0;
+                UltimasAtividades = new List<ActivityLog>();
+                
+                ModelState.AddModelError("", "Erro ao carregar alguns dados: " + ex.Message);
                 return Page();
             }
         }
