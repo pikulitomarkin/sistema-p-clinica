@@ -5,8 +5,13 @@
     ViewData["Title"] = "Agende sua Consulta";
     Layout = null;
     
-    var anaSantos = await PsicologoService.GetAllAsync();
-    var drAna = anaSantos.FirstOrDefault(p => p.Email == "ana.santos@psii.com");
+    var psicologos = await PsicologoService.GetAllAsync();
+    // Tenta buscar Ana Santos pelo email, se não encontrar, pega o primeiro ativo
+    var drAna = psicologos.FirstOrDefault(p => p.Email == "ana.santos@psii.com") 
+                ?? psicologos.FirstOrDefault(p => p.Ativo);
+    
+    // Informações de fallback caso não haja psicólogo cadastrado
+    var infoFallback = drAna == null;
 }
 
 <!DOCTYPE html>
@@ -32,34 +37,32 @@
                     <p class="lead text-muted">Com a Dra. Ana Santos</p>
                 </div>
 
-                @if (drAna != null)
-                {
-                    <!-- Card do Psicólogo -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" 
-                                         style="width: 80px; height: 80px;">
-                                        <i class="bi bi-person-circle text-success" style="font-size: 3rem;"></i>
-                                    </div>
+                <!-- Card do Psicólogo -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" 
+                                     style="width: 80px; height: 80px;">
+                                    <i class="bi bi-person-circle text-success" style="font-size: 3rem;"></i>
                                 </div>
-                                <div class="col">
-                                    <h4 class="mb-1">@drAna.Nome</h4>
-                                    <p class="text-muted mb-1">
-                                        <i class="bi bi-award me-1"></i> CRP: @drAna.CRP
-                                    </p>
-                                    <p class="text-muted mb-0">
-                                        <i class="bi bi-star-fill me-1"></i> @drAna.Especialidades
-                                    </p>
-                                </div>
-                                <div class="col-auto">
-                                    <h3 class="text-success mb-0">@drAna.ValorConsulta.ToString("C")</h3>
-                                    <small class="text-muted">por sessão</small>
-                                </div>
+                            </div>
+                            <div class="col">
+                                <h4 class="mb-1">@(drAna?.Nome ?? "Dra. Ana Santos")</h4>
+                                <p class="text-muted mb-1">
+                                    <i class="bi bi-award me-1"></i> CRP: @(drAna?.CRP ?? "08/45168")
+                                </p>
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-star-fill me-1"></i> @(drAna?.Especialidades ?? "TCC, Psicologia Organizacional")
+                                </p>
+                            </div>
+                            <div class="col-auto">
+                                <h3 class="text-success mb-0">@((drAna?.ValorConsulta ?? 150m).ToString("C"))</h3>
+                                <small class="text-muted">por sessão</small>
                             </div>
                         </div>
                     </div>
+                </div>
 
                     <!-- Card de Informações -->
                     <div class="card border-0 shadow-sm mb-4">
@@ -117,60 +120,60 @@
                         </div>
                     </div>
 
-                    <!-- Card de Horários -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="bi bi-clock text-success me-2"></i>
-                                Horários de Atendimento
-                            </h5>
-                            <div class="row mt-3">
-                                @if (drAna.AtendeManha)
-                                {
-                                    <div class="col-md-6 mb-3">
-                                        <div class="border rounded p-3">
-                                            <h6 class="text-primary mb-2">
-                                                <i class="bi bi-sunrise me-2"></i>Manhã
-                                            </h6>
-                                            <p class="mb-0 text-muted">
-                                                @drAna.HorarioInicioManha.ToString(@"hh\:mm") às @drAna.HorarioFimManha.ToString(@"hh\:mm")
-                                            </p>
-                                        </div>
+                <!-- Card de Horários -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-clock text-success me-2"></i>
+                            Horários de Atendimento
+                        </h5>
+                        <div class="row mt-3">
+                            @if (drAna?.AtendeManha ?? true)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3">
+                                        <h6 class="text-primary mb-2">
+                                            <i class="bi bi-sunrise me-2"></i>Manhã
+                                        </h6>
+                                        <p class="mb-0 text-muted">
+                                            @((drAna?.HorarioInicioManha ?? new TimeSpan(9, 0, 0)).ToString(@"hh\:mm")) às @((drAna?.HorarioFimManha ?? new TimeSpan(12, 0, 0)).ToString(@"hh\:mm"))
+                                        </p>
                                     </div>
-                                }
-                                @if (drAna.AtendeTarde)
-                                {
-                                    <div class="col-md-6 mb-3">
-                                        <div class="border rounded p-3">
-                                            <h6 class="text-warning mb-2">
-                                                <i class="bi bi-sunset me-2"></i>Tarde
-                                            </h6>
-                                            <p class="mb-0 text-muted">
-                                                @drAna.HorarioInicioTarde.ToString(@"hh\:mm") às @drAna.HorarioFimTarde.ToString(@"hh\:mm")
-                                            </p>
-                                        </div>
+                                </div>
+                            }
+                            @if (drAna?.AtendeTarde ?? true)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="border rounded p-3">
+                                        <h6 class="text-warning mb-2">
+                                            <i class="bi bi-sunset me-2"></i>Tarde
+                                        </h6>
+                                        <p class="mb-0 text-muted">
+                                            @((drAna?.HorarioInicioTarde ?? new TimeSpan(14, 0, 0)).ToString(@"hh\:mm")) às @((drAna?.HorarioFimTarde ?? new TimeSpan(17, 0, 0)).ToString(@"hh\:mm"))
+                                        </p>
                                     </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar-week me-1"></i>
+                                Atende: 
+                                @{
+                                    var dias = new List<string>();
+                                    if (drAna?.AtendeSegunda ?? true) dias.Add("Seg");
+                                    if (drAna?.AtendeTerca ?? true) dias.Add("Ter");
+                                    if (drAna?.AtendeQuarta ?? true) dias.Add("Qua");
+                                    if (drAna?.AtendeQuinta ?? true) dias.Add("Qui");
+                                    if (drAna?.AtendeSexta ?? true) dias.Add("Sex");
+                                    if (drAna?.AtendeSabado ?? false) dias.Add("Sáb");
+                                    if (drAna?.AtendeDomingo ?? false) dias.Add("Dom");
                                 }
-                            </div>
-                            <div class="mt-3">
-                                <small class="text-muted">
-                                    <i class="bi bi-calendar-week me-1"></i>
-                                    Atende: 
-                                    @{
-                                        var dias = new List<string>();
-                                        if (drAna.AtendeSegunda) dias.Add("Seg");
-                                        if (drAna.AtendeTerca) dias.Add("Ter");
-                                        if (drAna.AtendeQuarta) dias.Add("Qua");
-                                        if (drAna.AtendeQuinta) dias.Add("Qui");
-                                        if (drAna.AtendeSexta) dias.Add("Sex");
-                                        if (drAna.AtendeSabado) dias.Add("Sáb");
-                                        if (drAna.AtendeDomingo) dias.Add("Dom");
-                                    }
-                                    @string.Join(", ", dias)
-                                </small>
-                            </div>
+                                @string.Join(", ", dias)
+                            </small>
                         </div>
                     </div>
+                </div>
 
                     <!-- Sistema PsicoPontos -->
                     <div class="card border-0 shadow-sm bg-success bg-opacity-10 mb-4">
@@ -187,29 +190,56 @@
                         </div>
                     </div>
 
-                    <!-- Botões de Ação -->
-                    <div class="d-grid gap-3">
+                @if (infoFallback)
+                {
+                    <!-- Aviso de Sistema em Configuração -->
+                    <div class="alert alert-info border-0 shadow-sm">
+                        <h5 class="alert-heading">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Sistema em Configuração
+                        </h5>
+                        <p class="mb-0">
+                            Para agendar sua consulta, entre em contato diretamente:
+                        </p>
+                        <div class="mt-3">
+                            <p class="mb-1">
+                                <i class="bi bi-whatsapp text-success me-2"></i>
+                                <strong>WhatsApp:</strong> (42) 99936-9724
+                            </p>
+                            <p class="mb-0">
+                                <i class="bi bi-envelope text-primary me-2"></i>
+                                <strong>Email:</strong> psiianasantos@psiianasantos.com.br
+                            </p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Botões de Ação -->
+                <div class="d-grid gap-3">
+                    @if (!infoFallback)
+                    {
                         <a href="/Cliente/AgendarConsulta" class="btn btn-success btn-lg">
                             <i class="bi bi-calendar-check me-2"></i>
                             Continuar para Agendamento
                         </a>
-                        <a href="/Account/Register" class="btn btn-outline-primary btn-lg">
-                            <i class="bi bi-person-plus me-2"></i>
-                            Ainda não tenho conta - Cadastrar
+                    }
+                    else
+                    {
+                        <a href="https://wa.me/5542999369724?text=Olá! Gostaria de agendar uma consulta." 
+                           class="btn btn-success btn-lg" target="_blank">
+                            <i class="bi bi-whatsapp me-2"></i>
+                            Agendar via WhatsApp
                         </a>
-                        <a href="/" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-2"></i>
-                            Voltar para página inicial
-                        </a>
-                    </div>
-                }
-                else
-                {
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        Informações da psicóloga não disponíveis no momento.
-                    </div>
-                }
+                    }
+                    <a href="/Account/Register" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-person-plus me-2"></i>
+                        Ainda não tenho conta - Cadastrar
+                    </a>
+                    <a href="/" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Voltar para página inicial
+                    </a>
+                </div>
             </div>
         </div>
     </div>
