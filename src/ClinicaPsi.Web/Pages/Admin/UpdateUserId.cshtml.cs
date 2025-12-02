@@ -6,8 +6,7 @@ using System.Text;
 
 namespace ClinicaPsi.Web.Pages.Admin;
 
-// TEMPORÁRIO: Removido [Authorize] para permitir acesso direto
-// [Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin")]
 public class UpdateUserIdModel : PageModel
 {
     private readonly AppDbContext _context;
