@@ -86,7 +86,8 @@ public class CadastroModel : PageModel
                 return Page();
             }
 
-            int psicologoId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            // O PsicologoId já vem do formulário em Prontuario.PsicologoId
+            // Não precisamos pegar do usuário logado
             
             // Adicionar nova evolução se fornecida
             if (!string.IsNullOrEmpty(NovaEvolucao))
@@ -119,7 +120,7 @@ public class CadastroModel : PageModel
             // Definir dados automáticos
             if (Prontuario.Id == 0)
             {
-                Prontuario.PsicologoId = psicologoId;
+                // O PsicologoId já está definido no formulário
                 Prontuario.DataCriacao = DateTime.Now;
                 await _prontuarioService.CriarProntuarioAsync(Prontuario);
                 TempData["SuccessMessage"] = "Prontuário criado com sucesso!";
