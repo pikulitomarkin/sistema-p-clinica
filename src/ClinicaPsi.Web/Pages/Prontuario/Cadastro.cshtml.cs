@@ -122,24 +122,26 @@ public class CadastroModel : PageModel
                 Prontuario.PsicologoId = psicologoId;
                 Prontuario.DataCriacao = DateTime.Now;
                 await _prontuarioService.CriarProntuarioAsync(Prontuario);
-                MensagemSucesso = "Prontuário criado com sucesso!";
+                TempData["SuccessMessage"] = "Prontuário criado com sucesso!";
+                _logger.LogInformation($"Prontuário criado com sucesso - ID: {Prontuario.Id}");
             }
             else
             {
                 Prontuario.DataAtualizacao = DateTime.Now;
                 await _prontuarioService.AtualizarProntuarioAsync(Prontuario);
-                MensagemSucesso = "Prontuário atualizado com sucesso!";
+                TempData["SuccessMessage"] = "Prontuário atualizado com sucesso!";
+                _logger.LogInformation($"Prontuário {Prontuario.Id} atualizado com sucesso");
             }
 
-            _logger.LogInformation($"Prontuário {(Edicao ? "atualizado" : "criado")} com sucesso");
             return RedirectToPage("Index");
         }
         catch (Exception ex)
         {
-            MensagemErro = "Erro ao salvar prontuário: " + ex.Message;
+            TempData["ErrorMessage"] = "Erro ao salvar prontuário: " + ex.Message;
             _logger.LogError(ex, "Erro ao salvar prontuário");
             Pacientes = await _pacienteService.GetAllAsync();
             Psicologos = await _psicologoService.GetAllAsync();
+            MensagemErro = TempData["ErrorMessage"]?.ToString();
             return Page();
         }
     }
