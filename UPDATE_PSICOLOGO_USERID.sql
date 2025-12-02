@@ -1,5 +1,6 @@
 -- Script para atualizar o UserId do psicólogo cadastrado
 -- Execute este script no banco de dados PostgreSQL do Railway
+-- Acesse: Railway Dashboard → PostgreSQL → Query Tab
 
 -- 1. Verificar o email do psicólogo cadastrado
 SELECT "Id", "Nome", "Email", "CRP" FROM "Psicologos";
@@ -23,6 +24,8 @@ FROM "Psicologos" p
 LEFT JOIN "AspNetUsers" u ON p."UserId" = u."Id";
 
 -- NOTAS:
+-- - Hosting: Railway (PostgreSQL)
 -- - A migration já adicionou a coluna UserId na tabela Psicologos
 -- - Este script vincula o psicólogo existente ao usuário do AspNetUsers
 -- - Após executar, os prontuários serão filtrados corretamente por psicólogo
+-- - Cada psicólogo verá apenas seus próprios prontuários
