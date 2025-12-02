@@ -55,13 +55,14 @@
         </div>
         <div class="col-md-6">
             <label class="form-label">Psicólogo</label>
-            <select asp-for="Prontuario.PsicologoId" class="form-select" required>
-                <option value="">Selecione...</option>
+            <select asp-for="Prontuario.PsicologoId" class="form-select" required disabled>
                 @foreach (var psicologo in Model.Psicologos)
                 {
                     <option value="@psicologo.Id" selected="@(Model.Prontuario.PsicologoId == psicologo.Id)">@psicologo.Nome</option>
                 }
             </select>
+            <input type="hidden" asp-for="Prontuario.PsicologoId" />
+            <small class="form-text text-muted">Psicólogo pré-selecionado automaticamente</small>
         </div>
         <div class="col-md-4">
             <label class="form-label">Data Sessão</label>

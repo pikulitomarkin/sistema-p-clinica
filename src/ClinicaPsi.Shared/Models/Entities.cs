@@ -67,6 +67,9 @@ public class Psicologo
 {
     public int Id { get; set; }
     
+    // Relacionamento com AspNetUsers
+    public string? UserId { get; set; }
+    
     [Required(ErrorMessage = "Nome é obrigatório")]
     [StringLength(100, ErrorMessage = "Nome deve ter no máximo 100 caracteres")]
     public string Nome { get; set; } = string.Empty;

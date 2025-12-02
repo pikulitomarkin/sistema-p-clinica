@@ -55,6 +55,9 @@ public class CadastroModel : PageModel
             Pacientes = await _pacienteService.GetAllAsync();
             Psicologos = await _psicologoService.GetAllAsync();
 
+            // Obter userId (GUID) do usuário logado
+            string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
             if (id.HasValue)
             {
                 var prontuario = await _prontuarioService.ObterPorIdAsync(id.Value);
@@ -65,6 +68,16 @@ public class CadastroModel : PageModel
                 else
                 {
                     MensagemErro = "Prontuário não encontrado.";
+                }
+            }
+            else if (!string.IsNullOrEmpty(userId))
+            {
+                // Pré-selecionar o psicólogo logado para novo prontuário
+                var psicologoLogado = Psicologos.FirstOrDefault(p => p.UserId == userId);
+                if (psicologoLogado != null)
+                {
+                    Prontuario.PsicologoId = psicologoLogado.Id;
+                    _logger.LogInformation($"Psicólogo pré-selecionado: {psicologoLogado.Nome} (ID: {psicologoLogado.Id})");
                 }
             }
         }

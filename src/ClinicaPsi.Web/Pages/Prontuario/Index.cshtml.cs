@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using System.Linq;
 
 namespace ClinicaPsi.Web.Pages.Prontuario;
 
@@ -13,12 +14,14 @@ public class IndexModel : PageModel
 {
     private readonly ProntuarioService _prontuarioService;
     private readonly ConsultaService _consultaService;
+    private readonly PsicologoService _psicologoService;
     private readonly ILogger<IndexModel> _logger;
 
-    public IndexModel(ProntuarioService prontuarioService, ConsultaService consultaService, ILogger<IndexModel> logger)
+    public IndexModel(ProntuarioService prontuarioService, ConsultaService consultaService, PsicologoService psicologoService, ILogger<IndexModel> logger)
     {
         _prontuarioService = prontuarioService;
         _consultaService = consultaService;
+        _psicologoService = psicologoService;
         _logger = logger;
     }
 
@@ -33,11 +36,22 @@ public class IndexModel : PageModel
     {
         try
         {
-            int psicologoId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            // Obter userId (GUID) do usuário logado
+            string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
-            if (psicologoId == 0)
+            if (string.IsNullOrEmpty(userId))
             {
                 MensagemErro = "Não foi possível identificar o psicólogo logado.";
+                return;
+            }
+
+            // Buscar psicólogo pelo UserId
+            var todosPsicologos = await _psicologoService.GetAllAsync();
+            var psicologo = todosPsicologos.FirstOrDefault(p => p.UserId == userId);
+            
+            if (psicologo == null)
+            {
+                MensagemErro = "Psicólogo não encontrado. Verifique se seu cadastro está completo.";
                 return;
             }
 
@@ -46,17 +60,19 @@ public class IndexModel : PageModel
             {
                 // Filtrar por paciente específico
                 Prontuarios = await _prontuarioService.ObterPorPacienteAsync(pacienteId.Value);
+                // Filtrar apenas os do psicólogo logado
+                Prontuarios = Prontuarios?.Where(p => p.PsicologoId == psicologo.Id).ToList();
             }
             else
             {
-                Prontuarios = await _prontuarioService.ObterPorPsicologoAsync(psicologoId);
+                Prontuarios = await _prontuarioService.ObterPorPsicologoAsync(psicologo.Id);
             }
 
             // Calcular estatísticas
             TotalProntuarios = Prontuarios?.Count ?? 0;
             ProntuariosFinalizados = Prontuarios?.Count(p => p.Finalizado) ?? 0;
 
-            _logger.LogInformation($"Carregados {TotalProntuarios} prontuários para psicólogo {psicologoId}");
+            _logger.LogInformation($"Carregados {TotalProntuarios} prontuários para psicólogo {psicologo.Nome} (ID: {psicologo.Id})");
         }
         catch (Exception ex)
         {
