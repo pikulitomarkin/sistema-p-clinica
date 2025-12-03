@@ -1,7 +1,8 @@
-const venom = require('venom-bot');
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
+const QRCode = require('qrcode');
 require('dotenv').config();
 
 const app = express();
@@ -16,150 +17,123 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Armazenar clientes Venom-Bot
+// Armazenar clientes WhatsApp Web
 const clients = new Map();
-const initializingClients = new Map();
+const qrCodes = new Map();
 
-// Inicializar sessão Venom-Bot
-async function initSession(sessionName = 'default', forceNew = false) {
-  // Se já existe um cliente conectado, retornar (a menos que forceNew)
-  if (clients.has(sessionName) && !forceNew) {
-    console.log(`Sessão ${sessionName} já existe, reutilizando...`);
-    return clients.get(sessionName);
-  }
+// Criar cliente WhatsApp Web
+function createClient(sessionName = 'default') {
+  console.log(`[${sessionName}] Criando novo cliente WhatsApp Web...`);
 
-  // Se forceNew, fechar e remover cliente existente
-  if (forceNew && clients.has(sessionName)) {
-    console.log(`Forçando nova sessão, fechando cliente existente...`);
-    try {
-      const oldClient = clients.get(sessionName);
-      await oldClient.close();
-    } catch (e) {
-      console.log(`Erro ao fechar cliente antigo:`, e.message);
+  const client = new Client({
+    authStrategy: new LocalAuth({
+      clientId: sessionName,
+      dataPath: './sessions'
+    }),
+    puppeteer: {
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu',
+        '--disable-web-security'
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium'
     }
-    clients.delete(sessionName);
-  }
-
-  // Se já está inicializando, aguardar (a menos que forceNew)
-  if (initializingClients.has(sessionName) && !forceNew) {
-    console.log(`Sessão ${sessionName} já está sendo inicializada, aguardando...`);
-    return initializingClients.get(sessionName);
-  }
-
-  // Se forceNew, cancelar inicialização anterior
-  if (forceNew && initializingClients.has(sessionName)) {
-    console.log(`Forçando nova sessão, cancelando inicialização anterior...`);
-    initializingClients.delete(sessionName);
-  }
-
-  console.log(`Iniciando nova sessão: ${sessionName} (forceNew: ${forceNew})`);
-
-  // Deletar tokens antigos se forceNew (força geração de QR Code)
-  if (forceNew) {
-    const fs = require('fs');
-    const path = require('path');
-    const tokenPath = path.join(__dirname, 'tokens', sessionName);
-    console.log(`Deletando tokens antigos em: ${tokenPath}`);
-    try {
-      if (fs.existsSync(tokenPath)) {
-        fs.rmSync(tokenPath, { recursive: true, force: true });
-        console.log(`Tokens deletados com sucesso!`);
-      } else {
-        console.log(`Pasta de tokens não existe, prosseguindo...`);
-      }
-    } catch (e) {
-      console.log(`Erro ao deletar tokens:`, e.message);
-    }
-  }
-
-  // Marcar como inicializando
-  const initPromise = venom.create({
-    session: sessionName,
-    multidevice: true,
-    disableWelcome: true,
-    updatesLog: false,
-    logQR: true,  // IMPORTANTE: true para capturar QR Code via catchQR
-    headless: true,
-    useChrome: false,  // Usar Chromium ao invés de Chrome
-    browserArgs: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--disable-gpu',
-      '--disable-web-security',
-      '--disable-features=IsolateOrigins,site-per-process',
-      '--disable-blink-features=AutomationControlled'
-    ],
-    autoClose: 0,  // Não fechar automaticamente
-    catchQR: (base64Qr, asciiQR, attempts, urlCode) => {
-      console.log(`========== QR CODE CAPTURADO ==========`);
-      console.log(`Sessão: ${sessionName}`);
-      console.log(`Tentativa: ${attempts}`);
-      console.log(`QR Code (primeiros 50 chars): ${base64Qr.substring(0, 50)}...`);
-      console.log(`========================================`);
-      // Salvar QR Code no banco
-      saveQRCode(sessionName, base64Qr);
-    },
-    statusFind: (statusSession, session) => {
-      console.log(`Status: ${statusSession} - Sessão: ${session}`);
-      updateSessionStatus(sessionName, statusSession);
-      
-      // Se conectou com sucesso, remover QR Code do banco
-      if (statusSession === 'isLogged' || statusSession === 'qrReadSuccess') {
-        pool.query(`
-          UPDATE "WhatsAppSessions" 
-          SET "QRCode" = NULL, "Status" = 'Conectado', "UpdatedAt" = NOW()
-          WHERE "SessionName" = $1
-        `, [sessionName]).catch(err => console.error('Erro ao limpar QR Code:', err));
-      }
-    }
-  }).then(client => {
-    clients.set(sessionName, client);
-    initializingClients.delete(sessionName);
-    return client;
-  }).catch(err => {
-    console.error(`Erro ao inicializar sessão ${sessionName}:`, err);
-    initializingClients.delete(sessionName);
-    throw err;
   });
 
-  initializingClients.set(sessionName, initPromise);
-  return initPromise;
+  // Evento: QR Code gerado
+  client.on('qr', async (qr) => {
+    console.log(`========== QR CODE GERADO ==========`);
+    console.log(`Sessão: ${sessionName}`);
+    
+    try {
+      // Converter para base64
+      const qrCodeBase64 = await QRCode.toDataURL(qr);
+      console.log(`QR Code convertido para base64 (${qrCodeBase64.length} chars)`);
+      
+      // Armazenar temporariamente
+      qrCodes.set(sessionName, qrCodeBase64);
+      
+      // Salvar no banco
+      await saveQRCode(sessionName, qrCodeBase64);
+      
+      console.log(`========================================`);
+    } catch (error) {
+      console.error(`[${sessionName}] Erro ao processar QR Code:`, error);
+    }
+  });
+
+  // Evento: Cliente pronto
+  client.on('ready', async () => {
+    console.log(`[${sessionName}] Cliente conectado e pronto!`);
+    
+    try {
+      const info = client.info;
+      await updateSessionStatus(sessionName, 'Conectado', info.wid.user);
+      
+      // Limpar QR Code do banco
+      await pool.query(
+        'UPDATE "WhatsAppSessions" SET "QRCode" = NULL, "UpdatedAt" = NOW() WHERE "SessionName" = $1',
+        [sessionName]
+      );
+    } catch (error) {
+      console.error(`[${sessionName}] Erro ao atualizar status:`, error);
+    }
+  });
+
+  // Evento: Autenticação
+  client.on('authenticated', () => {
+    console.log(`[${sessionName}] Autenticado com sucesso!`);
+  });
+
+  // Evento: Falha de autenticação
+  client.on('auth_failure', async (msg) => {
+    console.error(`[${sessionName}] Falha na autenticação:`, msg);
+    await updateSessionStatus(sessionName, 'Erro de Autenticação');
+  });
+
+  // Evento: Desconectado
+  client.on('disconnected', async (reason) => {
+    console.log(`[${sessionName}] Desconectado:`, reason);
+    await updateSessionStatus(sessionName, 'Desconectado');
+    clients.delete(sessionName);
+  });
+
+  return client;
 }
 
 // Salvar QR Code no banco
 async function saveQRCode(sessionName, qrCode) {
   try {
-    console.log(`Salvando QR Code no banco para sessão ${sessionName}...`);
+    console.log(`[${sessionName}] Salvando QR Code no banco...`);
     await pool.query(`
       INSERT INTO "WhatsAppSessions" ("SessionName", "Status", "QRCode", "QRCodeExpiry", "CreatedAt", "UpdatedAt")
       VALUES ($1, 'QRCode', $2, NOW() + INTERVAL '2 minutes', NOW(), NOW())
       ON CONFLICT ("SessionName") 
       DO UPDATE SET "QRCode" = $2, "Status" = 'QRCode', "QRCodeExpiry" = NOW() + INTERVAL '2 minutes', "UpdatedAt" = NOW()
     `, [sessionName, qrCode]);
-    console.log(`QR Code salvo com sucesso no banco!`);
+    console.log(`[${sessionName}] QR Code salvo com sucesso!`);
   } catch (error) {
-    console.error('Erro ao salvar QR Code no banco:', error);
+    console.error(`[${sessionName}] Erro ao salvar QR Code:`, error);
   }
 }
 
 // Atualizar status da sessão
-async function updateSessionStatus(sessionName, status) {
+async function updateSessionStatus(sessionName, status, phoneNumber = null) {
   try {
-    const dbStatus = status === 'isLogged' ? 'Conectado' : 
-                     status === 'qrReadSuccess' ? 'Conectado' :
-                     status === 'qrReadFail' ? 'Erro' : 'Desconectado';
-    
     await pool.query(`
       UPDATE "WhatsAppSessions" 
-      SET "Status" = $1, "UpdatedAt" = NOW(), "LastConnection" = CASE WHEN $1 = 'Conectado' THEN NOW() ELSE "LastConnection" END
-      WHERE "SessionName" = $2
-    `, [dbStatus, sessionName]);
+      SET "Status" = $1, "PhoneNumber" = COALESCE($2, "PhoneNumber"), "UpdatedAt" = NOW(), 
+          "LastConnection" = CASE WHEN $1 = 'Conectado' THEN NOW() ELSE "LastConnection" END
+      WHERE "SessionName" = $3
+    `, [status, phoneNumber, sessionName]);
   } catch (error) {
-    console.error('Erro ao atualizar status:', error);
+    console.error(`[${sessionName}] Erro ao atualizar status:`, error);
   }
 }
 
@@ -176,16 +150,16 @@ app.get('/status', async (req, res) => {
       return res.json({ connected: false, phoneNumber: null });
     }
 
-    const status = await client.getConnectionState();
-    const hostDevice = await client.getHostDevice();
+    const state = await client.getState();
+    const info = client.info;
     
     res.json({
-      connected: status === 'CONNECTED',
-      phoneNumber: hostDevice?.id?.user || null,
-      status: status
+      connected: state === 'CONNECTED',
+      phoneNumber: info?.wid?.user || null,
+      status: state
     });
   } catch (error) {
-    console.error('Erro ao obter status:', error);
+    console.error(`[${session}] Erro ao obter status:`, error);
     res.status(500).json({ error: 'Erro ao verificar status' });
   }
 });
@@ -196,59 +170,14 @@ app.get('/qrcode', async (req, res) => {
   
   try {
     console.log(`[/qrcode] ========== NOVA REQUISIÇÃO ==========`);
-    console.log(`[/qrcode] Sessão solicitada: ${session}`);
-    console.log(`[/qrcode] Clientes ativos: ${clients.size}`);
-    console.log(`[/qrcode] Clientes inicializando: ${initializingClients.size}`);
+    console.log(`[/qrcode] Sessão: ${session}`);
     
-    // Verificar se já está conectado
-    if (clients.has(session)) {
-      const client = clients.get(session);
-      try {
-        const state = await client.getConnectionState();
-        console.log(`[/qrcode] Estado da conexão: ${state}`);
-        if (state === 'CONNECTED') {
-          console.log(`[/qrcode] Sessão ${session} já está conectada`);
-          return res.json({ 
-            error: 'Já conectado',
-            message: 'A sessão já está conectada ao WhatsApp'
-          });
-        }
-      } catch (err) {
-        console.log(`[/qrcode] Cliente existe mas erro ao verificar estado:`, err.message);
-        console.log(`[/qrcode] Removendo cliente e reiniciando...`);
-        try {
-          await client.close();
-        } catch (e) {}
-        clients.delete(session);
-        initializingClients.delete(session);
-      }
+    // Verificar se já tem QR Code gerado recentemente
+    if (qrCodes.has(session)) {
+      console.log(`[/qrcode] QR Code em memória encontrado`);
+      return res.json({ qrCode: qrCodes.get(session), expired: false });
     }
-    
-    // Se já está inicializando, aguardar
-    if (initializingClients.has(session)) {
-      console.log(`[/qrcode] Sessão já está sendo inicializada, aguardando...`);
-      // Aguardar QR Code ser salvo (timeout 60s)
-      for (let i = 0; i < 120; i++) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const qrResult = await pool.query(
-          'SELECT "QRCode" FROM "WhatsAppSessions" WHERE "SessionName" = $1 AND "QRCode" IS NOT NULL',
-          [session]
-        );
-        
-        if (qrResult.rows.length > 0 && qrResult.rows[0].QRCode) {
-          console.log(`[/qrcode] QR Code encontrado no banco!`);
-          return res.json({ qrCode: qrResult.rows[0].QRCode, expired: false });
-        }
-        
-        // Log a cada 10 segundos
-        if (i % 20 === 0 && i > 0) {
-          console.log(`[/qrcode] Aguardando... ${i/2} segundos`);
-        }
-      }
-      console.error(`[/qrcode] Timeout: QR Code não foi gerado em 60 segundos`);
-      return res.status(408).json({ error: 'Timeout ao gerar QR Code' });
-    }
-    
+
     // Buscar QR Code válido do banco
     const result = await pool.query(
       'SELECT "QRCode", "QRCodeExpiry" FROM "WhatsAppSessions" WHERE "SessionName" = $1',
@@ -260,58 +189,76 @@ app.get('/qrcode', async (req, res) => {
       if (qrCodeExpiry > new Date()) {
         console.log(`[/qrcode] QR Code válido encontrado no banco`);
         return res.json({ qrCode: result.rows[0].QRCode, expired: false });
-      } else {
-        console.log(`[/qrcode] QR Code expirado, gerando novo...`);
       }
     }
 
-    // Limpar QR Code expirado do banco
+    // Se já existe cliente, verificar estado
+    if (clients.has(session)) {
+      const client = clients.get(session);
+      const state = await client.getState().catch(() => 'UNKNOWN');
+      
+      if (state === 'CONNECTED') {
+        console.log(`[/qrcode] Cliente já está conectado`);
+        return res.json({ 
+          error: 'Já conectado',
+          message: 'A sessão já está conectada ao WhatsApp'
+        });
+      }
+      
+      console.log(`[/qrcode] Cliente existe mas não está conectado (${state}), destruindo...`);
+      try {
+        await client.destroy();
+      } catch (e) {}
+      clients.delete(session);
+    }
+
+    // Limpar QR Code expirado
+    qrCodes.delete(session);
     await pool.query(
       'UPDATE "WhatsAppSessions" SET "QRCode" = NULL, "Status" = $1, "UpdatedAt" = NOW() WHERE "SessionName" = $2',
       ['Gerando QR Code', session]
     );
 
-    console.log(`[/qrcode] Iniciando nova sessão com forceNew=true...`);
-    
-    // Iniciar nova sessão para gerar QR Code (forçar nova sessão para gerar QR Code)
-    initSession(session, true).catch(err => {
-      console.error(`[/qrcode] Erro ao iniciar sessão:`, err);
-      initializingClients.delete(session);
-    });
-    
-    // Aguardar QR Code ser salvo (timeout 60s)
-    console.log(`[/qrcode] Aguardando QR Code ser gerado...`);
-    for (let i = 0; i < 120; i++) {
+    console.log(`[/qrcode] Criando novo cliente...`);
+    const client = createClient(session);
+    clients.set(session, client);
+
+    // Inicializar cliente
+    console.log(`[/qrcode] Inicializando cliente...`);
+    client.initialize();
+
+    // Aguardar QR Code (timeout 90s)
+    console.log(`[/qrcode] Aguardando QR Code...`);
+    for (let i = 0; i < 180; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Verificar memória
+      if (qrCodes.has(session)) {
+        console.log(`[/qrcode] QR Code gerado com sucesso!`);
+        return res.json({ qrCode: qrCodes.get(session), expired: false });
+      }
+      
+      // Verificar banco
       const qrResult = await pool.query(
         'SELECT "QRCode" FROM "WhatsAppSessions" WHERE "SessionName" = $1 AND "QRCode" IS NOT NULL',
         [session]
       );
       
       if (qrResult.rows.length > 0 && qrResult.rows[0].QRCode) {
-        console.log(`[/qrcode] QR Code gerado com sucesso após ${i/2} segundos!`);
+        console.log(`[/qrcode] QR Code encontrado no banco!`);
+        qrCodes.set(session, qrResult.rows[0].QRCode);
         return res.json({ qrCode: qrResult.rows[0].QRCode, expired: false });
       }
       
-      // Log a cada 10 segundos
       if (i % 20 === 0 && i > 0) {
-        console.log(`[/qrcode] Aguardando... ${i/2} segundos`);
+        console.log(`[/qrcode] Aguardando... ${i/2}s`);
       }
     }
 
-    console.error(`[/qrcode] Timeout: QR Code não foi gerado em 60 segundos`);
-    // Limpar inicialização falhada
-    initializingClients.delete(session);
-    if (clients.has(session)) {
-      try {
-        const client = clients.get(session);
-        await client.close();
-      } catch (e) {}
-      clients.delete(session);
-    }
+    console.error(`[/qrcode] Timeout após 90 segundos`);
     res.status(408).json({ error: 'Timeout ao gerar QR Code' });
   } catch (error) {
-    console.error('[/qrcode] Erro ao gerar QR Code:', error);
+    console.error('[/qrcode] Erro:', error);
     res.status(500).json({ error: 'Erro ao gerar QR Code', details: error.message });
   }
 });
@@ -325,20 +272,25 @@ app.post('/send', async (req, res) => {
   }
 
   try {
-    let client = clients.get(session);
+    const client = clients.get(session);
     
     if (!client) {
-      client = await initSession(session);
+      return res.status(400).json({ error: 'Sessão não iniciada' });
     }
 
-    // Formatar número (adicionar @c.us se necessário)
-    const formattedNumber = number.includes('@c.us') ? number : `${number}@c.us`;
+    const state = await client.getState();
+    if (state !== 'CONNECTED') {
+      return res.status(400).json({ error: 'Cliente não está conectado' });
+    }
+
+    // Formatar número
+    const chatId = number.includes('@c.us') ? number : `${number}@c.us`;
     
-    await client.sendText(formattedNumber, message);
+    await client.sendMessage(chatId, message);
     
     res.json({ success: true, message: 'Mensagem enviada' });
   } catch (error) {
-    console.error('Erro ao enviar mensagem:', error);
+    console.error(`[${session}] Erro ao enviar mensagem:`, error);
     res.status(500).json({ error: 'Erro ao enviar mensagem', details: error.message });
   }
 });
@@ -351,9 +303,11 @@ app.post('/disconnect', async (req, res) => {
     const client = clients.get(session);
     
     if (client) {
-      await client.close();
+      await client.destroy();
       clients.delete(session);
     }
+
+    qrCodes.delete(session);
 
     await pool.query(
       'UPDATE "WhatsAppSessions" SET "Status" = $1, "QRCode" = NULL, "UpdatedAt" = NOW() WHERE "SessionName" = $2',
@@ -362,79 +316,63 @@ app.post('/disconnect', async (req, res) => {
 
     res.json({ success: true, message: 'Desconectado' });
   } catch (error) {
-    console.error('Erro ao desconectar:', error);
+    console.error(`[${session}] Erro ao desconectar:`, error);
     res.status(500).json({ error: 'Erro ao desconectar' });
   }
 });
 
-// POST /reset - Resetar sessão (limpar tokens e forçar novo QR Code)
+// POST /reset - Resetar sessão
 app.post('/reset', async (req, res) => {
   const session = req.query.session || 'default';
 
   try {
     console.log(`[/reset] Resetando sessão: ${session}`);
     
-    // Fechar cliente se existir
+    // Destruir cliente
     if (clients.has(session)) {
       try {
-        const client = clients.get(session);
-        await client.close();
-      } catch (e) {
-        console.log(`Erro ao fechar cliente:`, e.message);
-      }
+        await clients.get(session).destroy();
+      } catch (e) {}
       clients.delete(session);
     }
 
-    // Remover da fila de inicialização
-    if (initializingClients.has(session)) {
-      initializingClients.delete(session);
-    }
+    qrCodes.delete(session);
 
-    // Deletar tokens e cache
+    // Deletar sessão do disco
     const fs = require('fs');
     const path = require('path');
-    
-    // Deletar tokens
-    const tokenPath = path.join(__dirname, 'tokens', session);
-    console.log(`Deletando tokens em: ${tokenPath}`);
+    const sessionPath = path.join(__dirname, 'sessions', `session-${session}`);
+    console.log(`Deletando sessão em: ${sessionPath}`);
     try {
-      if (fs.existsSync(tokenPath)) {
-        fs.rmSync(tokenPath, { recursive: true, force: true });
-        console.log(`Tokens deletados!`);
+      if (fs.existsSync(sessionPath)) {
+        fs.rmSync(sessionPath, { recursive: true, force: true });
+        console.log(`Sessão deletada!`);
       }
     } catch (e) {
-      console.log(`Erro ao deletar tokens:`, e.message);
-    }
-    
-    // Deletar pasta tokens inteira para garantir
-    const allTokensPath = path.join(__dirname, 'tokens');
-    console.log(`Limpando toda pasta tokens: ${allTokensPath}`);
-    try {
-      if (fs.existsSync(allTokensPath)) {
-        fs.rmSync(allTokensPath, { recursive: true, force: true });
-        console.log(`Pasta tokens completamente deletada!`);
-      }
-    } catch (e) {
-      console.log(`Erro ao deletar pasta tokens:`, e.message);
+      console.log(`Erro ao deletar sessão:`, e.message);
     }
 
-    // Limpar banco de dados
+    // Limpar banco
     await pool.query(
       'UPDATE "WhatsAppSessions" SET "Status" = $1, "QRCode" = NULL, "AuthToken" = NULL, "PhoneNumber" = NULL, "UpdatedAt" = NOW() WHERE "SessionName" = $2',
       ['Reset', session]
     );
 
-    console.log(`[/reset] Sessão ${session} resetada com sucesso!`);
-    res.json({ success: true, message: 'Sessão resetada com sucesso' });
+    console.log(`[/reset] Sessão ${session} resetada!`);
+    res.json({ success: true, message: 'Sessão resetada' });
   } catch (error) {
-    console.error('[/reset] Erro ao resetar sessão:', error);
+    console.error('[/reset] Erro:', error);
     res.status(500).json({ error: 'Erro ao resetar sessão', details: error.message });
   }
 });
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', sessions: clients.size });
+  res.json({ 
+    status: 'ok', 
+    sessions: clients.size,
+    library: 'whatsapp-web.js'
+  });
 });
 
 // Debug: Testar conexão com banco
@@ -451,32 +389,9 @@ app.get('/debug/db', async (req, res) => {
     res.json({
       database: 'connected',
       time: result.rows[0].now,
-      tableExists: tables.rows.length > 0
+      tableExists: tables.rows.length > 0,
+      library: 'whatsapp-web.js v1.23.0'
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Criar tabela WhatsAppSessions
-app.post('/debug/create-table', async (req, res) => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS "WhatsAppSessions" (
-        "Id" SERIAL PRIMARY KEY,
-        "SessionName" TEXT NOT NULL UNIQUE,
-        "Status" TEXT NOT NULL,
-        "QRCode" TEXT,
-        "QRCodeExpiry" TIMESTAMP,
-        "AuthToken" TEXT,
-        "PhoneNumber" TEXT,
-        "LastConnection" TIMESTAMP,
-        "CreatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "UpdatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    
-    res.json({ success: true, message: 'Tabela WhatsAppSessions criada com sucesso!' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -484,7 +399,7 @@ app.post('/debug/create-table', async (req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`WhatsApp Bot API rodando na porta ${PORT}`);
+  console.log(`WhatsApp Bot API (whatsapp-web.js) rodando na porta ${PORT}`);
   console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
-  console.log('Aguardando requisições para inicializar sessões...');
+  console.log('Aguardando requisições...');
 });
