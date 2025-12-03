@@ -25,42 +25,56 @@ public class FixUserIdModel : PageModel
         {
             sb.AppendLine("=== FIX USERID DO PSICOLOGO ===\n");
 
+            // 1. Adicionar coluna UserId se não existir
+            try
+            {
+                sb.AppendLine("1. Verificando coluna UserId...");
+                await _context.Database.ExecuteSqlRawAsync(
+                    "ALTER TABLE \"Psicologos\" ADD COLUMN IF NOT EXISTS \"UserId\" TEXT NULL");
+                sb.AppendLine("✓ Coluna UserId verificada/criada\n");
+            }
+            catch (Exception ex)
+            {
+                sb.AppendLine($"⚠ Erro ao criar coluna (pode já existir): {ex.Message}\n");
+            }
+
+            // 2. Buscar dados
+            sb.AppendLine("2. Buscando dados...");
             var psicologos = await _context.Psicologos.ToListAsync();
             var usuarios = await _context.Users.ToListAsync();
+            sb.AppendLine($"✓ Psicologos: {psicologos.Count}");
+            sb.AppendLine($"✓ Usuarios: {usuarios.Count}\n");
 
-            sb.AppendLine($"Psicologos: {psicologos.Count}");
-            sb.AppendLine($"Usuarios: {usuarios.Count}\n");
-
+            // 3. Atualizar UserId
+            sb.AppendLine("3. Vinculando psicólogos com usuários...");
             int updated = 0;
+            
             foreach (var psi in psicologos)
             {
-                if (string.IsNullOrEmpty(psi.UserId))
+                var user = usuarios.FirstOrDefault(u => u.Email == psi.Email);
+                if (user != null)
                 {
-                    var user = usuarios.FirstOrDefault(u => u.Email == psi.Email);
-                    if (user != null)
-                    {
-                        psi.UserId = user.Id;
-                        updated++;
-                        sb.AppendLine($"✓ {psi.Nome} → UserId: {user.Id}");
-                    }
+                    // Atualizar diretamente via SQL
+                    await _context.Database.ExecuteSqlRawAsync(
+                        "UPDATE \"Psicologos\" SET \"UserId\" = {0} WHERE \"Id\" = {1}",
+                        user.Id, psi.Id);
+                    
+                    updated++;
+                    sb.AppendLine($"✓ {psi.Nome} ({psi.Email}) → UserId: {user.Id}");
+                }
+                else
+                {
+                    sb.AppendLine($"⚠ {psi.Nome} ({psi.Email}) → Sem usuário correspondente");
                 }
             }
 
-            if (updated > 0)
-            {
-                await _context.SaveChangesAsync();
-                sb.AppendLine($"\n✓ {updated} registro(s) atualizado(s)!");
-                Success = true;
-            }
-            else
-            {
-                sb.AppendLine("\n✓ Nenhuma atualização necessária (já configurado)");
-                Success = true;
-            }
+            sb.AppendLine($"\n✓ CONCLUÍDO: {updated} registro(s) atualizado(s)!");
+            Success = true;
         }
         catch (Exception ex)
         {
             sb.AppendLine($"\n✗ ERRO: {ex.Message}");
+            sb.AppendLine($"Stack: {ex.StackTrace}");
             Success = false;
         }
 
