@@ -76,8 +76,8 @@ namespace ClinicaPsi.Web.Pages.Admin
                     StatusInfo = new WhatsAppStatusInfo
                     {
                         Conectado = false,
-                        Status = sessao.Status,
-                        NomeSessao = sessao.SessionName,
+                        NumeroTelefone = sessao.PhoneNumber,
+                        SessionName = sessao.SessionName,
                         UltimaConexao = sessao.LastConnection
                     };
                     
@@ -148,18 +148,10 @@ namespace ClinicaPsi.Web.Pages.Admin
                 // Limpar número (remover espaços, traços, etc)
                 numeroTeste = new string(numeroTeste.Where(char.IsDigit).ToArray());
 
-                var sessao = await _whatsAppService.ObterSessaoAsync("default");
-                if (sessao == null)
-                {
-                    Mensagem = "Sessão WhatsApp não encontrada!";
-                    Sucesso = false;
-                    return Page();
-                }
-
                 var resultado = await _whatsAppService.EnviarMensagemAsync(
                     numeroTeste,
                     mensagemTeste,
-                    sessao
+                    "default"
                 );
 
                 if (resultado)

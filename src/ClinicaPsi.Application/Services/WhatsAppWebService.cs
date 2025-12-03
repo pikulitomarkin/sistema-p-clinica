@@ -47,7 +47,7 @@ public class WhatsAppWebService
         return session;
     }
 
-    public async Task<string?> GerarQRCodeAsync(string sessionName = "default")
+    public async Task<WhatsAppSession?> GerarQRCodeAsync(string sessionName = "default")
     {
         try
         {
@@ -67,7 +67,7 @@ public class WhatsAppWebService
                 session.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
-                return result?.QrCode;
+                return session;
             }
 
             _logger.LogWarning("Falha ao gerar QR Code: {StatusCode}", response.StatusCode);
@@ -198,5 +198,6 @@ public class WhatsAppStatusInfo
     public bool Conectado { get; set; }
     public string? NumeroTelefone { get; set; }
     public DateTime? UltimaConexao { get; set; }
+    public string SessionName { get; set; } = "default";
     public string Status { get; set; } = "Desconectado";
 }

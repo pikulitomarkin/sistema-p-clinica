@@ -12,8 +12,7 @@ AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar Data Protection para usar EFS (armazena
-mento compartilhado)
+// Configurar Data Protection para usar EFS (armazenamento compartilhado)
 // Isso garante que múltiplas instâncias possam compartilhar as chaves de criptografia
 try
 {
