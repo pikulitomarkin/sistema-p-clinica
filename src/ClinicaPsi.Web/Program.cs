@@ -45,12 +45,30 @@ builder.Services.AddRazorPages();
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>();
 
-// Configurar banco de dados com connection string do appsettings
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Data Source=clinicapsi.db";
+// Configurar banco de dados
+// Railway fornece DATABASE_URL no formato postgres://user:pass@host:port/db
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+if (!string.IsNullOrEmpty(connectionString))
+{
+    Console.WriteLine("DATABASE_URL detectada, convertendo para formato Npgsql...");
+    
+    // Converter de postgres:// para formato Npgsql
+    var uri = new Uri(connectionString);
+    var npgsqlConnection = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={uri.UserInfo.Split(':')[0]};Password={uri.UserInfo.Split(':')[1]};SSL Mode=Require;Trust Server Certificate=true";
+    connectionString = npgsqlConnection;
+    
+    Console.WriteLine($"Connection string convertida: {npgsqlConnection.Replace(uri.UserInfo.Split(':')[1], "***")}");
+}
+else
+{
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+        ?? "Data Source=clinicapsi.db";
+}
 
 // Detectar tipo de banco baseado na connection string
-var usePostgreSql = connectionString.Contains("Host=") || connectionString.Contains("Server=") && connectionString.Contains("Database=");
+var usePostgreSql = connectionString.Contains("Host=") || (connectionString.Contains("Server=") && connectionString.Contains("Database="));
+Console.WriteLine($"Usando PostgreSQL: {usePostgreSql}");
     
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
