@@ -233,6 +233,30 @@ app.get('/debug/db', async (req, res) => {
   }
 });
 
+// Criar tabela WhatsAppSessions
+app.post('/debug/create-table', async (req, res) => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "WhatsAppSessions" (
+        "Id" SERIAL PRIMARY KEY,
+        "SessionName" TEXT NOT NULL UNIQUE,
+        "Status" TEXT NOT NULL,
+        "QRCode" TEXT,
+        "QRCodeExpiry" TIMESTAMP,
+        "AuthToken" TEXT,
+        "PhoneNumber" TEXT,
+        "LastConnection" TIMESTAMP,
+        "CreatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "UpdatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    res.json({ success: true, message: 'Tabela WhatsAppSessions criada com sucesso!' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`WhatsApp Bot API rodando na porta ${PORT}`);
