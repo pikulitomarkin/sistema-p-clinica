@@ -1,0 +1,24 @@
+@page
+@model FixUserIdModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix UserId</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+        pre { background: #2d2d2d; padding: 15px; border-radius: 5px; overflow: auto; }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix UserId - Executar SQL</h1>
+    @if (Model.Result != null)
+    {
+        <pre class="@(Model.Success ? "success" : "error")">@Model.Result</pre>
+    }
+</body>
+</html>
