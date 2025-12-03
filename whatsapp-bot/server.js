@@ -78,7 +78,7 @@ async function initSession(sessionName = 'default', forceNew = false) {
     multidevice: true,
     disableWelcome: true,
     updatesLog: false,
-    logQR: false,
+    logQR: true,  // IMPORTANTE: true para capturar QR Code via catchQR
     catchQR: (base64Qr, asciiQR, attempts, urlCode) => {
       console.log(`========== QR CODE CAPTURADO ==========`);
       console.log(`Sessão: ${sessionName}`);
