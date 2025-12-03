@@ -58,14 +58,16 @@ async function initSession(sessionName = 'default') {
 // Salvar QR Code no banco
 async function saveQRCode(sessionName, qrCode) {
   try {
+    console.log(`Salvando QR Code no banco para sessão ${sessionName}...`);
     await pool.query(`
       INSERT INTO "WhatsAppSessions" ("SessionName", "Status", "QRCode", "QRCodeExpiry", "CreatedAt", "UpdatedAt")
       VALUES ($1, 'QRCode', $2, NOW() + INTERVAL '2 minutes', NOW(), NOW())
       ON CONFLICT ("SessionName") 
       DO UPDATE SET "QRCode" = $2, "Status" = 'QRCode', "QRCodeExpiry" = NOW() + INTERVAL '2 minutes', "UpdatedAt" = NOW()
     `, [sessionName, qrCode]);
+    console.log(`QR Code salvo com sucesso no banco!`);
   } catch (error) {
-    console.error('Erro ao salvar QR Code:', error);
+    console.error('Erro ao salvar QR Code no banco:', error);
   }
 }
 
