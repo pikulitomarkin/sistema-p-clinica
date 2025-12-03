@@ -44,7 +44,11 @@ async function initSession(sessionName = 'default') {
     updatesLog: false,
     logQR: false,
     catchQR: (base64Qr, asciiQR, attempts, urlCode) => {
-      console.log(`QR Code gerado para ${sessionName} (tentativa ${attempts})`);
+      console.log(`========== QR CODE CAPTURADO ==========`);
+      console.log(`Sessão: ${sessionName}`);
+      console.log(`Tentativa: ${attempts}`);
+      console.log(`QR Code (primeiros 50 chars): ${base64Qr.substring(0, 50)}...`);
+      console.log(`========================================`);
       // Salvar QR Code no banco
       saveQRCode(sessionName, base64Qr);
     },
@@ -140,13 +144,17 @@ app.get('/qrcode', async (req, res) => {
   const session = req.query.sessionName || req.query.session || 'default';
   
   try {
-    console.log(`[/qrcode] Requisição recebida para sessão: ${session}`);
+    console.log(`[/qrcode] ========== NOVA REQUISIÇÃO ==========`);
+    console.log(`[/qrcode] Sessão solicitada: ${session}`);
+    console.log(`[/qrcode] Clientes ativos: ${clients.size}`);
+    console.log(`[/qrcode] Clientes inicializando: ${initializingClients.size}`);
     
     // Verificar se já está conectado
     if (clients.has(session)) {
       const client = clients.get(session);
       try {
         const state = await client.getConnectionState();
+        console.log(`[/qrcode] Estado da conexão: ${state}`);
         if (state === 'CONNECTED') {
           console.log(`[/qrcode] Sessão ${session} já está conectada`);
           return res.json({ 
@@ -155,9 +163,39 @@ app.get('/qrcode', async (req, res) => {
           });
         }
       } catch (err) {
-        console.log(`[/qrcode] Cliente existe mas não está conectado, reiniciando...`);
+        console.log(`[/qrcode] Cliente existe mas erro ao verificar estado:`, err.message);
+        console.log(`[/qrcode] Removendo cliente e reiniciando...`);
+        try {
+          await client.close();
+        } catch (e) {}
         clients.delete(session);
+        initializingClients.delete(session);
       }
+    }
+    
+    // Se já está inicializando, aguardar
+    if (initializingClients.has(session)) {
+      console.log(`[/qrcode] Sessão já está sendo inicializada, aguardando...`);
+      // Aguardar QR Code ser salvo (timeout 60s)
+      for (let i = 0; i < 120; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const qrResult = await pool.query(
+          'SELECT "QRCode" FROM "WhatsAppSessions" WHERE "SessionName" = $1 AND "QRCode" IS NOT NULL',
+          [session]
+        );
+        
+        if (qrResult.rows.length > 0 && qrResult.rows[0].QRCode) {
+          console.log(`[/qrcode] QR Code encontrado no banco!`);
+          return res.json({ qrCode: qrResult.rows[0].QRCode, expired: false });
+        }
+        
+        // Log a cada 10 segundos
+        if (i % 20 === 0 && i > 0) {
+          console.log(`[/qrcode] Aguardando... ${i/2} segundos`);
+        }
+      }
+      console.error(`[/qrcode] Timeout: QR Code não foi gerado em 60 segundos`);
+      return res.status(408).json({ error: 'Timeout ao gerar QR Code' });
     }
     
     // Buscar QR Code válido do banco
@@ -184,14 +222,15 @@ app.get('/qrcode', async (req, res) => {
 
     console.log(`[/qrcode] Iniciando nova sessão...`);
     
-    // Iniciar nova sessão para gerar QR Code
+    // Iniciar nova sessão para gerar QR Code (sem await para não bloquear)
     initSession(session).catch(err => {
       console.error(`[/qrcode] Erro ao iniciar sessão:`, err);
+      initializingClients.delete(session);
     });
     
-    // Aguardar QR Code ser salvo (timeout 30s)
+    // Aguardar QR Code ser salvo (timeout 60s)
     console.log(`[/qrcode] Aguardando QR Code ser gerado...`);
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 120; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       const qrResult = await pool.query(
         'SELECT "QRCode" FROM "WhatsAppSessions" WHERE "SessionName" = $1 AND "QRCode" IS NOT NULL',
@@ -199,12 +238,26 @@ app.get('/qrcode', async (req, res) => {
       );
       
       if (qrResult.rows.length > 0 && qrResult.rows[0].QRCode) {
-        console.log(`[/qrcode] QR Code gerado com sucesso!`);
+        console.log(`[/qrcode] QR Code gerado com sucesso após ${i/2} segundos!`);
         return res.json({ qrCode: qrResult.rows[0].QRCode, expired: false });
+      }
+      
+      // Log a cada 10 segundos
+      if (i % 20 === 0 && i > 0) {
+        console.log(`[/qrcode] Aguardando... ${i/2} segundos`);
       }
     }
 
-    console.error(`[/qrcode] Timeout: QR Code não foi gerado em 30 segundos`);
+    console.error(`[/qrcode] Timeout: QR Code não foi gerado em 60 segundos`);
+    // Limpar inicialização falhada
+    initializingClients.delete(session);
+    if (clients.has(session)) {
+      try {
+        const client = clients.get(session);
+        await client.close();
+      } catch (e) {}
+      clients.delete(session);
+    }
     res.status(408).json({ error: 'Timeout ao gerar QR Code' });
   } catch (error) {
     console.error('[/qrcode] Erro ao gerar QR Code:', error);
