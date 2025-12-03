@@ -317,10 +317,5 @@ app.post('/debug/create-table', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`WhatsApp Bot API rodando na porta ${PORT}`);
   console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  console.log('Aguardando requisições para inicializar sessões...');
 });
-
-// Inicializar sessão padrão ao iniciar
-setTimeout(() => {
-  console.log('Inicializando sessão padrão...');
-  initSession('default').catch(console.error);
-}, 2000);
