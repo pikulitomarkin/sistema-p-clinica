@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:20-slim
 
 # Instalar dependências do Puppeteer/Chromium
 RUN apt-get update && apt-get install -y \
