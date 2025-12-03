@@ -16,12 +16,27 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<AuditoriaUsuario> AuditoriasUsuarios => Set<AuditoriaUsuario>();
     public DbSet<ConfiguracaoSistema> ConfiguracoesSistema => Set<ConfiguracaoSistema>();
     public DbSet<ProntuarioEletronico> ProntuariosEletronicos => Set<ProntuarioEletronico>();
+    public DbSet<WhatsAppSession> WhatsAppSessions => Set<WhatsAppSession>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configuração simplificada - EnsureCreated cuidará da estrutura
+        // Configurar PostgreSQL para usar timestamp sem timezone globalmente
+        if (Database.IsNpgsql())
+        {
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entity.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetColumnType("timestamp without time zone");
+                    }
+                }
+            }
+        }
+
         modelBuilder.Entity<Paciente>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -166,6 +181,17 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany()
                 .HasForeignKey(e => e.ConsultaId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<WhatsAppSession>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.SessionName).IsUnique();
+            entity.Property(e => e.SessionName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.PhoneNumber).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
     }
 }
