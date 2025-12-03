@@ -1,0 +1,246 @@
+@page
+@model ClinicaPsi.Web.Pages.Admin.WhatsAppModel
+@{
+    ViewData["Title"] = "WhatsApp Web - Gerenciamento";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="bi bi-whatsapp text-success"></i> WhatsApp Web
+            </h2>
+            <p class="text-muted">Gerencie a conexão do WhatsApp para envio automático de notificações</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Mensagem))
+    {
+        <div class="alert alert-@(Model.Sucesso ? "success" : "danger") alert-dismissible fade show" role="alert">
+            <i class="bi bi-@(Model.Sucesso ? "check-circle" : "x-circle")"></i>
+            @Model.Mensagem
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Card de Status -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Status da Conexão
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.StatusInfo != null)
+                    {
+                        <div class="mb-3">
+                            <label class="fw-bold">Status:</label>
+                            @if (Model.StatusInfo.Conectado)
+                            {
+                                <span class="badge bg-success ms-2">
+                                    <i class="bi bi-check-circle"></i> Conectado
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger ms-2">
+                                    <i class="bi bi-x-circle"></i> Desconectado
+                                </span>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.StatusInfo.NumeroTelefone))
+                        {
+                            <div class="mb-3">
+                                <label class="fw-bold">Número Conectado:</label>
+                                <span class="ms-2">@Model.StatusInfo.NumeroTelefone</span>
+                            </div>
+                        }
+
+                        @if (Model.StatusInfo.UltimaConexao.HasValue)
+                        {
+                            <div class="mb-3">
+                                <label class="fw-bold">Última Conexão:</label>
+                                <span class="ms-2">@Model.StatusInfo.UltimaConexao.Value.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="fw-bold">Nome da Sessão:</label>
+                            <span class="ms-2">@Model.StatusInfo.NomeSessao</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Não foi possível obter o status da conexão.
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <form method="post" class="d-inline">
+                        <button type="submit" asp-page-handler="AtualizarStatus" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-arrow-clockwise"></i> Atualizar Status
+                        </button>
+                    </form>
+                    
+                    @if (Model.StatusInfo?.Conectado == true)
+                    {
+                        <form method="post" class="d-inline ms-2">
+                            <button type="submit" asp-page-handler="Desconectar" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Deseja realmente desconectar o WhatsApp?')">
+                                <i class="bi bi-plug"></i> Desconectar
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Card de QR Code -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-qr-code"></i> QR Code
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    @if (!string.IsNullOrEmpty(Model.QRCodeBase64))
+                    {
+                        <div class="mb-3">
+                            <img src="data:image/png;base64,@Model.QRCodeBase64" 
+                                 alt="QR Code WhatsApp" 
+                                 class="img-fluid border rounded shadow"
+                                 style="max-width: 300px;" />
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-phone"></i>
+                            <strong>Como conectar:</strong><br/>
+                            1. Abra o WhatsApp no seu celular<br/>
+                            2. Vá em Configurações → WhatsApp Web<br/>
+                            3. Escaneie o QR Code acima
+                        </div>
+
+                        @if (Model.QRCodeExpira.HasValue)
+                        {
+                            <small class="text-muted">
+                                QR Code expira em: @Model.QRCodeExpira.Value.ToString("dd/MM/yyyy HH:mm:ss")
+                            </small>
+                        }
+                    }
+                    else if (Model.StatusInfo?.Conectado == true)
+                    {
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <h5>WhatsApp já está conectado!</h5>
+                            <p class="mb-0">Não é necessário escanear o QR Code.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            QR Code não disponível. Clique em "Gerar QR Code" abaixo.
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    @if (Model.StatusInfo?.Conectado != true)
+                    {
+                        <form method="post" class="d-inline">
+                            <button type="submit" asp-page-handler="GerarQRCode" class="btn btn-sm btn-success">
+                                <i class="bi bi-qr-code-scan"></i> Gerar QR Code
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card de Teste de Mensagem -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots"></i> Teste de Mensagem
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.StatusInfo?.Conectado == true)
+                    {
+                        <form method="post">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Número (com DDI e DDD):</label>
+                                    <input type="text" name="numeroTeste" class="form-control" 
+                                           placeholder="5511999999999" required />
+                                    <small class="text-muted">Formato: 5511999999999 (sem espaços ou caracteres)</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Mensagem:</label>
+                                    <input type="text" name="mensagemTeste" class="form-control" 
+                                           placeholder="Teste de mensagem do sistema" required />
+                                </div>
+                                <div class="col-md-2 mb-3 d-flex align-items-end">
+                                    <button type="submit" asp-page-handler="EnviarTeste" class="btn btn-info w-100">
+                                        <i class="bi bi-send"></i> Enviar
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mb-0">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Conecte o WhatsApp primeiro para enviar mensagens de teste.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações Adicionais -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informações Importantes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>Sessão Persistente:</strong> Uma vez conectado, a sessão permanece ativa mesmo após reiniciar o servidor.</li>
+                        <li><strong>QR Code:</strong> Válido por 2 minutos. Após expirar, gere um novo QR Code.</li>
+                        <li><strong>Notificações Automáticas:</strong> O sistema enviará automaticamente lembretes de consultas 24h antes.</li>
+                        <li><strong>Segurança:</strong> A conexão é criptografada de ponta a ponta pelo WhatsApp.</li>
+                        <li><strong>Multi-device:</strong> Suporta WhatsApp Multi-dispositivos (não desconecta o celular).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-refresh da página a cada 30 segundos se não estiver conectado
+        @if (Model.StatusInfo?.Conectado != true && !string.IsNullOrEmpty(Model.QRCodeBase64))
+        {
+            <text>
+            setTimeout(function() {
+                window.location.reload();
+            }, 30000);
+            </text>
+        }
+    </script>
+}
