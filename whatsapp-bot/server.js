@@ -212,6 +212,27 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', sessions: clients.size });
 });
 
+// Debug: Testar conexão com banco
+app.get('/debug/db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    const tables = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name = 'WhatsAppSessions'
+    `);
+    
+    res.json({
+      database: 'connected',
+      time: result.rows[0].now,
+      tableExists: tables.rows.length > 0
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`WhatsApp Bot API rodando na porta ${PORT}`);
