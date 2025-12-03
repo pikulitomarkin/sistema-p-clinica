@@ -79,6 +79,21 @@ async function initSession(sessionName = 'default', forceNew = false) {
     disableWelcome: true,
     updatesLog: false,
     logQR: true,  // IMPORTANTE: true para capturar QR Code via catchQR
+    headless: true,
+    useChrome: false,  // Usar Chromium ao invés de Chrome
+    browserArgs: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu',
+      '--disable-web-security',
+      '--disable-features=IsolateOrigins,site-per-process',
+      '--disable-blink-features=AutomationControlled'
+    ],
+    autoClose: 0,  // Não fechar automaticamente
     catchQR: (base64Qr, asciiQR, attempts, urlCode) => {
       console.log(`========== QR CODE CAPTURADO ==========`);
       console.log(`Sessão: ${sessionName}`);
@@ -375,9 +390,11 @@ app.post('/reset', async (req, res) => {
       initializingClients.delete(session);
     }
 
-    // Deletar tokens
+    // Deletar tokens e cache
     const fs = require('fs');
     const path = require('path');
+    
+    // Deletar tokens
     const tokenPath = path.join(__dirname, 'tokens', session);
     console.log(`Deletando tokens em: ${tokenPath}`);
     try {
@@ -387,6 +404,18 @@ app.post('/reset', async (req, res) => {
       }
     } catch (e) {
       console.log(`Erro ao deletar tokens:`, e.message);
+    }
+    
+    // Deletar pasta tokens inteira para garantir
+    const allTokensPath = path.join(__dirname, 'tokens');
+    console.log(`Limpando toda pasta tokens: ${allTokensPath}`);
+    try {
+      if (fs.existsSync(allTokensPath)) {
+        fs.rmSync(allTokensPath, { recursive: true, force: true });
+        console.log(`Pasta tokens completamente deletada!`);
+      }
+    } catch (e) {
+      console.log(`Erro ao deletar pasta tokens:`, e.message);
     }
 
     // Limpar banco de dados
