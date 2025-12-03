@@ -21,20 +21,56 @@ const clients = new Map();
 const initializingClients = new Map();
 
 // Inicializar sessão Venom-Bot
-async function initSession(sessionName = 'default') {
-  // Se já existe um cliente conectado, retornar
-  if (clients.has(sessionName)) {
+async function initSession(sessionName = 'default', forceNew = false) {
+  // Se já existe um cliente conectado, retornar (a menos que forceNew)
+  if (clients.has(sessionName) && !forceNew) {
     console.log(`Sessão ${sessionName} já existe, reutilizando...`);
     return clients.get(sessionName);
   }
 
-  // Se já está inicializando, aguardar
-  if (initializingClients.has(sessionName)) {
+  // Se forceNew, fechar e remover cliente existente
+  if (forceNew && clients.has(sessionName)) {
+    console.log(`Forçando nova sessão, fechando cliente existente...`);
+    try {
+      const oldClient = clients.get(sessionName);
+      await oldClient.close();
+    } catch (e) {
+      console.log(`Erro ao fechar cliente antigo:`, e.message);
+    }
+    clients.delete(sessionName);
+  }
+
+  // Se já está inicializando, aguardar (a menos que forceNew)
+  if (initializingClients.has(sessionName) && !forceNew) {
     console.log(`Sessão ${sessionName} já está sendo inicializada, aguardando...`);
     return initializingClients.get(sessionName);
   }
 
-  console.log(`Iniciando nova sessão: ${sessionName}`);
+  // Se forceNew, cancelar inicialização anterior
+  if (forceNew && initializingClients.has(sessionName)) {
+    console.log(`Forçando nova sessão, cancelando inicialização anterior...`);
+    initializingClients.delete(sessionName);
+  }
+
+  console.log(`Iniciando nova sessão: ${sessionName} (forceNew: ${forceNew})`);
+
+  // Deletar tokens antigos se forceNew (força geração de QR Code)
+  if (forceNew) {
+    const fs = require('fs');
+    const path = require('path');
+    const tokenPath = path.join(__dirname, 'tokens', sessionName);
+    console.log(`Deletando tokens antigos em: ${tokenPath}`);
+    try {
+      if (fs.existsSync(tokenPath)) {
+        fs.rmSync(tokenPath, { recursive: true, force: true });
+        console.log(`Tokens deletados com sucesso!`);
+      } else {
+        console.log(`Pasta de tokens não existe, prosseguindo...`);
+      }
+    } catch (e) {
+      console.log(`Erro ao deletar tokens:`, e.message);
+    }
+  }
 
   // Marcar como inicializando
   const initPromise = venom.create({
@@ -220,10 +256,10 @@ app.get('/qrcode', async (req, res) => {
       ['Gerando QR Code', session]
     );
 
-    console.log(`[/qrcode] Iniciando nova sessão...`);
+    console.log(`[/qrcode] Iniciando nova sessão com forceNew=true...`);
     
-    // Iniciar nova sessão para gerar QR Code (sem await para não bloquear)
-    initSession(session).catch(err => {
+    // Iniciar nova sessão para gerar QR Code (forçar nova sessão para gerar QR Code)
+    initSession(session, true).catch(err => {
       console.error(`[/qrcode] Erro ao iniciar sessão:`, err);
       initializingClients.delete(session);
     });
@@ -313,6 +349,57 @@ app.post('/disconnect', async (req, res) => {
   } catch (error) {
     console.error('Erro ao desconectar:', error);
     res.status(500).json({ error: 'Erro ao desconectar' });
+  }
+});
+
+// POST /reset - Resetar sessão (limpar tokens e forçar novo QR Code)
+app.post('/reset', async (req, res) => {
+  const session = req.query.session || 'default';
+
+  try {
+    console.log(`[/reset] Resetando sessão: ${session}`);
+    
+    // Fechar cliente se existir
+    if (clients.has(session)) {
+      try {
+        const client = clients.get(session);
+        await client.close();
+      } catch (e) {
+        console.log(`Erro ao fechar cliente:`, e.message);
+      }
+      clients.delete(session);
+    }
+
+    // Remover da fila de inicialização
+    if (initializingClients.has(session)) {
+      initializingClients.delete(session);
+    }
+
+    // Deletar tokens
+    const fs = require('fs');
+    const path = require('path');
+    const tokenPath = path.join(__dirname, 'tokens', session);
+    console.log(`Deletando tokens em: ${tokenPath}`);
+    try {
+      if (fs.existsSync(tokenPath)) {
+        fs.rmSync(tokenPath, { recursive: true, force: true });
+        console.log(`Tokens deletados!`);
+      }
+    } catch (e) {
+      console.log(`Erro ao deletar tokens:`, e.message);
+    }
+
+    // Limpar banco de dados
+    await pool.query(
+      'UPDATE "WhatsAppSessions" SET "Status" = $1, "QRCode" = NULL, "AuthToken" = NULL, "PhoneNumber" = NULL, "UpdatedAt" = NOW() WHERE "SessionName" = $2',
+      ['Reset', session]
+    );
+
+    console.log(`[/reset] Sessão ${session} resetada com sucesso!`);
+    res.json({ success: true, message: 'Sessão resetada com sucesso' });
+  } catch (error) {
+    console.error('[/reset] Erro ao resetar sessão:', error);
+    res.status(500).json({ error: 'Erro ao resetar sessão', details: error.message });
   }
 });
 
