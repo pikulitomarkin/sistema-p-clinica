@@ -53,7 +53,7 @@ public class WhatsAppWebService
         {
             _logger.LogInformation("Gerando QR Code para sessão: {SessionName}", sessionName);
 
-            var response = await _httpClient.GetAsync($"{_venomBotUrl}/qrcode?session={sessionName}");
+            var response = await _httpClient.GetAsync($"{_venomBotUrl}/qrcode?sessionName={sessionName}");
             
             if (response.IsSuccessStatusCode)
             {
@@ -183,8 +183,14 @@ public class WhatsAppWebService
 // DTOs
 public class VenomBotResponse
 {
+    [System.Text.Json.Serialization.JsonPropertyName("qrCode")]
     public string? QrCode { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("message")]
     public string? Message { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("expired")]
+    public bool? Expired { get; set; }
 }
 
 public class VenomBotStatusResponse
