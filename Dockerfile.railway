@@ -42,3 +42,5 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 
 # Run app - Railway injects PORT variable
 CMD dotnet ClinicaPsi.Web.dll --urls http://0.0.0.0:$PORT
+
+# Rebuild forçado: 2025-12-03 22:24:13
