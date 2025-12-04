@@ -3,11 +3,14 @@ using ClinicaPsi.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using System.Diagnostics;
 
 namespace ClinicaPsi.Application.Services;
 
 public class WhatsAppWebService
 {
+    private static readonly ActivitySource ActivitySource = new("ClinicaPsi.WhatsApp");
+    
     private readonly AppDbContext _context;
     private readonly ILogger<WhatsAppWebService> _logger;
     private readonly HttpClient _httpClient;
@@ -49,11 +52,15 @@ public class WhatsAppWebService
 
     public async Task<WhatsAppSession?> GerarQRCodeAsync(string sessionName = "default")
     {
+        using var activity = ActivitySource.StartActivity("WhatsApp.GerarQRCode");
+        activity?.SetTag("whatsapp.session", sessionName);
+        
         try
         {
             _logger.LogInformation("Gerando QR Code para sessão: {SessionName}", sessionName);
 
             var response = await _httpClient.GetAsync($"{_venomBotUrl}/qrcode?sessionName={sessionName}");
+            activity?.SetTag("http.status_code", (int)response.StatusCode);
             
             if (response.IsSuccessStatusCode)
             {

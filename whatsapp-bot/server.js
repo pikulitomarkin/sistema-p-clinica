@@ -11,6 +11,16 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Handler global para erros não tratados (evita crash do processo)
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('⚠️ Unhandled Rejection:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('⚠️ Uncaught Exception:', error.message);
+  // Não fechar o processo, apenas logar
+});
+
 // Conexão PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -214,7 +224,16 @@ app.get('/qrcode', async (req, res) => {
     // Se já existe cliente, verificar estado
     if (clients.has(session)) {
       const client = clients.get(session);
-      const state = await client.getState().catch(() => 'UNKNOWN');
+      let state = null;
+      
+      try {
+        state = await client.getState();
+      } catch (e) {
+        console.log(`[/qrcode] ⚠️ Erro ao obter estado do cliente: ${e.message}`);
+        // Cliente fantasma (Puppeteer fechado), limpar
+        clients.delete(session);
+        state = 'DEAD';
+      }
       
       console.log(`[/qrcode] Cliente existente - Estado: ${state}`);
       
@@ -235,11 +254,16 @@ app.get('/qrcode', async (req, res) => {
         });
       }
       
-      console.log(`[/qrcode] Cliente existe mas não está conectado (${state}), destruindo...`);
-      try {
-        await client.destroy();
-      } catch (e) {}
-      clients.delete(session);
+      // Cliente não está conectado ou está morto, destruir
+      if (state !== 'DEAD') {
+        console.log(`[/qrcode] Cliente existe mas não está conectado (${state}), destruindo...`);
+        try {
+          await client.destroy();
+        } catch (e) {
+          console.log(`[/qrcode] ⚠️ Erro ao destruir cliente: ${e.message}`);
+        }
+        clients.delete(session);
+      }
     }
 
     // Limpar QR Code expirado
