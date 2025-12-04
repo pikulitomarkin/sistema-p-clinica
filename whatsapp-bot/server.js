@@ -51,6 +51,18 @@ function createClient(sessionName = 'default') {
     console.log(`========== QR CODE GERADO ==========`);
     console.log(`Sessão: ${sessionName}`);
     
+    // Verificar se já está conectado (evitar loop)
+    const client = clients.get(sessionName);
+    if (client) {
+      try {
+        const state = await client.getState().catch(() => 'UNKNOWN');
+        if (state === 'CONNECTED') {
+          console.log(`[${sessionName}] Já está conectado, ignorando QR Code`);
+          return;
+        }
+      } catch (e) {}
+    }
+    
     try {
       // Converter para base64
       const qrCodeBase64 = await QRCode.toDataURL(qr);
@@ -70,17 +82,20 @@ function createClient(sessionName = 'default') {
 
   // Evento: Cliente pronto
   client.on('ready', async () => {
-    console.log(`[${sessionName}] Cliente conectado e pronto!`);
+    console.log(`[${sessionName}] ✅ Cliente conectado e pronto!`);
     
     try {
       const info = client.info;
       await updateSessionStatus(sessionName, 'Conectado', info.wid.user);
       
-      // Limpar QR Code do banco
+      // Limpar QR Code do banco e da memória
+      qrCodes.delete(sessionName);
       await pool.query(
         'UPDATE "WhatsAppSessions" SET "QRCode" = NULL, "UpdatedAt" = NOW() WHERE "SessionName" = $1',
         [sessionName]
       );
+      
+      console.log(`[${sessionName}] ✅ QR Code limpo - Sessão autenticada`);
     } catch (error) {
       console.error(`[${sessionName}] Erro ao atualizar status:`, error);
     }
@@ -197,11 +212,22 @@ app.get('/qrcode', async (req, res) => {
       const client = clients.get(session);
       const state = await client.getState().catch(() => 'UNKNOWN');
       
+      console.log(`[/qrcode] Cliente existente - Estado: ${state}`);
+      
       if (state === 'CONNECTED') {
-        console.log(`[/qrcode] Cliente já está conectado`);
-        return res.json({ 
+        console.log(`[/qrcode] ✅ Cliente já está conectado - não gerar novo QR Code`);
+        return res.status(400).json({ 
           error: 'Já conectado',
           message: 'A sessão já está conectada ao WhatsApp'
+        });
+      }
+      
+      // Se está em processo de conexão, não destruir
+      if (state === 'OPENING' || state === 'INITIALIZING') {
+        console.log(`[/qrcode] ⏳ Cliente está conectando... aguarde`);
+        return res.status(400).json({ 
+          error: 'Conectando',
+          message: 'Aguarde, a conexão está em andamento'
         });
       }
       
