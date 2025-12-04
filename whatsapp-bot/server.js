@@ -253,10 +253,25 @@ app.get('/qrcode', async (req, res) => {
     console.log(`[/qrcode] Inicializando cliente...`);
     client.initialize();
 
-    // Aguardar QR Code (timeout 90s)
-    console.log(`[/qrcode] Aguardando QR Code...`);
+    // Aguardar QR Code ou conexão (timeout 90s)
+    console.log(`[/qrcode] Aguardando QR Code ou conexão...`);
     for (let i = 0; i < 180; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Verificar se conectou (QR Code foi escaneado)
+      const client = clients.get(session);
+      if (client) {
+        try {
+          const state = await client.getState();
+          if (state === 'CONNECTED') {
+            console.log(`[/qrcode] ✅ Cliente conectou durante aguardo do QR Code!`);
+            return res.json({ 
+              connected: true,
+              message: 'WhatsApp conectado com sucesso!'
+            });
+          }
+        } catch (e) {}
+      }
       
       // Verificar memória
       if (qrCodes.has(session)) {
