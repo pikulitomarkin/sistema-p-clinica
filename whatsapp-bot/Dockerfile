@@ -39,8 +39,8 @@ COPY . .
 RUN mkdir -p /app/tokens && chmod 777 /app/tokens
 RUN mkdir -p /app/sessions && chmod 777 /app/sessions
 
-# Volume para persistir sessões do WhatsApp
-VOLUME /app/sessions
+# Nota: Volume /app/sessions deve ser criado no Railway Dashboard
+# Settings → Volumes → New Volume → Mount Path: /app/sessions
 
 EXPOSE 3000
 
