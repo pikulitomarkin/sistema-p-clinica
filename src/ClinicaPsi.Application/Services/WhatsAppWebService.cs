@@ -60,12 +60,20 @@ public class WhatsAppWebService
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<VenomBotResponse>(content);
 
+                // IMPORTANTE: Retornar o QR Code diretamente da API, não do banco
+                // O servidor Node.js limpa o QR Code do banco após salvar
                 var session = await ObterSessaoAsync(sessionName);
-                session.QRCode = result?.QrCode;
+                
+                // Atualizar apenas status e expiry no banco
                 session.QRCodeExpiry = DateTime.UtcNow.AddMinutes(2);
                 session.Status = "QRCode";
                 session.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
+
+                // Mas retornar o QR Code da resposta da API
+                session.QRCode = result?.QrCode;
+                
+                _logger.LogInformation("QR Code recebido da API: {Length} caracteres", session.QRCode?.Length ?? 0);
 
                 return session;
             }
