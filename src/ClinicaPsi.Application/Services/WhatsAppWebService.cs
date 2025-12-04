@@ -114,16 +114,30 @@ public class WhatsAppWebService
                     {
                         var content = await response.Content.ReadAsStringAsync();
                         var result = JsonSerializer.Deserialize<VenomBotResponse>(content);
-                        var session = await ObterSessaoAsync(sessionName);
                         
-                        session.QRCodeExpiry = DateTime.UtcNow.AddMinutes(2);
-                        session.Status = "QRCode";
-                        session.UpdatedAt = DateTime.UtcNow;
+                        // Verificar se conectou automaticamente (sessão persistida no volume)
+                        if (result?.Connected == true)
+                        {
+                            _logger.LogInformation("Bot reconectou automaticamente usando sessão persistida no volume");
+                            var session = await ObterSessaoAsync(sessionName);
+                            session.Status = "Conectado";
+                            session.LastConnection = DateTime.UtcNow;
+                            session.QRCode = null;
+                            session.UpdatedAt = DateTime.UtcNow;
+                            await _context.SaveChangesAsync();
+                            return session;
+                        }
+                        
+                        var sessionResult = await ObterSessaoAsync(sessionName);
+                        
+                        sessionResult.QRCodeExpiry = DateTime.UtcNow.AddMinutes(2);
+                        sessionResult.Status = "QRCode";
+                        sessionResult.UpdatedAt = DateTime.UtcNow;
                         await _context.SaveChangesAsync();
                         
-                        session.QRCode = result?.QrCode;
-                        _logger.LogInformation("QR Code gerado após desconexão: {Length} caracteres", session.QRCode?.Length ?? 0);
-                        return session;
+                        sessionResult.QRCode = result?.QrCode;
+                        _logger.LogInformation("QR Code gerado após desconexão: {Length} caracteres", sessionResult.QRCode?.Length ?? 0);
+                        return sessionResult;
                     }
                 }
             }
