@@ -1,0 +1,13 @@
+# Robots.txt para Clínica Psicologia Iana Santos
+# https://www.psiianasantos.com.br
+
+User-agent: *
+Allow: /
+
+# Bloquear páginas administrativas
+Disallow: /admin/
+Disallow: /Account/
+Disallow: /Identity/
+
+# Sitemap
+Sitemap: https://www.psiianasantos.com.br/sitemap.xml
