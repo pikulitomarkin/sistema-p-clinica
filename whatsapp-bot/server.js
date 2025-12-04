@@ -50,17 +50,21 @@ function createClient(sessionName = 'default') {
   client.on('qr', async (qr) => {
     console.log(`========== QR CODE GERADO ==========`);
     console.log(`Sessão: ${sessionName}`);
+    console.log(`QR Code raw length: ${qr.length} caracteres`);
     
     // Verificar se já está conectado (evitar loop)
     const client = clients.get(sessionName);
     if (client) {
       try {
         const state = await client.getState().catch(() => 'UNKNOWN');
+        console.log(`[${sessionName}] Estado atual do cliente: ${state}`);
         if (state === 'CONNECTED') {
-          console.log(`[${sessionName}] Já está conectado, ignorando QR Code`);
+          console.log(`[${sessionName}] ⚠️  Já está conectado, IGNORANDO QR Code`);
           return;
         }
-      } catch (e) {}
+      } catch (e) {
+        console.log(`[${sessionName}] Erro ao verificar estado: ${e.message}`);
+      }
     }
     
     try {
@@ -239,19 +243,23 @@ app.get('/qrcode', async (req, res) => {
     }
 
     // Limpar QR Code expirado
+    console.log(`[/qrcode] Limpando QR Code expirado da memória e banco...`);
     qrCodes.delete(session);
     await pool.query(
       'UPDATE "WhatsAppSessions" SET "QRCode" = NULL, "Status" = $1, "UpdatedAt" = NOW() WHERE "SessionName" = $2',
       ['Gerando QR Code', session]
     );
+    console.log(`[/qrcode] ✅ QR Code limpo`);
 
-    console.log(`[/qrcode] Criando novo cliente...`);
+    console.log(`[/qrcode] Criando novo cliente whatsapp-web.js...`);
     const client = createClient(session);
     clients.set(session, client);
+    console.log(`[/qrcode] ✅ Cliente criado e adicionado ao Map`);
 
     // Inicializar cliente
-    console.log(`[/qrcode] Inicializando cliente...`);
+    console.log(`[/qrcode] Inicializando cliente (aguardar evento 'qr')...`);
     client.initialize();
+    console.log(`[/qrcode] ✅ Inicialização disparada`);
 
     // Aguardar QR Code ou conexão (timeout 90s)
     console.log(`[/qrcode] Aguardando QR Code ou conexão...`);
