@@ -35,8 +35,12 @@ RUN npm install --production
 # Copiar código
 COPY . .
 
-# Criar diretório para tokens
+# Criar diretórios persistentes
 RUN mkdir -p /app/tokens && chmod 777 /app/tokens
+RUN mkdir -p /app/sessions && chmod 777 /app/sessions
+
+# Volume para persistir sessões do WhatsApp
+VOLUME /app/sessions
 
 EXPOSE 3000
 
