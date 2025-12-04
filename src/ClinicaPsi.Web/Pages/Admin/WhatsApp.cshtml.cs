@@ -71,6 +71,11 @@ namespace ClinicaPsi.Web.Pages.Admin
                 
                 if (sessao != null && !string.IsNullOrEmpty(sessao.QRCode))
                 {
+                    // DEBUG: Log completo do QR Code recebido
+                    _logger.LogInformation("QR Code recebido: {Length} caracteres", sessao.QRCode.Length);
+                    _logger.LogInformation("QR Code começa com: {Prefix}", sessao.QRCode.Substring(0, Math.Min(50, sessao.QRCode.Length)));
+                    
+                    // O QR Code já vem completo da API (com data:image/png;base64,)
                     QRCodeBase64 = sessao.QRCode;
                     QRCodeExpira = sessao.QRCodeExpiry;
                     StatusInfo = new WhatsAppStatusInfo
@@ -84,10 +89,11 @@ namespace ClinicaPsi.Web.Pages.Admin
                     Mensagem = "QR Code gerado! Escaneie com seu WhatsApp em até 2 minutos.";
                     Sucesso = true;
                     
-                    _logger.LogInformation("QR Code gerado com sucesso");
+                    _logger.LogInformation("QR Code gerado com sucesso - Pronto para exibição");
                 }
                 else
                 {
+                    _logger.LogWarning("Sessão retornou nula ou QR Code vazio");
                     Mensagem = "Não foi possível gerar o QR Code. Tente novamente.";
                     Sucesso = false;
                 }
