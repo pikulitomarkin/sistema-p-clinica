@@ -262,6 +262,9 @@ public class VenomBotResponse
     
     [System.Text.Json.Serialization.JsonPropertyName("expired")]
     public bool? Expired { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("connected")]
+    public bool? Connected { get; set; }
 }
 
 public class VenomBotStatusResponse
