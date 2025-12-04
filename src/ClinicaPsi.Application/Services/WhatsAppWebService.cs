@@ -158,24 +158,35 @@ public class WhatsAppWebService
     {
         try
         {
+            _logger.LogInformation("Obtendo status da sessão: {SessionName}", sessionName);
+            
             var response = await _httpClient.GetAsync($"{_venomBotUrl}/status?session={sessionName}");
+            
+            _logger.LogInformation("Status Code da API: {StatusCode}", response.StatusCode);
             
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("Resposta da API: {Content}", content);
+                
                 var result = JsonSerializer.Deserialize<VenomBotStatusResponse>(content);
 
                 var session = await ObterSessaoAsync(sessionName);
+                
+                _logger.LogInformation("Status retornado da API - Connected: {Connected}, Phone: {Phone}", 
+                    result?.Connected, result?.PhoneNumber);
                 
                 if (result?.Connected == true)
                 {
                     session.Status = "Conectado";
                     session.PhoneNumber = result.PhoneNumber;
                     session.LastConnection = DateTime.UtcNow;
+                    _logger.LogInformation("Status atualizado para Conectado");
                 }
                 else
                 {
                     session.Status = "Desconectado";
+                    _logger.LogInformation("Status atualizado para Desconectado");
                 }
                 
                 session.UpdatedAt = DateTime.UtcNow;
@@ -186,10 +197,12 @@ public class WhatsAppWebService
                     Conectado = result?.Connected ?? false,
                     NumeroTelefone = result?.PhoneNumber,
                     UltimaConexao = session.LastConnection,
-                    Status = session.Status
+                    Status = session.Status,
+                    SessionName = session.SessionName
                 };
             }
 
+            _logger.LogWarning("Falha ao obter status: {StatusCode}", response.StatusCode);
             return new WhatsAppStatusInfo { Conectado = false, Status = "Erro" };
         }
         catch (Exception ex)

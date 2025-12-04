@@ -63,7 +63,10 @@
                         {
                             <div class="mb-3">
                                 <label class="fw-bold">Última Conexão:</label>
-                                <span class="ms-2">@Model.StatusInfo.UltimaConexao.Value.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                                @{
+                                    var brasiliaTime = TimeZoneInfo.ConvertTimeFromUtc(Model.StatusInfo.UltimaConexao.Value, TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"));
+                                }
+                                <span class="ms-2">@brasiliaTime.ToString("dd/MM/yyyy HH:mm:ss")</span>
                             </div>
                         }
 
