@@ -78,6 +78,43 @@ public class WhatsAppWebService
                 return session;
             }
 
+            // Se retornou 400, pode ser "já conectado" ou "conectando"
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("Bot retornou erro 400: {Error}", errorContent);
+                
+                // Se já está conectado, tentar desconectar e gerar novo QR
+                if (errorContent.Contains("conectado") || errorContent.Contains("CONNECTED"))
+                {
+                    _logger.LogInformation("Cliente reportado como conectado, tentando desconectar...");
+                    await DesconectarAsync(sessionName);
+                    
+                    // Aguardar 2 segundos
+                    await Task.Delay(2000);
+                    
+                    // Tentar gerar QR Code novamente
+                    _logger.LogInformation("Tentando gerar QR Code novamente após desconexão...");
+                    response = await _httpClient.GetAsync($"{_venomBotUrl}/qrcode?sessionName={sessionName}");
+                    
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        var result = JsonSerializer.Deserialize<VenomBotResponse>(content);
+                        var session = await ObterSessaoAsync(sessionName);
+                        
+                        session.QRCodeExpiry = DateTime.UtcNow.AddMinutes(2);
+                        session.Status = "QRCode";
+                        session.UpdatedAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                        
+                        session.QRCode = result?.QrCode;
+                        _logger.LogInformation("QR Code gerado após desconexão: {Length} caracteres", session.QRCode?.Length ?? 0);
+                        return session;
+                    }
+                }
+            }
+
             _logger.LogWarning("Falha ao gerar QR Code: {StatusCode}", response.StatusCode);
             return null;
         }
