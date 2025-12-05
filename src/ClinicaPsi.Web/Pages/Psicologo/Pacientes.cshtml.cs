@@ -166,63 +166,126 @@ namespace ClinicaPsi.Web.Pages.Psicologo
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
-                return Forbid();
+            {
+                TempData["Error"] = "Usuário não autenticado";
+                return RedirectToPage();
+            }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user?.PsicologoId == null)
-                return Forbid();
+            {
+                TempData["Error"] = "Psicólogo não encontrado";
+                return RedirectToPage();
+            }
+
+            // Validar dados obrigatórios
+            if (string.IsNullOrWhiteSpace(nome))
+            {
+                TempData["Error"] = "Nome é obrigatório";
+                return RedirectToPage();
+            }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                TempData["Error"] = "Email é obrigatório";
+                return RedirectToPage();
+            }
+
+            // CPF, Telefone e Data de Nascimento são obrigatórios na entidade
+            if (string.IsNullOrWhiteSpace(cpf))
+            {
+                TempData["Error"] = "CPF é obrigatório";
+                return RedirectToPage();
+            }
+
+            if (string.IsNullOrWhiteSpace(telefone))
+            {
+                TempData["Error"] = "Telefone é obrigatório";
+                return RedirectToPage();
+            }
+
+            if (!dataNascimento.HasValue)
+            {
+                TempData["Error"] = "Data de nascimento é obrigatória";
+                return RedirectToPage();
+            }
 
             try
             {
+                // Limpar e validar email
+                email = email.Trim().ToLower();
+                
                 // Verificar se email já existe
                 var emailExiste = await _context.Pacientes.AnyAsync(p => p.Email == email);
                 if (emailExiste)
                 {
-                    ModelState.AddModelError("", "Já existe um paciente cadastrado com este email");
-                    return await OnGetAsync();
+                    TempData["Error"] = "Já existe um paciente cadastrado com este email";
+                    return RedirectToPage();
                 }
 
                 // Limpar CPF
-                if (!string.IsNullOrEmpty(cpf))
+                cpf = cpf.Replace(".", "").Replace("-", "").Replace(" ", "").Trim();
+                
+                // Validar CPF (deve ter 11 dígitos)
+                if (cpf.Length != 11 || !cpf.All(char.IsDigit))
                 {
-                    cpf = cpf.Replace(".", "").Replace("-", "");
-                    
-                    // Verificar se CPF já existe
-                    var cpfExiste = await _context.Pacientes.AnyAsync(p => p.CPF == cpf);
-                    if (cpfExiste)
-                    {
-                        ModelState.AddModelError("", "Já existe um paciente cadastrado com este CPF");
-                        return await OnGetAsync();
-                    }
+                    TempData["Error"] = "CPF inválido. Deve conter 11 dígitos";
+                    return RedirectToPage();
                 }
+                
+                // Verificar se CPF já existe
+                var cpfExiste = await _context.Pacientes.AnyAsync(p => p.CPF == cpf);
+                if (cpfExiste)
+                {
+                    TempData["Error"] = "Já existe um paciente cadastrado com este CPF";
+                    return RedirectToPage();
+                }
+
+                // Limpar telefone
+                telefone = telefone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "").Trim();
 
                 // Criar novo paciente
                 var novoPaciente = new Paciente
                 {
-                    Nome = nome,
+                    Nome = nome.Trim(),
                     Email = email,
                     CPF = cpf,
                     Telefone = telefone,
-                    DataNascimento = dataNascimento ?? DateTime.Now,
-                    ContatoEmergencia = contatoEmergencia,
-                    Endereco = endereco,
-                    HistoricoMedico = historicoMedico,
+                    DataNascimento = dataNascimento.Value,
+                    ContatoEmergencia = string.IsNullOrWhiteSpace(contatoEmergencia) ? null : contatoEmergencia.Trim(),
+                    Endereco = string.IsNullOrWhiteSpace(endereco) ? null : endereco.Trim(),
+                    HistoricoMedico = string.IsNullOrWhiteSpace(historicoMedico) ? null : historicoMedico.Trim(),
                     PsicoPontos = 0,
                     ConsultasRealizadas = 0,
                     ConsultasGratuitas = 0,
-                    DataCadastro = DateTime.Now
+                    DataCadastro = DateTime.Now,
+                    DataCriacao = DateTime.Now,
+                    Ativo = true
                 };
 
                 _context.Pacientes.Add(novoPaciente);
-                await _context.SaveChangesAsync();
+                var resultado = await _context.SaveChangesAsync();
 
-                TempData["Success"] = "Paciente cadastrado com sucesso!";
+                if (resultado > 0)
+                {
+                    TempData["Success"] = "Paciente cadastrado com sucesso!";
+                }
+                else
+                {
+                    TempData["Error"] = "Não foi possível salvar o paciente. Tente novamente.";
+                }
+                
+                return RedirectToPage();
+            }
+            catch (DbUpdateException dbEx)
+            {
+                TempData["Error"] = $"Erro ao salvar no banco de dados: {dbEx.InnerException?.Message ?? dbEx.Message}";
                 return RedirectToPage();
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "Erro ao cadastrar paciente: " + ex.Message);
-                return await OnGetAsync();
+                TempData["Error"] = $"Erro ao cadastrar paciente: {ex.Message}";
+                return RedirectToPage();
             }
         }
 
