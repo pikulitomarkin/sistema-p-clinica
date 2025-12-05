@@ -1,15 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <!-- Página Principal -->
   <url>
     <loc>https://www.psiianasantos.com.br/</loc>
     <lastmod>2025-12-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://www.psiianasantos.com.br/images/ana-santos.jpg</image:loc>
+      <image:title>Psicóloga Ana Santos</image:title>
+      <image:caption>Psicóloga Clínica especializada em Terapia Cognitivo-Comportamental</image:caption>
+    </image:image>
   </url>
+  
+  <!-- Área de Login -->
   <url>
     <loc>https://www.psiianasantos.com.br/Account/Login</loc>
     <lastmod>2025-12-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+  </url>
+  
+  <!-- Agendamento -->
+  <url>
+    <loc>https://www.psiianasantos.com.br/Agendamento</loc>
+    <lastmod>2025-12-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>

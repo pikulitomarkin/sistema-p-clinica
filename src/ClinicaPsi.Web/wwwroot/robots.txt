@@ -1,13 +1,22 @@
-# Robots.txt para Clínica Psicologia Iana Santos
+# Robots.txt para Psicóloga Ana Santos
 # https://www.psiianasantos.com.br
+# Clínica de Psicologia - Terapia Cognitivo-Comportamental
 
 User-agent: *
 Allow: /
 
-# Bloquear páginas administrativas
-Disallow: /admin/
+# Bloquear páginas administrativas e de sistema
+Disallow: /Admin/
 Disallow: /Account/
 Disallow: /Identity/
+Disallow: /Cliente/
+
+# Permitir indexação da página inicial e agendamento
+Allow: /
+Allow: /Agendamento
 
 # Sitemap
 Sitemap: https://www.psiianasantos.com.br/sitemap.xml
+
+# Crawl-delay para respeitar o servidor
+Crawl-delay: 1
