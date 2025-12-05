@@ -1,5 +1,6 @@
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
@@ -13,11 +14,41 @@ namespace ClinicaPsi.Application.Services
     public class PdfService
     {
         private readonly AppDbContext _context;
+        private const string ASSINATURA_PATH = "wwwroot/images/assinaturas/assinatura-psicologo.png";
 
         public PdfService(AppDbContext context)
         {
             _context = context;
             QuestPDF.Settings.License = LicenseType.Community;
+        }
+
+        // Método auxiliar para verificar se existe assinatura
+        private byte[]? ObterAssinaturaPsicologo(string? crp = null)
+        {
+            try
+            {
+                // Tenta buscar assinatura específica do psicólogo (futuro)
+                if (!string.IsNullOrEmpty(crp))
+                {
+                    var assinaturaEspecifica = $"wwwroot/images/assinaturas/assinatura-{crp.Replace("/", "-")}.png";
+                    if (File.Exists(assinaturaEspecifica))
+                    {
+                        return File.ReadAllBytes(assinaturaEspecifica);
+                    }
+                }
+
+                // Usa assinatura padrão
+                if (File.Exists(ASSINATURA_PATH))
+                {
+                    return File.ReadAllBytes(ASSINATURA_PATH);
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         // Handler PDF Admin com dados reais
@@ -426,9 +457,16 @@ namespace ClinicaPsi.Application.Services
                             text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))).FontSize(12);
                         });
 
-                        // Assinatura moderna
+                        // Assinatura moderna com imagem
                         col.Item().PaddingTop(50).AlignCenter().Column(signCol =>
                         {
+                            // Tentar adicionar imagem da assinatura
+                            var assinaturaBytes = ObterAssinaturaPsicologo(consulta.Psicologo?.CRP);
+                            if (assinaturaBytes != null)
+                            {
+                                signCol.Item().Width(150).Image(assinaturaBytes);
+                            }
+                            
                             signCol.Item().Width(200).LineHorizontal(2).LineColor(Colors.Green.Medium);
                             signCol.Item().PaddingTop(8).Text(consulta.Psicologo?.Nome ?? "").Bold().FontSize(13).FontColor(Colors.Green.Darken2);
                             signCol.Item().PaddingTop(2).Text($"CRP: {consulta.Psicologo?.CRP ?? ""}").FontSize(11).FontColor(Colors.Grey.Darken2);
@@ -546,9 +584,15 @@ namespace ClinicaPsi.Application.Services
                             text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))).FontSize(12);
                         });
 
-                        // Assinatura moderna
+                        // Assinatura moderna com imagem
                         col.Item().PaddingTop(50).AlignCenter().Column(signCol =>
                         {
+                            var assinaturaBytes = ObterAssinaturaPsicologo(consulta.Psicologo?.CRP);
+                            if (assinaturaBytes != null)
+                            {
+                                signCol.Item().Width(150).Image(assinaturaBytes);
+                            }
+                            
                             signCol.Item().Width(200).LineHorizontal(2).LineColor(Colors.Red.Medium);
                             signCol.Item().PaddingTop(8).Text(consulta.Psicologo?.Nome ?? "").Bold().FontSize(13).FontColor(Colors.Red.Darken2);
                             signCol.Item().PaddingTop(2).Text($"CRP: {consulta.Psicologo?.CRP ?? ""}").FontSize(11).FontColor(Colors.Grey.Darken2);
@@ -631,9 +675,15 @@ namespace ClinicaPsi.Application.Services
                             text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))).FontSize(12);
                         });
 
-                        // Assinatura moderna
+                        // Assinatura moderna com imagem
                         col.Item().PaddingTop(50).AlignCenter().Column(signCol =>
                         {
+                            var assinaturaBytes = ObterAssinaturaPsicologo(psicologo.CRP);
+                            if (assinaturaBytes != null)
+                            {
+                                signCol.Item().Width(150).Image(assinaturaBytes);
+                            }
+                            
                             signCol.Item().Width(200).LineHorizontal(2).LineColor(Colors.Green.Medium);
                             signCol.Item().PaddingTop(8).Text(psicologo.Nome).Bold().FontSize(13).FontColor(Colors.Green.Darken2);
                             signCol.Item().PaddingTop(2).Text($"CRP: {psicologo.CRP}").FontSize(11).FontColor(Colors.Grey.Darken2);
@@ -749,9 +799,15 @@ namespace ClinicaPsi.Application.Services
                             text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))).FontSize(12);
                         });
 
-                        // Assinatura moderna
+                        // Assinatura moderna com imagem
                         col.Item().PaddingTop(50).AlignCenter().Column(signCol =>
                         {
+                            var assinaturaBytes = ObterAssinaturaPsicologo(psicologo.CRP);
+                            if (assinaturaBytes != null)
+                            {
+                                signCol.Item().Width(150).Image(assinaturaBytes);
+                            }
+                            
                             signCol.Item().Width(200).LineHorizontal(2).LineColor(Colors.Red.Medium);
                             signCol.Item().PaddingTop(8).Text(psicologo.Nome).Bold().FontSize(13).FontColor(Colors.Red.Darken2);
                             signCol.Item().PaddingTop(2).Text($"CRP: {psicologo.CRP}").FontSize(11).FontColor(Colors.Grey.Darken2);
