@@ -51,8 +51,23 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
         public async Task<IActionResult> OnGetAsync()
         {
-            await CarregarDadosAsync();
-            return Page();
+            try
+            {
+                await CarregarDadosAsync();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                // Log do erro mas não mostra ao usuário para evitar poluição visual
+                Console.WriteLine($"Erro ao carregar PsicoPontos: {ex.Message}");
+                
+                // Define valores padrão para evitar NullReference
+                TotalPontos = 0;
+                PosicaoRanking = 0;
+                TotalPacientes = 0;
+                
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostUsarPontosAsync()
