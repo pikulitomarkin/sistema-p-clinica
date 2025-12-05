@@ -28,11 +28,19 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
         public async Task<IActionResult> OnGetAsync(string filtroStatus = "proximas", string busca = "")
         {
-            FiltroStatus = filtroStatus;
-            Busca = busca;
+            try
+            {
+                FiltroStatus = filtroStatus;
+                Busca = busca;
 
-            await CarregarDadosAsync();
-            return Page();
+                await CarregarDadosAsync();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostCancelarConsultaAsync(int consultaId, string motivo = "")

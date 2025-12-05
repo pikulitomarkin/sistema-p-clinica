@@ -39,11 +39,19 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
         public async Task<IActionResult> OnGetAsync(DateTime? data)
         {
-            if (data.HasValue)
-                DataSelecionada = data.Value;
+            try
+            {
+                if (data.HasValue)
+                    DataSelecionada = data.Value;
 
-            await CarregarDadosAsync();
-            return Page();
+                await CarregarDadosAsync();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostAsync()

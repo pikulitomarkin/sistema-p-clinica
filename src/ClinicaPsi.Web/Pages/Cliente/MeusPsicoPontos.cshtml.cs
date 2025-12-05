@@ -51,8 +51,16 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
         public async Task<IActionResult> OnGetAsync()
         {
-            await CarregarDadosAsync();
-            return Page();
+            try
+            {
+                await CarregarDadosAsync();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostUsarPontosAsync()

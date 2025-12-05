@@ -214,9 +214,16 @@
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-3">
-                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" 
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center position-relative" 
                                  style="width: 80px; height: 80px;">
                                 <i class="bi bi-person-fill display-4 text-primary"></i>
+                            </div>
+                            <div class="mt-2">
+                                <label for="fotoPerfil" class="btn btn-sm btn-outline-primary" style="cursor: pointer;">
+                                    <i class="bi bi-camera me-1"></i>Alterar Foto
+                                </label>
+                                <input type="file" id="fotoPerfil" accept="image/*" style="display: none;" 
+                                       onchange="alert('Funcionalidade de upload de foto será implementada em breve!')">
                             </div>
                         </div>
 
@@ -309,15 +316,12 @@
                     <p class="mb-3">Nossa equipe está aqui para ajudar você!</p>
                     
                     <div class="d-grid gap-2">
-                        <button class="btn btn-outline-info btn-sm">
-                            <i class="bi bi-chat-dots me-2"></i>Chat Online
-                        </button>
-                        <button class="btn btn-outline-info btn-sm">
-                            <i class="bi bi-telephone me-2"></i>(11) 9999-9999
-                        </button>
-                        <button class="btn btn-outline-info btn-sm">
-                            <i class="bi bi-envelope me-2"></i>suporte@clinicapsi.com
-                        </button>
+                        <a href="tel:+5561981133399" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-telephone me-2"></i>(61) 98113-3399
+                        </a>
+                        <a href="mailto:raivinicius@gmail.com" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-envelope me-2"></i>raivinicius@gmail.com
+                        </a>
                     </div>
                 </div>
             </div>
