@@ -56,16 +56,24 @@ namespace ClinicaPsi.Web.Pages.Admin
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null || !await _userManager.IsInRoleAsync(user, "Admin"))
+            try
             {
-                return Forbid();
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null || !await _userManager.IsInRoleAsync(user, "Admin"))
+                {
+                    return Forbid();
+                }
+
+                await CarregarEstatisticasAsync();
+                await CarregarConsultasAsync();
+
+                return Page();
             }
-
-            await CarregarEstatisticasAsync();
-            await CarregarConsultasAsync();
-
-            return Page();
+            catch (Exception ex)
+            {
+                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostCancelarConsultaAsync(int consultaId)

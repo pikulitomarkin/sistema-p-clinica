@@ -54,33 +54,41 @@ namespace ClinicaPsi.Web.Pages.Psicologo
 
         public async Task<IActionResult> OnGetAsync(DateTime? dataInicio = null, DateTime? dataFim = null)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Forbid();
-
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user?.PsicologoId == null)
-                return Forbid();
-
-            var psicologoId = user.PsicologoId.Value;
-
-            // Definir período
-            if (dataInicio.HasValue && dataFim.HasValue)
+            try
             {
-                DataInicio = dataInicio.Value;
-                DataFim = dataFim.Value;
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Forbid();
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user?.PsicologoId == null)
+                    return Forbid();
+
+                var psicologoId = user.PsicologoId.Value;
+
+                // Definir período
+                if (dataInicio.HasValue && dataFim.HasValue)
+                {
+                    DataInicio = dataInicio.Value;
+                    DataFim = dataFim.Value;
+                }
+
+                // Garantir que a data fim seja o final do dia
+                DataFim = DataFim.Date.AddDays(1).AddTicks(-1);
+
+                await CalcularEstatisticasGeraisAsync(psicologoId);
+                await CalcularVariacoesAsync(psicologoId);
+                await CalcularStatusConsultasAsync(psicologoId);
+                await GerarDadosGraficosAsync(psicologoId);
+                await GerarRankingsAsync(psicologoId);
+
+                return Page();
             }
-
-            // Garantir que a data fim seja o final do dia
-            DataFim = DataFim.Date.AddDays(1).AddTicks(-1);
-
-            await CalcularEstatisticasGeraisAsync(psicologoId);
-            await CalcularVariacoesAsync(psicologoId);
-            await CalcularStatusConsultasAsync(psicologoId);
-            await GerarDadosGraficosAsync(psicologoId);
-            await GerarRankingsAsync(psicologoId);
-
-            return Page();
+            catch (Exception ex)
+            {
+                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
+                return Page();
+            }
         }
 
         private async Task CalcularEstatisticasGeraisAsync(int psicologoId)

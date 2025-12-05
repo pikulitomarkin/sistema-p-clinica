@@ -45,31 +45,33 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             string visualizacao = "lista",
             int pagina = 1)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Forbid();
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Forbid();
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            
-            int psicologoId;
-            
-            // Se for Admin, permitir acesso mas usar o primeiro psicólogo disponível
-            if (User.IsInRole("Admin") && user?.PsicologoId == null)
-            {
-                var primeiroPsicologo = await _context.Psicologos.FirstOrDefaultAsync();
-                if (primeiroPsicologo == null)
-                    return NotFound("Nenhum psicólogo encontrado no sistema");
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
                 
-                psicologoId = primeiroPsicologo.Id;
-            }
-            else if (user?.PsicologoId == null)
-            {
-                return Forbid();
-            }
-            else
-            {
-                psicologoId = user.PsicologoId.Value;
-            }
+                int psicologoId;
+                
+                // Se for Admin, permitir acesso mas usar o primeiro psicólogo disponível
+                if (User.IsInRole("Admin") && user?.PsicologoId == null)
+                {
+                    var primeiroPsicologo = await _context.Psicologos.FirstOrDefaultAsync();
+                    if (primeiroPsicologo == null)
+                        return NotFound("Nenhum psicólogo encontrado no sistema");
+                    
+                    psicologoId = primeiroPsicologo.Id;
+                }
+                else if (user?.PsicologoId == null)
+                {
+                    return Forbid();
+                }
+                else
+                {
+                    psicologoId = user.PsicologoId.Value;
+                }
 
             // Definir filtros
             FiltroNomePaciente = paciente;
@@ -122,16 +124,22 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 .Take(ItensPorPagina)
                 .ToListAsync();
 
-            // Buscar pacientes disponíveis
-            PacientesDisponiveis = await _context.Pacientes
-                .Where(p => _context.Consultas
-                    .Any(c => c.PacienteId == p.Id && c.PsicologoId == psicologoId))
-                .Union(_context.Pacientes.Take(20))
-                .Distinct()
-                .OrderBy(p => p.Nome)
-                .ToListAsync();
+                // Buscar pacientes disponíveis
+                PacientesDisponiveis = await _context.Pacientes
+                    .Where(p => _context.Consultas
+                        .Any(c => c.PacienteId == p.Id && c.PsicologoId == psicologoId))
+                    .Union(_context.Pacientes.Take(20))
+                    .Distinct()
+                    .OrderBy(p => p.Nome)
+                    .ToListAsync();
 
-            return Page();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostNovaConsultaAsync(

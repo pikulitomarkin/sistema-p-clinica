@@ -33,37 +33,45 @@ namespace ClinicaPsi.Web.Pages.Psicologo
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Forbid();
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Forbid();
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user?.PsicologoId == null)
-                return Forbid();
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user?.PsicologoId == null)
+                    return Forbid();
 
-            var psicologoId = user.PsicologoId.Value;
+                var psicologoId = user.PsicologoId.Value;
 
-            // Buscar dados do psicólogo
-            var psicologo = await _context.Psicologos.FindAsync(psicologoId);
-            if (psicologo == null)
-                return NotFound();
+                // Buscar dados do psicólogo
+                var psicologo = await _context.Psicologos.FindAsync(psicologoId);
+                if (psicologo == null)
+                    return NotFound();
 
-            Psicologo = psicologo;
+                Psicologo = psicologo;
 
-            // Buscar próximas consultas
-            ProximasConsultas = await _context.Consultas
-                .Include(c => c.Paciente)
-                .Where(c => c.PsicologoId == psicologoId &&
-                           c.DataHorario >= DateTime.Now &&
-                           c.Status != StatusConsulta.Cancelada)
-                .OrderBy(c => c.DataHorario)
-                .Take(10)
-                .ToListAsync();
+                // Buscar próximas consultas
+                ProximasConsultas = await _context.Consultas
+                    .Include(c => c.Paciente)
+                    .Where(c => c.PsicologoId == psicologoId &&
+                               c.DataHorario >= DateTime.Now &&
+                               c.Status != StatusConsulta.Cancelada)
+                    .OrderBy(c => c.DataHorario)
+                    .Take(10)
+                    .ToListAsync();
 
-            // Calcular estatísticas
-            await CalcularEstatisticasAsync(psicologoId);
+                // Calcular estatísticas
+                await CalcularEstatisticasAsync(psicologoId);
 
-            return Page();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostAtualizarPerfilAsync(

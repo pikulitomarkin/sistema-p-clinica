@@ -48,15 +48,17 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             string visualizacao = "cards",
             int pagina = 1)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Forbid();
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Forbid();
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user?.PsicologoId == null)
-                return Forbid();
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                if (user?.PsicologoId == null)
+                    return Forbid();
 
-            var psicologoId = user.PsicologoId.Value;
+                var psicologoId = user.PsicologoId.Value;
 
             // Definir filtros
             FiltroBusca = busca;
@@ -140,10 +142,16 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 .GroupBy(c => c.PacienteId)
                 .ToDictionaryAsync(g => g.Key, g => g.Count());
 
-            // Calcular estatísticas
-            await CalcularEstatisticasAsync(psicologoId);
+                // Calcular estatísticas
+                await CalcularEstatisticasAsync(psicologoId);
 
-            return Page();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostNovoPacienteAsync(

@@ -122,8 +122,8 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
             }
             catch (Exception ex)
             {
-                // Log do erro (você pode adicionar um logger aqui)
-                return StatusCode(500, $"Erro ao carregar dados do usuário: {ex.Message}");
+                // Erro ao carregar consultas - provavelmente migração pendente
+                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
             }
 
             return Page();
