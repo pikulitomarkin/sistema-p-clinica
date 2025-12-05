@@ -26,7 +26,7 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             _pdfService = pdfService;
         }
 
-        public List<Consulta> ConsultasRealizadas { get; set; } = new();
+        public List<Paciente> Pacientes { get; set; } = new();
         public string? ErrorMessage { get; set; }
         public string? SuccessMessage { get; set; }
 
@@ -50,27 +50,26 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     return Page();
                 }
 
-                // Buscar consultas realizadas dos últimos 90 dias
-                var dataLimite = DateTime.Now.AddDays(-90);
-                ConsultasRealizadas = await _context.Consultas
-                    .Include(c => c.Paciente)
-                    .Include(c => c.Psicologo)
-                    .Where(c => c.PsicologoId == psicologo.Id 
-                        && c.Status == StatusConsulta.Realizada
-                        && c.DataHorario >= dataLimite)
-                    .OrderByDescending(c => c.DataHorario)
+                // Buscar todos os pacientes que já tiveram consultas com este psicólogo
+                Pacientes = await _context.Pacientes
+                    .Where(p => _context.Consultas.Any(c => c.PacienteId == p.Id && c.PsicologoId == psicologo.Id))
+                    .OrderBy(p => p.Nome)
                     .ToListAsync();
 
                 return Page();
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Erro ao carregar consultas: {ex.Message}";
+                ErrorMessage = $"Erro ao carregar pacientes: {ex.Message}";
                 return Page();
             }
         }
 
-        public async Task<IActionResult> OnPostGerarDeclaracaoAsync(int consultaId)
+        public async Task<IActionResult> OnPostGerarDeclaracaoAsync(
+            int pacienteId,
+            string dataConsulta,
+            string horaConsulta,
+            int duracao)
         {
             try
             {
@@ -80,7 +79,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     return RedirectToPage("/Account/Login");
                 }
 
-                // Verificar se a consulta pertence ao psicólogo logado
                 var psicologo = await _context.Psicologos
                     .FirstOrDefaultAsync(p => p.UserId == user.Id);
 
@@ -90,26 +88,38 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     return await OnGetAsync();
                 }
 
-                var consulta = await _context.Consultas
-                    .Include(c => c.Paciente)
-                    .FirstOrDefaultAsync(c => c.Id == consultaId && c.PsicologoId == psicologo.Id);
+                var paciente = await _context.Pacientes
+                    .FirstOrDefaultAsync(p => p.Id == pacienteId);
 
-                if (consulta == null)
+                if (paciente == null)
                 {
-                    ErrorMessage = "Consulta não encontrada ou você não tem permissão para gerar este documento.";
+                    ErrorMessage = "Paciente não encontrado.";
                     return await OnGetAsync();
                 }
 
-                if (consulta.Status != StatusConsulta.Realizada)
+                // Combinar data e hora
+                if (!DateTime.TryParse(dataConsulta, out var data))
                 {
-                    ErrorMessage = "Só é possível gerar declaração para consultas realizadas.";
+                    ErrorMessage = "Data inválida.";
                     return await OnGetAsync();
                 }
 
-                // Gerar PDF
-                var pdfBytes = await _pdfService.GerarDeclaracaoComparecimentoAsync(consultaId);
+                if (!TimeSpan.TryParse(horaConsulta, out var hora))
+                {
+                    ErrorMessage = "Horário inválido.";
+                    return await OnGetAsync();
+                }
+
+                var dataHorario = data.Date.Add(hora);
+
+                // Gerar PDF com dados manuais
+                var pdfBytes = await _pdfService.GerarDeclaracaoComparecimentoManualAsync(
+                    paciente,
+                    psicologo,
+                    dataHorario,
+                    duracao);
                 
-                var nomeArquivo = $"Declaracao_{consulta.Paciente?.Nome?.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
+                var nomeArquivo = $"Declaracao_{paciente.Nome.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
                 
                 return File(pdfBytes, "application/pdf", nomeArquivo);
             }
@@ -121,7 +131,9 @@ namespace ClinicaPsi.Web.Pages.Psicologo
         }
 
         public async Task<IActionResult> OnPostGerarAtestadoAsync(
-            int consultaId, 
+            int pacienteId,
+            string dataConsulta,
+            string horaConsulta,
             string? cid, 
             int diasAfastamento, 
             string? observacoes)
@@ -134,7 +146,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     return RedirectToPage("/Account/Login");
                 }
 
-                // Verificar se a consulta pertence ao psicólogo logado
                 var psicologo = await _context.Psicologos
                     .FirstOrDefaultAsync(p => p.UserId == user.Id);
 
@@ -144,19 +155,12 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     return await OnGetAsync();
                 }
 
-                var consulta = await _context.Consultas
-                    .Include(c => c.Paciente)
-                    .FirstOrDefaultAsync(c => c.Id == consultaId && c.PsicologoId == psicologo.Id);
+                var paciente = await _context.Pacientes
+                    .FirstOrDefaultAsync(p => p.Id == pacienteId);
 
-                if (consulta == null)
+                if (paciente == null)
                 {
-                    ErrorMessage = "Consulta não encontrada ou você não tem permissão para gerar este documento.";
-                    return await OnGetAsync();
-                }
-
-                if (consulta.Status != StatusConsulta.Realizada)
-                {
-                    ErrorMessage = "Só é possível gerar atestado para consultas realizadas.";
+                    ErrorMessage = "Paciente não encontrado.";
                     return await OnGetAsync();
                 }
 
@@ -166,14 +170,31 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     return await OnGetAsync();
                 }
 
-                // Gerar PDF
-                var pdfBytes = await _pdfService.GerarAtestadoAsync(
-                    consultaId, 
+                // Combinar data e hora
+                if (!DateTime.TryParse(dataConsulta, out var data))
+                {
+                    ErrorMessage = "Data inválida.";
+                    return await OnGetAsync();
+                }
+
+                if (!TimeSpan.TryParse(horaConsulta, out var hora))
+                {
+                    ErrorMessage = "Horário inválido.";
+                    return await OnGetAsync();
+                }
+
+                var dataHorario = data.Date.Add(hora);
+
+                // Gerar PDF com dados manuais
+                var pdfBytes = await _pdfService.GerarAtestadoManualAsync(
+                    paciente,
+                    psicologo,
+                    dataHorario,
                     cid ?? string.Empty, 
                     diasAfastamento, 
                     observacoes ?? string.Empty);
                 
-                var nomeArquivo = $"Atestado_{consulta.Paciente?.Nome?.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
+                var nomeArquivo = $"Atestado_{paciente.Nome.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
                 
                 return File(pdfBytes, "application/pdf", nomeArquivo);
             }
