@@ -1,0 +1,435 @@
+@page "/admin/usuarios/detalhes/{id}"
+@model ClinicaPsi.Web.Pages.Admin.Usuarios.DetalhesModel
+@{
+    ViewData["Title"] = $"Detalhes - {Model.Usuario.NomeCompleto}";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-person-circle me-2"></i>
+                        Detalhes do Usuário
+                    </h2>
+                    <p class="text-muted">Informações completas do usuário</p>
+                </div>
+                <div>
+                    <a href="/admin/usuarios" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Voltar
+                    </a>
+                    <a href="/admin/usuarios/editar/@Model.Usuario.Id" class="btn btn-primary">
+                        <i class="bi bi-pencil me-2"></i>Editar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informações Principais -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-person-circle text-primary" style="font-size: 5rem;"></i>
+                    </div>
+                    <h4 class="mb-2">@Model.Usuario.NomeCompleto</h4>
+                    <p class="text-muted mb-3">@Model.Usuario.Email</p>
+                    
+                    <!-- Badge do Tipo de Usuário -->
+                    @switch (Model.Usuario.TipoUsuario)
+                    {
+                        case TipoUsuario.Admin:
+                            <span class="badge bg-danger mb-3">
+                                <i class="bi bi-shield-check me-1"></i>Administrador
+                            </span>
+                            break;
+                        case TipoUsuario.Psicologo:
+                            <span class="badge bg-primary mb-3">
+                                <i class="bi bi-person-badge me-1"></i>Psicólogo
+                            </span>
+                            break;
+                        case TipoUsuario.Cliente:
+                            <span class="badge bg-success mb-3">
+                                <i class="bi bi-person me-1"></i>Paciente
+                            </span>
+                            break;
+                    }
+
+                    <!-- Status -->
+                    <div class="mb-3">
+                        @if (Model.Usuario.Ativo)
+                        {
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle me-1"></i>Ativo
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Inativo
+                            </span>
+                        }
+                    </div>
+
+                    <!-- Roles -->
+                    @if (Model.Roles.Any())
+                    {
+                        <hr>
+                        <div class="text-start">
+                            <h6 class="text-muted mb-2">Permissões:</h6>
+                            @foreach (var role in Model.Roles)
+                            {
+                                <span class="badge bg-info me-1">@role</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações Detalhadas -->
+        <div class="col-lg-8">
+            <!-- Dados da Conta -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Informações da Conta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Nome de Usuário</label>
+                            <p class="mb-0 fw-bold">@Model.Usuario.UserName</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Email</label>
+                            <p class="mb-0 fw-bold">@Model.Usuario.Email</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Email Confirmado</label>
+                            <p class="mb-0">
+                                @if (Model.Usuario.EmailConfirmed)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>Sim
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">
+                                        <i class="bi bi-x-circle me-1"></i>Não
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Telefone</label>
+                            <p class="mb-0 fw-bold">@(Model.Usuario.PhoneNumber ?? "Não informado")</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Telefone Confirmado</label>
+                            <p class="mb-0">
+                                @if (Model.Usuario.PhoneNumberConfirmed)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>Sim
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">
+                                        <i class="bi bi-x-circle me-1"></i>Não
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Autenticação de 2 Fatores</label>
+                            <p class="mb-0">
+                                @if (Model.Usuario.TwoFactorEnabled)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-shield-check me-1"></i>Ativada
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-shield me-1"></i>Desativada
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados Específicos - Paciente -->
+            @if (Model.Usuario.TipoUsuario == TipoUsuario.Cliente && Model.Paciente != null)
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person me-2"></i>Dados do Paciente
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">CPF</label>
+                                <p class="mb-0 fw-bold">@Model.Paciente.CPF</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Data de Nascimento</label>
+                                <p class="mb-0 fw-bold">@Model.Paciente.DataNascimento.ToString("dd/MM/yyyy")</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Telefone</label>
+                                <p class="mb-0 fw-bold">@Model.Paciente.Telefone</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">PsicoPontos</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-warning text-dark" style="font-size: 1.1rem;">
+                                        <i class="bi bi-star-fill me-1"></i>@Model.Paciente.PsicoPontos pontos
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Consultas Gratuitas</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-info" style="font-size: 1rem;">
+                                        <i class="bi bi-gift me-1"></i>@Model.Paciente.ConsultasGratuitas disponível(is)
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small">Endereço</label>
+                                <p class="mb-0">@(Model.Paciente.Endereco ?? "Não informado")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estatísticas de Consultas -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-check me-2"></i>Estatísticas de Consultas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3 mb-3">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="text-primary mb-1">@Model.TotalConsultas</h3>
+                                    <small class="text-muted">Total</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="text-success mb-1">@Model.ConsultasRealizadas</h3>
+                                    <small class="text-muted">Realizadas</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="text-warning mb-1">@Model.ConsultasAgendadas</h3>
+                                    <small class="text-muted">Agendadas</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="text-info mb-1">@Model.Paciente.ConsultasRealizadas</h3>
+                                    <small class="text-muted">Histórico</small>
+                                </div>
+                            </div>
+                        </div>
+                        @if (Model.UltimaConsulta.HasValue || Model.ProximaConsulta.HasValue)
+                        {
+                            <hr>
+                            <div class="row">
+                                @if (Model.UltimaConsulta.HasValue)
+                                {
+                                    <div class="col-md-6">
+                                        <label class="text-muted small">Última Consulta</label>
+                                        <p class="mb-0">
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            @Model.UltimaConsulta.Value.ToString("dd/MM/yyyy 'às' HH:mm")
+                                        </p>
+                                    </div>
+                                }
+                                @if (Model.ProximaConsulta.HasValue)
+                                {
+                                    <div class="col-md-6">
+                                        <label class="text-muted small">Próxima Consulta</label>
+                                        <p class="mb-0">
+                                            <i class="bi bi-calendar-check me-1"></i>
+                                            @Model.ProximaConsulta.Value.ToString("dd/MM/yyyy 'às' HH:mm")
+                                        </p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Dados Específicos - Psicólogo -->
+            @if (Model.Usuario.TipoUsuario == TipoUsuario.Psicologo && Model.Psicologo != null)
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-badge me-2"></i>Dados do Psicólogo
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">CRP</label>
+                                <p class="mb-0 fw-bold">@Model.Psicologo.CRP</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Telefone</label>
+                                <p class="mb-0 fw-bold">@Model.Psicologo.Telefone</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Valor da Consulta</label>
+                                <p class="mb-0 fw-bold">@Model.Psicologo.ValorConsulta.ToString("C")</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Status</label>
+                                <p class="mb-0">
+                                    @if (Model.Psicologo.Ativo)
+                                    {
+                                        <span class="badge bg-success">Ativo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inativo</span>
+                                    }
+                                </p>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="text-muted small">Especialidades</label>
+                                <p class="mb-0">@(Model.Psicologo.Especialidades ?? "Não informado")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estatísticas de Consultas -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-check me-2"></i>Estatísticas de Atendimento
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4 mb-3">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="text-primary mb-1">@Model.TotalConsultas</h3>
+                                    <small class="text-muted">Total de Consultas</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="text-success mb-1">@Model.ConsultasRealizadas</h3>
+                                    <small class="text-muted">Realizadas</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="text-warning mb-1">@Model.ConsultasAgendadas</h3>
+                                    <small class="text-muted">Agendadas</small>
+                                </div>
+                            </div>
+                        </div>
+                        @if (Model.UltimaConsulta.HasValue || Model.ProximaConsulta.HasValue)
+                        {
+                            <hr>
+                            <div class="row">
+                                @if (Model.UltimaConsulta.HasValue)
+                                {
+                                    <div class="col-md-6">
+                                        <label class="text-muted small">Último Atendimento</label>
+                                        <p class="mb-0">
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            @Model.UltimaConsulta.Value.ToString("dd/MM/yyyy 'às' HH:mm")
+                                        </p>
+                                    </div>
+                                }
+                                @if (Model.ProximaConsulta.HasValue)
+                                {
+                                    <div class="col-md-6">
+                                        <label class="text-muted small">Próximo Atendimento</label>
+                                        <p class="mb-0">
+                                            <i class="bi bi-calendar-check me-1"></i>
+                                            @Model.ProximaConsulta.Value.ToString("dd/MM/yyyy 'às' HH:mm")
+                                        </p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Informações do Sistema -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Informações do Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">ID do Usuário</label>
+                            <p class="mb-0">
+                                <code>@Model.Usuario.Id</code>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Data de Cadastro</label>
+                            <p class="mb-0">@Model.Usuario.DataCadastro.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Tentativas de Login Falhas</label>
+                            <p class="mb-0">
+                                @if (Model.Usuario.AccessFailedCount > 0)
+                                {
+                                    <span class="badge bg-warning">@Model.Usuario.AccessFailedCount tentativas</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Nenhuma</span>
+                                }
+                            </p>
+                        </div>
+                        @if (Model.Usuario.LockoutEnd.HasValue)
+                        {
+                            <div class="col-12 mb-3">
+                                <label class="text-muted small">Bloqueio de Conta</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-lock me-1"></i>
+                                        Bloqueada até @Model.Usuario.LockoutEnd.Value.ToString("dd/MM/yyyy HH:mm")
+                                    </span>
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
