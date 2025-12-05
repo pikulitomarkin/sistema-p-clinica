@@ -80,25 +80,24 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Duração</label>
-                                    <select asp-for="Input.DuracaoMinutos" class="form-select">
-                                        <option value="50">50 minutos (Padrão)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Formato da Consulta</label>
-                                    <select asp-for="Input.Formato" class="form-select">
+                                    <label class="form-label fw-bold">Formato da Consulta *</label>
+                                    <select asp-for="Input.Formato" class="form-select" required>
                                         <option value="@FormatoConsulta.Presencial">🏢 Presencial</option>
                                         <option value="@FormatoConsulta.Online">💻 Online (Videochamada)</option>
                                     </select>
-                                    <small class="text-muted">Escolha se prefere atendimento presencial ou por videochamada</small>
+                                    <small class="text-muted d-block mt-1">Escolha se prefere atendimento presencial ou por videochamada</small>
                                 </div>
                             </div>
                         </div>
 
                         <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Duração da Consulta</label>
+                                    <input type="text" class="form-control" value="50 minutos (Padrão)" readonly>
+                                    <small class="text-muted d-block mt-1">Todas as consultas têm duração padrão de 50 minutos</small>
+                                </div>
+                            </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Tipo de Consulta</label>
@@ -111,7 +110,10 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Valor da Consulta</label>
                                     <div class="input-group">

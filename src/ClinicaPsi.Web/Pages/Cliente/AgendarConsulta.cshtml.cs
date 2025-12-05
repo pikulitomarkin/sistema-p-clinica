@@ -69,7 +69,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
                 // Verificar se já existe consulta no mesmo horário
                 var consultaExistente = await _context.Consultas
-                    .Where(c => c.PsicologoId == Input.PsicologoId && 
+                    .Where(c => c.PsicologoId == Input.PsicologoId &&
                                c.DataHorario == Input.DataHorario &&
                                c.Status != StatusConsulta.Cancelada)
                     .FirstOrDefaultAsync();
@@ -154,14 +154,14 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 return NotFound();
 
             var consultasOcupadas = await _context.Consultas
-                .Where(c => c.PsicologoId == psicologoId && 
+                .Where(c => c.PsicologoId == psicologoId &&
                            c.DataHorario.Date == data.Date &&
                            c.Status != StatusConsulta.Cancelada)
                 .Select(c => c.DataHorario)
                 .ToListAsync();
 
             var horariosDisponiveis = GerarHorariosDisponiveis(psicologo, data, consultasOcupadas);
-            
+
             return new JsonResult(horariosDisponiveis.Select(h => new {
                 valor = h.ToString("yyyy-MM-ddTHH:mm"),
                 texto = h.ToString("HH:mm")
@@ -218,7 +218,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
             {
                 var inicioManha = data.Date.Add(psicologo.HorarioInicioManha);
                 var fimManha = data.Date.Add(psicologo.HorarioFimManha);
-                
+
                 for (var hora = inicioManha; hora < fimManha; hora = hora.AddMinutes(50))
                 {
                     if (!horariosOcupados.Contains(hora) && hora > DateTime.Now)
@@ -233,7 +233,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
             {
                 var inicioTarde = data.Date.Add(psicologo.HorarioInicioTarde);
                 var fimTarde = data.Date.Add(psicologo.HorarioFimTarde);
-                
+
                 for (var hora = inicioTarde; hora < fimTarde; hora = hora.AddMinutes(50))
                 {
                     if (!horariosOcupados.Contains(hora) && hora > DateTime.Now)
