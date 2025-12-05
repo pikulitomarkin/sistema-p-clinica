@@ -50,9 +50,9 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     return Page();
                 }
 
-                // Buscar todos os pacientes que já tiveram consultas com este psicólogo
+                // Buscar todos os pacientes ativos
                 Pacientes = await _context.Pacientes
-                    .Where(p => _context.Consultas.Any(c => c.PacienteId == p.Id && c.PsicologoId == psicologo.Id))
+                    .Where(p => p.Ativo)
                     .OrderBy(p => p.Nome)
                     .ToListAsync();
 

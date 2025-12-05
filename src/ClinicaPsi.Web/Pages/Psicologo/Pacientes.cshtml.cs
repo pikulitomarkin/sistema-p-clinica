@@ -67,10 +67,9 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             Visualizacao = visualizacao;
             PaginaAtual = pagina;
 
-            // Buscar pacientes que já tiveram consulta com este psicólogo
+            // Buscar todos os pacientes ativos
             var pacientesQuery = _context.Pacientes
-                .Where(p => _context.Consultas
-                    .Any(c => c.PacienteId == p.Id && c.PsicologoId == psicologoId));
+                .Where(p => p.Ativo);
 
             // Aplicar filtro de busca
             if (!string.IsNullOrEmpty(FiltroBusca))
@@ -81,14 +80,13 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     (p.CPF != null && p.CPF.Contains(FiltroBusca.Replace(".", "").Replace("-", ""))));
             }
 
-            // Aplicar filtro de período
+            // Aplicar filtro de período (pacientes que tiveram consulta no período)
             if (FiltroPeriodo.HasValue)
             {
                 var dataLimite = DateTime.Now.AddDays(-FiltroPeriodo.Value);
                 pacientesQuery = pacientesQuery.Where(p => 
                     _context.Consultas.Any(c => 
                         c.PacienteId == p.Id && 
-                        c.PsicologoId == psicologoId && 
                         c.DataHorario >= dataLimite));
             }
 
