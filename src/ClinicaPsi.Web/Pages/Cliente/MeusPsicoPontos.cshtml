@@ -196,69 +196,6 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <!-- Ranking -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-warning text-dark">
-                    <h6 class="mb-0"><i class="bi bi-trophy me-2"></i>Seu Ranking</h6>
-                </div>
-                <div class="card-body text-center">
-                    <div class="display-4 text-warning mb-2">#{Model.PosicaoRanking}</div>
-                    <p class="text-muted mb-3">de @Model.TotalPacientes pacientes</p>
-                    
-                    @if (Model.PosicaoRanking <= 3)
-                    {
-                        <div class="alert alert-warning border-0">
-                            <i class="bi bi-trophy-fill me-2"></i>
-                            <strong>Parabéns!</strong> Você está no TOP 3!
-                        </div>
-                    }
-                    else if (Model.PosicaoRanking <= 10)
-                    {
-                        <div class="alert alert-info border-0">
-                            <i class="bi bi-award me-2"></i>
-                            <strong>Muito bem!</strong> Você está no TOP 10!
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- TOP Pacientes -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header">
-                    <h6 class="mb-0"><i class="bi bi-people me-2"></i>TOP 10 Pacientes</h6>
-                </div>
-                <div class="card-body p-0">
-                    @if (Model.TopPacientes.Any())
-                    {
-                        <div class="list-group list-group-flush">
-                            @for (int i = 0; i < Math.Min(10, Model.TopPacientes.Count); i++)
-                            {
-                                var paciente = Model.TopPacientes[i];
-                                var posicao = i + 1;
-                                
-                                <div class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge @Model.GetRankingBadgeClass(posicao) me-2">
-                                                @posicao
-                                            </span>
-                                            <div>
-                                                <div class="fw-bold">@paciente.Nome</div>
-                                                <small class="text-muted">@paciente.ConsultasRealizadas consultas</small>
-                                            </div>
-                                        </div>
-                                        <div class="text-end">
-                                            <div class="fw-bold text-primary">@paciente.PsicoPontos</div>
-                                            <small class="text-muted">pontos</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
-            </div>
-
             <!-- Consultas Gratuitas Utilizadas -->
             @if (Model.ConsultasGratuitasHistorico.Any())
             {
