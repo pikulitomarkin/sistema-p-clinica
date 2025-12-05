@@ -36,78 +36,94 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
         {
             if (string.IsNullOrEmpty(id))
             {
-                return NotFound();
+                return NotFound("ID do usuário não fornecido.");
             }
 
-            Usuario = await _userManager.FindByIdAsync(id);
-            if (Usuario == null)
+            try
             {
-                return NotFound();
-            }
-
-            // Carregar roles do usuário
-            Roles = (await _userManager.GetRolesAsync(Usuario)).ToList();
-
-            // Se for paciente, carregar dados do paciente
-            if (Usuario.TipoUsuario == TipoUsuario.Cliente)
-            {
-                Paciente = await _context.Pacientes
-                    .FirstOrDefaultAsync(p => p.Id == Usuario.PacienteId);
-
-                if (Paciente != null)
+                Usuario = await _userManager.FindByIdAsync(id);
+                if (Usuario == null)
                 {
-                    // Carregar estatísticas de consultas
-                    var consultas = await _context.Consultas
-                        .Where(c => c.PacienteId == Paciente.Id)
-                        .ToListAsync();
+                    return NotFound($"Usuário com ID {id} não encontrado.");
+                }
 
-                    TotalConsultas = consultas.Count;
-                    ConsultasRealizadas = consultas.Count(c => c.Status == StatusConsulta.Realizada);
-                    ConsultasAgendadas = consultas.Count(c =>
-                        c.Status == StatusConsulta.Agendada ||
-                        c.Status == StatusConsulta.Confirmada);
+                // Carregar roles do usuário
+                Roles = (await _userManager.GetRolesAsync(Usuario)).ToList();
+            }
+            catch (Exception ex)
+            {
+                // Log do erro (você pode adicionar um logger aqui)
+                return StatusCode(500, $"Erro ao carregar usuário: {ex.Message}");
+            }
 
-                    UltimaConsulta = consultas
-                        .Where(c => c.Status == StatusConsulta.Realizada)
-                        .OrderByDescending(c => c.DataHorario)
-                        .FirstOrDefault()?.DataHorario;
+            try
+            {
+                // Se for paciente, carregar dados do paciente
+                if (Usuario.TipoUsuario == TipoUsuario.Cliente)
+                {
+                    Paciente = await _context.Pacientes
+                        .FirstOrDefaultAsync(p => p.Id == Usuario.PacienteId);
 
-                    ProximaConsulta = consultas
-                        .Where(c => c.Status == StatusConsulta.Agendada || c.Status == StatusConsulta.Confirmada)
-                        .OrderBy(c => c.DataHorario)
-                        .FirstOrDefault()?.DataHorario;
+                    if (Paciente != null)
+                    {
+                        // Carregar estatísticas de consultas
+                        var consultas = await _context.Consultas
+                            .Where(c => c.PacienteId == Paciente.Id)
+                            .ToListAsync();
+
+                        TotalConsultas = consultas.Count;
+                        ConsultasRealizadas = consultas.Count(c => c.Status == StatusConsulta.Realizada);
+                        ConsultasAgendadas = consultas.Count(c =>
+                            c.Status == StatusConsulta.Agendada ||
+                            c.Status == StatusConsulta.Confirmada);
+
+                        UltimaConsulta = consultas
+                            .Where(c => c.Status == StatusConsulta.Realizada)
+                            .OrderByDescending(c => c.DataHorario)
+                            .FirstOrDefault()?.DataHorario;
+
+                        ProximaConsulta = consultas
+                            .Where(c => c.Status == StatusConsulta.Agendada || c.Status == StatusConsulta.Confirmada)
+                            .OrderBy(c => c.DataHorario)
+                            .FirstOrDefault()?.DataHorario;
+                    }
+                }
+
+                // Se for psicólogo, carregar dados do psicólogo
+                if (Usuario.TipoUsuario == TipoUsuario.Psicologo)
+                {
+                    Psicologo = await _context.Psicologos
+                        .FirstOrDefaultAsync(p => p.UserId == id);
+
+                    if (Psicologo != null)
+                    {
+                        // Carregar estatísticas de consultas
+                        var consultas = await _context.Consultas
+                            .Where(c => c.PsicologoId == Psicologo.Id)
+                            .ToListAsync();
+
+                        TotalConsultas = consultas.Count;
+                        ConsultasRealizadas = consultas.Count(c => c.Status == StatusConsulta.Realizada);
+                        ConsultasAgendadas = consultas.Count(c =>
+                            c.Status == StatusConsulta.Agendada ||
+                            c.Status == StatusConsulta.Confirmada);
+
+                        UltimaConsulta = consultas
+                            .Where(c => c.Status == StatusConsulta.Realizada)
+                            .OrderByDescending(c => c.DataHorario)
+                            .FirstOrDefault()?.DataHorario;
+
+                        ProximaConsulta = consultas
+                            .Where(c => c.Status == StatusConsulta.Agendada || c.Status == StatusConsulta.Confirmada)
+                            .OrderBy(c => c.DataHorario)
+                            .FirstOrDefault()?.DataHorario;
+                    }
                 }
             }
-
-            // Se for psicólogo, carregar dados do psicólogo
-            if (Usuario.TipoUsuario == TipoUsuario.Psicologo)
+            catch (Exception ex)
             {
-                Psicologo = await _context.Psicologos
-                    .FirstOrDefaultAsync(p => p.UserId == id);
-
-                if (Psicologo != null)
-                {
-                    // Carregar estatísticas de consultas
-                    var consultas = await _context.Consultas
-                        .Where(c => c.PsicologoId == Psicologo.Id)
-                        .ToListAsync();
-
-                    TotalConsultas = consultas.Count;
-                    ConsultasRealizadas = consultas.Count(c => c.Status == StatusConsulta.Realizada);
-                    ConsultasAgendadas = consultas.Count(c =>
-                        c.Status == StatusConsulta.Agendada ||
-                        c.Status == StatusConsulta.Confirmada);
-
-                    UltimaConsulta = consultas
-                        .Where(c => c.Status == StatusConsulta.Realizada)
-                        .OrderByDescending(c => c.DataHorario)
-                        .FirstOrDefault()?.DataHorario;
-
-                    ProximaConsulta = consultas
-                        .Where(c => c.Status == StatusConsulta.Agendada || c.Status == StatusConsulta.Confirmada)
-                        .OrderBy(c => c.DataHorario)
-                        .FirstOrDefault()?.DataHorario;
-                }
+                // Log do erro (você pode adicionar um logger aqui)
+                return StatusCode(500, $"Erro ao carregar dados do usuário: {ex.Message}");
             }
 
             return Page();

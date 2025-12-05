@@ -1,8 +1,22 @@
 @page "/admin/usuarios/detalhes/{id}"
 @model ClinicaPsi.Web.Pages.Admin.Usuarios.DetalhesModel
 @{
-    ViewData["Title"] = $"Detalhes - {Model.Usuario.NomeCompleto}";
+    ViewData["Title"] = Model.Usuario != null ? $"Detalhes - {Model.Usuario.NomeCompleto}" : "Detalhes do Usuário";
     Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+@if (Model.Usuario == null)
+{
+    <div class="container-fluid py-4">
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Usuário não encontrado.
+        </div>
+        <a href="/admin/usuarios" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-2"></i>Voltar para Usuários
+        </a>
+    </div>
+    return;
 }
 
 <div class="container-fluid py-4">
