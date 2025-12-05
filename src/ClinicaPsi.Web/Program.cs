@@ -194,6 +194,30 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        // Aplicar migrations pendentes automaticamente
+        logger.LogInformation("Verificando migrations pendentes...");
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        if (pendingMigrations.Any())
+        {
+            logger.LogInformation($"Aplicando {pendingMigrations.Count()} migration(s) pendente(s): {string.Join(", ", pendingMigrations)}");
+            await context.Database.MigrateAsync();
+            logger.LogInformation("✅ Migrations aplicadas com sucesso!");
+        }
+        else
+        {
+            logger.LogInformation("Nenhuma migration pendente.");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "❌ Erro ao aplicar migrations: {Message}", ex.Message);
+        throw;
+    }
+    
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     
