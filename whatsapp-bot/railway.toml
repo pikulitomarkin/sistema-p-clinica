@@ -1,14 +1,17 @@
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+builder = "NIXPACKS"
+
+[build.nixpacksSettings]
+npmVersion = "10.x"
+nodeVersion = "20.x"
 
 [deploy]
-startCommand = "node server.js"
+startCommand = "npm start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
-healthcheckPath = "/health"
+healthcheckPath = "/"
 healthcheckTimeout = 300
 
-# Volume persistente para sessões do WhatsApp
+# Volume persistente para sessões do Baileys
 [[deploy.volumes]]
-mountPath = "/app/sessions"
+mountPath = "/app/auth_info_baileys"
