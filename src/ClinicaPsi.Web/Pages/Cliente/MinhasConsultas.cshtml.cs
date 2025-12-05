@@ -28,19 +28,11 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
         public async Task<IActionResult> OnGetAsync(string filtroStatus = "proximas", string busca = "")
         {
-            try
-            {
-                FiltroStatus = filtroStatus;
-                Busca = busca;
+            FiltroStatus = filtroStatus;
+            Busca = busca;
 
-                await CarregarDadosAsync();
-                return Page();
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
-                return Page();
-            }
+            await CarregarDadosAsync();
+            return Page();
         }
 
         public async Task<IActionResult> OnPostCancelarConsultaAsync(int consultaId, string motivo = "")
@@ -150,7 +142,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
             // Aplicar filtro de busca
             if (!string.IsNullOrWhiteSpace(Busca))
             {
-                consultasQuery = consultasQuery.Where(c => 
+                consultasQuery = consultasQuery.Where(c =>
                     c.Psicologo.Nome.Contains(Busca) ||
                     c.Observacoes!.Contains(Busca));
             }
@@ -162,7 +154,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
             var agora = DateTime.Now;
 
             ConsultasProximas = todasConsultas
-                .Where(c => c.DataHorario >= agora && 
+                .Where(c => c.DataHorario >= agora &&
                            (c.Status == StatusConsulta.Agendada || c.Status == StatusConsulta.Confirmada))
                 .OrderBy(c => c.DataHorario)
                 .ToList();
@@ -195,14 +187,14 @@ namespace ClinicaPsi.Web.Pages.Cliente
         public bool PodeSerCancelada(Consulta consulta)
         {
             var horasParaConsulta = (consulta.DataHorario - DateTime.Now).TotalHours;
-            return horasParaConsulta >= 24 && 
+            return horasParaConsulta >= 24 &&
                    (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada);
         }
 
         public bool PrecisaConfirmacao(Consulta consulta)
         {
             var horasParaConsulta = (consulta.DataHorario - DateTime.Now).TotalHours;
-            return horasParaConsulta <= 48 && horasParaConsulta > 0 && 
+            return horasParaConsulta <= 48 && horasParaConsulta > 0 &&
                    !consulta.ConfirmacaoRecebida &&
                    (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada);
         }

@@ -42,24 +42,16 @@ namespace ClinicaPsi.Web.Pages.Cliente
         public Dictionary<string, int> ConsultasPorPsicologo { get; set; } = new();
         public Dictionary<string, int> ConsultasPorMes { get; set; } = new();
 
-        public async Task<IActionResult> OnGetAsync(DateTime? dataInicio, DateTime? dataFim, 
+        public async Task<IActionResult> OnGetAsync(DateTime? dataInicio, DateTime? dataFim,
             string filtroTipo = "todos", int pagina = 1)
         {
-            try
-            {
-                if (dataInicio.HasValue) DataInicio = dataInicio.Value;
-                if (dataFim.HasValue) DataFim = dataFim.Value;
-                FiltroTipo = filtroTipo;
-                PaginaAtual = pagina;
+            if (dataInicio.HasValue) DataInicio = dataInicio.Value;
+            if (dataFim.HasValue) DataFim = dataFim.Value;
+            FiltroTipo = filtroTipo;
+            PaginaAtual = pagina;
 
-                await CarregarDadosAsync();
-                return Page();
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
-                return Page();
-            }
+            await CarregarDadosAsync();
+            return Page();
         }
 
         public async Task<IActionResult> OnGetExportarPdfAsync(DateTime? dataInicio, DateTime? dataFim)
@@ -76,8 +68,8 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 }
 
                 var pdfBytes = await _pdfService.GerarHistoricoConsultasPacienteAsync(
-                    user.PacienteId.Value, 
-                    dataInicio, 
+                    user.PacienteId.Value,
+                    dataInicio,
                     dataFim);
 
                 var paciente = await _context.Pacientes.FindAsync(user.PacienteId.Value);

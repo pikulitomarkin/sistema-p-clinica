@@ -51,16 +51,8 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
         public async Task<IActionResult> OnGetAsync()
         {
-            try
-            {
-                await CarregarDadosAsync();
-                return Page();
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
-                return Page();
-            }
+            await CarregarDadosAsync();
+            return Page();
         }
 
         public async Task<IActionResult> OnPostUsarPontosAsync()
@@ -149,7 +141,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
             // Calcular totais
             TotalPontosGanhos = HistoricoCompleto
-                .Where(h => h.TipoMovimentacao == TipoMovimentacaoPontos.Ganho || 
+                .Where(h => h.TipoMovimentacao == TipoMovimentacaoPontos.Ganho ||
                            h.TipoMovimentacao == TipoMovimentacaoPontos.Bonus)
                 .Sum(h => h.Pontos);
 
@@ -160,7 +152,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
             // Carregar consultas gratuitas utilizadas
             ConsultasGratuitasHistorico = await _context.Consultas
                 .Include(c => c.Psicologo)
-                .Where(c => c.PacienteId == user.PacienteId.Value && 
+                .Where(c => c.PacienteId == user.PacienteId.Value &&
                            c.Tipo == TipoConsulta.Gratuita &&
                            c.Status == StatusConsulta.Realizada)
                 .OrderByDescending(c => c.DataHorario)
@@ -229,7 +221,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
         public string GetProgressColorClass()
         {
             var progresso = (10 - PontosParaProximaGratuita) * 10;
-            
+
             return progresso switch
             {
                 >= 80 => "bg-success",
