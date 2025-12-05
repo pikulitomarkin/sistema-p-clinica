@@ -365,6 +365,189 @@ namespace ClinicaPsi.Application.Services
 
             return document.GeneratePdf();
         }
+
+        // Gerar Declaração de Comparecimento
+        public async Task<byte[]> GerarDeclaracaoComparecimentoAsync(int consultaId)
+    {
+        var consulta = await _context.Consultas
+            .Include(c => c.Paciente)
+            .Include(c => c.Psicologo)
+            .FirstOrDefaultAsync(c => c.Id == consultaId);
+
+        if (consulta == null)
+            throw new ArgumentException("Consulta não encontrada");
+
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(2, Unit.Centimetre);
+                page.DefaultTextStyle(x => x.FontSize(12));
+
+                page.Header()
+                    .Column(col =>
+                    {
+                        col.Item().AlignCenter().Text("DECLARAÇÃO DE COMPARECIMENTO").FontSize(18).Bold();
+                        col.Item().PaddingTop(10).LineHorizontal(1).LineColor(Colors.Grey.Medium);
+                    });
+
+                page.Content()
+                    .PaddingTop(40)
+                    .Column(col =>
+                    {
+                        col.Spacing(20);
+
+                        // Texto da declaração
+                        col.Item().Text(text =>
+                        {
+                            text.Span("Declaro para os devidos fins que ").FontSize(12);
+                            text.Span(consulta.Paciente?.Nome ?? "").Bold().FontSize(12);
+                            text.Span(", portador(a) do CPF ").FontSize(12);
+                            text.Span(consulta.Paciente?.CPF ?? "").Bold().FontSize(12);
+                            text.Span(", compareceu à consulta psicológica no dia ").FontSize(12);
+                            text.Span(consulta.DataHorario.ToString("dd/MM/yyyy")).Bold().FontSize(12);
+                            text.Span(" às ").FontSize(12);
+                            text.Span(consulta.DataHorario.ToString("HH:mm")).Bold().FontSize(12);
+                            text.Span(" com duração de ").FontSize(12);
+                            text.Span($"{consulta.DuracaoMinutos} minutos").Bold().FontSize(12);
+                            text.Span(".").FontSize(12);
+                        });
+
+                        col.Item().PaddingTop(60).AlignCenter().Text(text =>
+                        {
+                            text.Span("São Paulo, ").FontSize(12);
+                            text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))).FontSize(12);
+                        });
+
+                        // Assinatura
+                        col.Item().PaddingTop(60).AlignCenter().Column(signCol =>
+                        {
+                            signCol.Item().LineHorizontal(1).LineColor(Colors.Grey.Darken3);
+                            signCol.Item().PaddingTop(5).Text(consulta.Psicologo?.Nome ?? "").Bold().FontSize(12);
+                            signCol.Item().Text($"CRP: {consulta.Psicologo?.CRP ?? ""}").FontSize(11);
+                            signCol.Item().Text($"Email: {consulta.Psicologo?.Email ?? ""}").FontSize(10).FontColor(Colors.Grey.Darken2);
+                            signCol.Item().Text($"Telefone: {consulta.Psicologo?.Telefone ?? ""}").FontSize(10).FontColor(Colors.Grey.Darken2);
+                        });
+                    });
+
+                page.Footer()
+                    .AlignCenter()
+                    .Text(text =>
+                    {
+                        text.Span("Documento gerado eletronicamente em ").FontSize(8).FontColor(Colors.Grey.Medium);
+                        text.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Medium);
+                    });
+            });
+        });
+
+        return document.GeneratePdf();
+    }
+
+    // Gerar Atestado Médico
+    public async Task<byte[]> GerarAtestadoAsync(int consultaId, string cid, int diasAfastamento, string observacoes)
+    {
+        var consulta = await _context.Consultas
+            .Include(c => c.Paciente)
+            .Include(c => c.Psicologo)
+            .FirstOrDefaultAsync(c => c.Id == consultaId);
+
+        if (consulta == null)
+            throw new ArgumentException("Consulta não encontrada");
+
+        var dataInicio = consulta.DataHorario.Date;
+        var dataFim = dataInicio.AddDays(diasAfastamento - 1);
+
+        var document = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(2, Unit.Centimetre);
+                page.DefaultTextStyle(x => x.FontSize(12));
+
+                page.Header()
+                    .Column(col =>
+                    {
+                        col.Item().AlignCenter().Text("ATESTADO MÉDICO").FontSize(18).Bold();
+                        col.Item().PaddingTop(10).LineHorizontal(1).LineColor(Colors.Grey.Medium);
+                    });
+
+                page.Content()
+                    .PaddingTop(40)
+                    .Column(col =>
+                    {
+                        col.Spacing(20);
+
+                        // Texto do atestado
+                        col.Item().Text(text =>
+                        {
+                            text.Span("Atesto para os devidos fins que ").FontSize(12);
+                            text.Span(consulta.Paciente?.Nome ?? "").Bold().FontSize(12);
+                            text.Span(", portador(a) do CPF ").FontSize(12);
+                            text.Span(consulta.Paciente?.CPF ?? "").Bold().FontSize(12);
+                            text.Span(", esteve sob meus cuidados profissionais no dia ").FontSize(12);
+                            text.Span(consulta.DataHorario.ToString("dd/MM/yyyy")).Bold().FontSize(12);
+                        });
+
+                        if (!string.IsNullOrEmpty(cid))
+                        {
+                            col.Item().Text(text =>
+                            {
+                                text.Span("CID-10: ").FontSize(12);
+                                text.Span(cid).Bold().FontSize(12);
+                            });
+                        }
+
+                        col.Item().Text(text =>
+                        {
+                            text.Span("Necessitando de afastamento de suas atividades pelo período de ").FontSize(12);
+                            text.Span($"{diasAfastamento} dia(s)").Bold().FontSize(12);
+                            text.Span(", no período de ").FontSize(12);
+                            text.Span(dataInicio.ToString("dd/MM/yyyy")).Bold().FontSize(12);
+                            text.Span(" a ").FontSize(12);
+                            text.Span(dataFim.ToString("dd/MM/yyyy")).Bold().FontSize(12);
+                            text.Span(".").FontSize(12);
+                        });
+
+                        if (!string.IsNullOrEmpty(observacoes))
+                        {
+                            col.Item().PaddingTop(20).Text(text =>
+                            {
+                                text.Span("Observações: ").Bold().FontSize(12);
+                                text.Span(observacoes).FontSize(12);
+                            });
+                        }
+
+                        col.Item().PaddingTop(60).AlignCenter().Text(text =>
+                        {
+                            text.Span("São Paulo, ").FontSize(12);
+                            text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))).FontSize(12);
+                        });
+
+                        // Assinatura
+                        col.Item().PaddingTop(60).AlignCenter().Column(signCol =>
+                        {
+                            signCol.Item().LineHorizontal(1).LineColor(Colors.Grey.Darken3);
+                            signCol.Item().PaddingTop(5).Text(consulta.Psicologo?.Nome ?? "").Bold().FontSize(12);
+                            signCol.Item().Text($"CRP: {consulta.Psicologo?.CRP ?? ""}").FontSize(11);
+                            signCol.Item().Text($"Email: {consulta.Psicologo?.Email ?? ""}").FontSize(10).FontColor(Colors.Grey.Darken2);
+                            signCol.Item().Text($"Telefone: {consulta.Psicologo?.Telefone ?? ""}").FontSize(10).FontColor(Colors.Grey.Darken2);
+                        });
+                    });
+
+                page.Footer()
+                    .AlignCenter()
+                    .Text(text =>
+                    {
+                        text.Span("Documento gerado eletronicamente em ").FontSize(8).FontColor(Colors.Grey.Medium);
+                        text.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Medium);
+                    });
+            });
+        });
+
+        return document.GeneratePdf();
+    }
     }
 
     public class ReceitaPorPsicologoDto

@@ -1,0 +1,168 @@
+@page "/psicologo/documentos"
+@using Microsoft.AspNetCore.Authorization
+@using ClinicaPsi.Shared.Models
+@attribute [Authorize(Roles = "Psicologo")]
+@model ClinicaPsi.Web.Pages.Psicologo.DocumentosModel
+@{
+    ViewData["Title"] = "Gerar Documentos";
+    Layout = "_AdminLayout";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-file-earmark-text"></i> Gerar Documentos</h2>
+                <a href="/psicologo" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @Model.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Card Declaração de Comparecimento -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-check"></i> Declaração de Comparecimento</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Gere uma declaração de comparecimento para consulta realizada.</p>
+                    
+                    <form method="post" asp-page-handler="GerarDeclaracao">
+                        <div class="mb-3">
+                            <label class="form-label">Selecione a Consulta</label>
+                            <select class="form-select" name="consultaId" required>
+                                <option value="">Escolha uma consulta...</option>
+                                @foreach (var consulta in Model.ConsultasRealizadas)
+                                {
+                                    <option value="@consulta.Id">
+                                        @consulta.Paciente?.Nome - @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-file-pdf"></i> Gerar Declaração PDF
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Atestado -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-medical"></i> Atestado Médico</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Gere um atestado médico com período de afastamento.</p>
+                    
+                    <form method="post" asp-page-handler="GerarAtestado">
+                        <div class="mb-3">
+                            <label class="form-label">Selecione a Consulta</label>
+                            <select class="form-select" name="consultaId" required>
+                                <option value="">Escolha uma consulta...</option>
+                                @foreach (var consulta in Model.ConsultasRealizadas)
+                                {
+                                    <option value="@consulta.Id">
+                                        @consulta.Paciente?.Nome - @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">CID-10 (Opcional)</label>
+                            <input type="text" class="form-control" name="cid" placeholder="Ex: F41.1" maxlength="10" />
+                            <small class="text-muted">Código Internacional de Doenças</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Dias de Afastamento</label>
+                            <input type="number" class="form-control" name="diasAfastamento" min="1" max="90" value="1" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Observações (Opcional)</label>
+                            <textarea class="form-control" name="observacoes" rows="3" maxlength="500"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-file-pdf"></i> Gerar Atestado PDF
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Histórico de Documentos Gerados -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Consultas Recentes</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ConsultasRealizadas.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Paciente</th>
+                                        <th>Data/Hora</th>
+                                        <th>Duração</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var consulta in Model.ConsultasRealizadas.Take(10))
+                                    {
+                                        <tr>
+                                            <td>@consulta.Paciente?.Nome</td>
+                                            <td>@consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>@consulta.DuracaoMinutos min</td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    @consulta.Status.ToString()
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                            <p class="mt-2">Nenhuma consulta realizada encontrada</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
