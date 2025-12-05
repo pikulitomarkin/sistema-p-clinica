@@ -307,4 +307,22 @@ app.MapPost("/api/whatsapp/webhook", async (HttpRequest req, IServiceProvider sp
     }
 });
 
+// Aplicar migrations automaticamente ao iniciar (útil para Railway/AWS)
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        logger.LogInformation("Aplicando migrations pendentes ao banco de dados...");
+        context.Database.Migrate();
+        logger.LogInformation("Migrations aplicadas com sucesso!");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Erro ao aplicar migrations. O app continuará, mas pode haver problemas.");
+    }
+}
+
 app.Run();
