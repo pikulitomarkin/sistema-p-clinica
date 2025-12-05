@@ -388,55 +388,66 @@ namespace ClinicaPsi.Application.Services
                 page.Header()
                     .Column(col =>
                     {
-                        col.Item().AlignCenter().Text("DECLARAÇÃO DE COMPARECIMENTO").FontSize(18).Bold();
-                        col.Item().PaddingTop(10).LineHorizontal(1).LineColor(Colors.Grey.Medium);
+                        col.Item().Background(Colors.Green.Lighten4).Padding(15).Column(headerCol =>
+                        {
+                            headerCol.Item().AlignCenter().Text("DECLARAÇÃO DE COMPARECIMENTO")
+                                .FontSize(20).Bold().FontColor(Colors.Green.Darken2);
+                            headerCol.Item().PaddingTop(5).AlignCenter().Text("Atendimento Psicológico")
+                                .FontSize(11).FontColor(Colors.Grey.Darken1);
+                        });
+                        col.Item().PaddingTop(5).LineHorizontal(3).LineColor(Colors.Green.Medium);
                     });
 
                 page.Content()
-                    .PaddingTop(40)
+                    .PaddingTop(30)
                     .Column(col =>
                     {
-                        col.Spacing(20);
+                        col.Spacing(15);
 
-                        // Texto da declaração
-                        col.Item().Text(text =>
+                        // Texto da declaração com estilo moderno
+                        col.Item().Background(Colors.Grey.Lighten5).Padding(20).Text(text =>
                         {
-                            text.Span("Declaro para os devidos fins que ").FontSize(12);
-                            text.Span(consulta.Paciente?.Nome ?? "").Bold().FontSize(12);
+                            text.Span("Declaro para os devidos fins que ").FontSize(12).LineHeight(1.5f);
+                            text.Span(consulta.Paciente?.Nome ?? "").Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
                             text.Span(", portador(a) do CPF ").FontSize(12);
-                            text.Span(consulta.Paciente?.CPF ?? "").Bold().FontSize(12);
+                            text.Span(consulta.Paciente?.CPF ?? "").Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
                             text.Span(", compareceu à consulta psicológica no dia ").FontSize(12);
-                            text.Span(consulta.DataHorario.ToString("dd/MM/yyyy")).Bold().FontSize(12);
+                            text.Span(consulta.DataHorario.ToString("dd/MM/yyyy")).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
                             text.Span(" às ").FontSize(12);
-                            text.Span(consulta.DataHorario.ToString("HH:mm")).Bold().FontSize(12);
+                            text.Span(consulta.DataHorario.ToString("HH:mm")).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
                             text.Span(" com duração de ").FontSize(12);
-                            text.Span($"{consulta.DuracaoMinutos} minutos").Bold().FontSize(12);
+                            text.Span($"{consulta.DuracaoMinutos} minutos").Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
                             text.Span(".").FontSize(12);
                         });
 
-                        col.Item().PaddingTop(60).AlignCenter().Text(text =>
+                        col.Item().PaddingTop(50).AlignCenter().Text(text =>
                         {
-                            text.Span("São Paulo, ").FontSize(12);
+                            text.Span("Londrina - PR, ").FontSize(12);
                             text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))).FontSize(12);
                         });
 
-                        // Assinatura
-                        col.Item().PaddingTop(60).AlignCenter().Column(signCol =>
+                        // Assinatura moderna
+                        col.Item().PaddingTop(50).AlignCenter().Column(signCol =>
                         {
-                            signCol.Item().LineHorizontal(1).LineColor(Colors.Grey.Darken3);
-                            signCol.Item().PaddingTop(5).Text(consulta.Psicologo?.Nome ?? "").Bold().FontSize(12);
-                            signCol.Item().Text($"CRP: {consulta.Psicologo?.CRP ?? ""}").FontSize(11);
-                            signCol.Item().Text($"Email: {consulta.Psicologo?.Email ?? ""}").FontSize(10).FontColor(Colors.Grey.Darken2);
-                            signCol.Item().Text($"Telefone: {consulta.Psicologo?.Telefone ?? ""}").FontSize(10).FontColor(Colors.Grey.Darken2);
+                            signCol.Item().Width(200).LineHorizontal(2).LineColor(Colors.Green.Medium);
+                            signCol.Item().PaddingTop(8).Text(consulta.Psicologo?.Nome ?? "").Bold().FontSize(13).FontColor(Colors.Green.Darken2);
+                            signCol.Item().PaddingTop(2).Text($"CRP: {consulta.Psicologo?.CRP ?? ""}").FontSize(11).FontColor(Colors.Grey.Darken2);
+                            signCol.Item().PaddingTop(5).Text($"✉ {consulta.Psicologo?.Email ?? ""}").FontSize(9).FontColor(Colors.Blue.Medium);
+                            signCol.Item().Text($"☎ {consulta.Psicologo?.Telefone ?? ""}").FontSize(9).FontColor(Colors.Blue.Medium);
                         });
                     });
 
                 page.Footer()
+                    .Padding(10)
                     .AlignCenter()
-                    .Text(text =>
+                    .Column(footerCol =>
                     {
-                        text.Span("Documento gerado eletronicamente em ").FontSize(8).FontColor(Colors.Grey.Medium);
-                        text.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Medium);
+                        footerCol.Item().LineHorizontal(1).LineColor(Colors.Green.Lighten2);
+                        footerCol.Item().PaddingTop(5).Text(text =>
+                        {
+                            text.Span("Documento gerado eletronicamente em ").FontSize(8).FontColor(Colors.Grey.Medium);
+                            text.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Darken1);
+                        });
                     });
             });
         });
@@ -469,79 +480,94 @@ namespace ClinicaPsi.Application.Services
                 page.Header()
                     .Column(col =>
                     {
-                        col.Item().AlignCenter().Text("ATESTADO MÉDICO").FontSize(18).Bold();
-                        col.Item().PaddingTop(10).LineHorizontal(1).LineColor(Colors.Grey.Medium);
+                        col.Item().Background(Colors.Red.Lighten4).Padding(15).Column(headerCol =>
+                        {
+                            headerCol.Item().AlignCenter().Text("ATESTADO MÉDICO")
+                                .FontSize(20).Bold().FontColor(Colors.Red.Darken2);
+                            headerCol.Item().PaddingTop(5).AlignCenter().Text("Atendimento em Saúde Mental")
+                                .FontSize(11).FontColor(Colors.Grey.Darken1);
+                        });
+                        col.Item().PaddingTop(5).LineHorizontal(3).LineColor(Colors.Red.Medium);
                     });
 
                 page.Content()
-                    .PaddingTop(40)
+                    .PaddingTop(30)
                     .Column(col =>
                     {
-                        col.Spacing(20);
+                        col.Spacing(15);
 
-                        // Texto do atestado
-                        col.Item().Text(text =>
+                        // Texto do atestado com estilo moderno
+                        col.Item().Background(Colors.Grey.Lighten5).Padding(20).Column(textCol =>
                         {
-                            text.Span("Atesto para os devidos fins que ").FontSize(12);
-                            text.Span(consulta.Paciente?.Nome ?? "").Bold().FontSize(12);
-                            text.Span(", portador(a) do CPF ").FontSize(12);
-                            text.Span(consulta.Paciente?.CPF ?? "").Bold().FontSize(12);
-                            text.Span(", esteve sob meus cuidados profissionais no dia ").FontSize(12);
-                            text.Span(consulta.DataHorario.ToString("dd/MM/yyyy")).Bold().FontSize(12);
+                            textCol.Item().Text(text =>
+                            {
+                                text.Span("Atesto para os devidos fins que ").FontSize(12).LineHeight(1.5f);
+                                text.Span(consulta.Paciente?.Nome ?? "").Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
+                                text.Span(", portador(a) do CPF ").FontSize(12);
+                                text.Span(consulta.Paciente?.CPF ?? "").Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
+                                text.Span(", esteve sob meus cuidados profissionais no dia ").FontSize(12);
+                                text.Span(consulta.DataHorario.ToString("dd/MM/yyyy")).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
+                                text.Span(".").FontSize(12);
+                            });
+
+                            if (!string.IsNullOrEmpty(cid))
+                            {
+                                textCol.Item().PaddingTop(10).Text(text =>
+                                {
+                                    text.Span("CID-10: ").FontSize(12).Bold();
+                                    text.Span(cid).Bold().FontSize(12).FontColor(Colors.Red.Darken1);
+                                });
+                            }
+
+                            textCol.Item().PaddingTop(10).Text(text =>
+                            {
+                                text.Span("Necessitando de afastamento de suas atividades pelo período de ").FontSize(12).LineHeight(1.5f);
+                                text.Span($"{diasAfastamento} dia(s)").Bold().FontSize(12).FontColor(Colors.Red.Darken1);
+                                text.Span(", no período de ").FontSize(12);
+                                text.Span(dataInicio.ToString("dd/MM/yyyy")).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
+                                text.Span(" a ").FontSize(12);
+                                text.Span(dataFim.ToString("dd/MM/yyyy")).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
+                                text.Span(".").FontSize(12);
+                            });
+
+                            if (!string.IsNullOrEmpty(observacoes))
+                            {
+                                textCol.Item().PaddingTop(15).Text(text =>
+                                {
+                                    text.Span("Observações: ").Bold().FontSize(12);
+                                    text.Span(observacoes).FontSize(12).LineHeight(1.4f);
+                                });
+                            }
                         });
 
-                        if (!string.IsNullOrEmpty(cid))
+                        col.Item().PaddingTop(50).AlignCenter().Text(text =>
                         {
-                            col.Item().Text(text =>
-                            {
-                                text.Span("CID-10: ").FontSize(12);
-                                text.Span(cid).Bold().FontSize(12);
-                            });
-                        }
-
-                        col.Item().Text(text =>
-                        {
-                            text.Span("Necessitando de afastamento de suas atividades pelo período de ").FontSize(12);
-                            text.Span($"{diasAfastamento} dia(s)").Bold().FontSize(12);
-                            text.Span(", no período de ").FontSize(12);
-                            text.Span(dataInicio.ToString("dd/MM/yyyy")).Bold().FontSize(12);
-                            text.Span(" a ").FontSize(12);
-                            text.Span(dataFim.ToString("dd/MM/yyyy")).Bold().FontSize(12);
-                            text.Span(".").FontSize(12);
-                        });
-
-                        if (!string.IsNullOrEmpty(observacoes))
-                        {
-                            col.Item().PaddingTop(20).Text(text =>
-                            {
-                                text.Span("Observações: ").Bold().FontSize(12);
-                                text.Span(observacoes).FontSize(12);
-                            });
-                        }
-
-                        col.Item().PaddingTop(60).AlignCenter().Text(text =>
-                        {
-                            text.Span("São Paulo, ").FontSize(12);
+                            text.Span("Londrina - PR, ").FontSize(12);
                             text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))).FontSize(12);
                         });
 
-                        // Assinatura
-                        col.Item().PaddingTop(60).AlignCenter().Column(signCol =>
+                        // Assinatura moderna
+                        col.Item().PaddingTop(50).AlignCenter().Column(signCol =>
                         {
-                            signCol.Item().LineHorizontal(1).LineColor(Colors.Grey.Darken3);
-                            signCol.Item().PaddingTop(5).Text(consulta.Psicologo?.Nome ?? "").Bold().FontSize(12);
-                            signCol.Item().Text($"CRP: {consulta.Psicologo?.CRP ?? ""}").FontSize(11);
-                            signCol.Item().Text($"Email: {consulta.Psicologo?.Email ?? ""}").FontSize(10).FontColor(Colors.Grey.Darken2);
-                            signCol.Item().Text($"Telefone: {consulta.Psicologo?.Telefone ?? ""}").FontSize(10).FontColor(Colors.Grey.Darken2);
+                            signCol.Item().Width(200).LineHorizontal(2).LineColor(Colors.Red.Medium);
+                            signCol.Item().PaddingTop(8).Text(consulta.Psicologo?.Nome ?? "").Bold().FontSize(13).FontColor(Colors.Red.Darken2);
+                            signCol.Item().PaddingTop(2).Text($"CRP: {consulta.Psicologo?.CRP ?? ""}").FontSize(11).FontColor(Colors.Grey.Darken2);
+                            signCol.Item().PaddingTop(5).Text($"✉ {consulta.Psicologo?.Email ?? ""}").FontSize(9).FontColor(Colors.Blue.Medium);
+                            signCol.Item().Text($"☎ {consulta.Psicologo?.Telefone ?? ""}").FontSize(9).FontColor(Colors.Blue.Medium);
                         });
                     });
 
                 page.Footer()
+                    .Padding(10)
                     .AlignCenter()
-                    .Text(text =>
+                    .Column(footerCol =>
                     {
-                        text.Span("Documento gerado eletronicamente em ").FontSize(8).FontColor(Colors.Grey.Medium);
-                        text.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Medium);
+                        footerCol.Item().LineHorizontal(1).LineColor(Colors.Red.Lighten2);
+                        footerCol.Item().PaddingTop(5).Text(text =>
+                        {
+                            text.Span("Documento gerado eletronicamente em ").FontSize(8).FontColor(Colors.Grey.Medium);
+                            text.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Darken1);
+                        });
                     });
             });
         });
@@ -567,55 +593,66 @@ namespace ClinicaPsi.Application.Services
                 page.Header()
                     .Column(col =>
                     {
-                        col.Item().AlignCenter().Text("DECLARAÇÃO DE COMPARECIMENTO").FontSize(18).Bold();
-                        col.Item().PaddingTop(10).LineHorizontal(1).LineColor(Colors.Grey.Medium);
+                        col.Item().Background(Colors.Green.Lighten4).Padding(15).Column(headerCol =>
+                        {
+                            headerCol.Item().AlignCenter().Text("DECLARAÇÃO DE COMPARECIMENTO")
+                                .FontSize(20).Bold().FontColor(Colors.Green.Darken2);
+                            headerCol.Item().PaddingTop(5).AlignCenter().Text("Atendimento Psicológico")
+                                .FontSize(11).FontColor(Colors.Grey.Darken1);
+                        });
+                        col.Item().PaddingTop(5).LineHorizontal(3).LineColor(Colors.Green.Medium);
                     });
 
                 page.Content()
-                    .PaddingTop(40)
+                    .PaddingTop(30)
                     .Column(col =>
                     {
-                        col.Spacing(20);
+                        col.Spacing(15);
 
-                        // Texto da declaração
-                        col.Item().Text(text =>
+                        // Texto da declaração com estilo moderno
+                        col.Item().Background(Colors.Grey.Lighten5).Padding(20).Text(text =>
                         {
-                            text.Span("Declaro para os devidos fins que ").FontSize(12);
-                            text.Span(paciente.Nome).Bold().FontSize(12);
+                            text.Span("Declaro para os devidos fins que ").FontSize(12).LineHeight(1.5f);
+                            text.Span(paciente.Nome).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
                             text.Span(", portador(a) do CPF ").FontSize(12);
-                            text.Span(paciente.CPF).Bold().FontSize(12);
+                            text.Span(paciente.CPF).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
                             text.Span(", compareceu à consulta psicológica no dia ").FontSize(12);
-                            text.Span(dataHorario.ToString("dd/MM/yyyy")).Bold().FontSize(12);
+                            text.Span(dataHorario.ToString("dd/MM/yyyy")).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
                             text.Span(" às ").FontSize(12);
-                            text.Span(dataHorario.ToString("HH:mm")).Bold().FontSize(12);
+                            text.Span(dataHorario.ToString("HH:mm")).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
                             text.Span(" com duração de ").FontSize(12);
-                            text.Span($"{duracaoMinutos} minutos").Bold().FontSize(12);
+                            text.Span($"{duracaoMinutos} minutos").Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
                             text.Span(".").FontSize(12);
                         });
 
-                        col.Item().PaddingTop(60).AlignCenter().Text(text =>
+                        col.Item().PaddingTop(50).AlignCenter().Text(text =>
                         {
-                            text.Span("São Paulo, ").FontSize(12);
+                            text.Span("Londrina - PR, ").FontSize(12);
                             text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))).FontSize(12);
                         });
 
-                        // Assinatura
-                        col.Item().PaddingTop(60).AlignCenter().Column(signCol =>
+                        // Assinatura moderna
+                        col.Item().PaddingTop(50).AlignCenter().Column(signCol =>
                         {
-                            signCol.Item().LineHorizontal(1).LineColor(Colors.Grey.Darken3);
-                            signCol.Item().PaddingTop(5).Text(psicologo.Nome).Bold().FontSize(12);
-                            signCol.Item().Text($"CRP: {psicologo.CRP}").FontSize(11);
-                            signCol.Item().Text($"Email: {psicologo.Email}").FontSize(10).FontColor(Colors.Grey.Darken2);
-                            signCol.Item().Text($"Telefone: {psicologo.Telefone}").FontSize(10).FontColor(Colors.Grey.Darken2);
+                            signCol.Item().Width(200).LineHorizontal(2).LineColor(Colors.Green.Medium);
+                            signCol.Item().PaddingTop(8).Text(psicologo.Nome).Bold().FontSize(13).FontColor(Colors.Green.Darken2);
+                            signCol.Item().PaddingTop(2).Text($"CRP: {psicologo.CRP}").FontSize(11).FontColor(Colors.Grey.Darken2);
+                            signCol.Item().PaddingTop(5).Text($"✉ {psicologo.Email}").FontSize(9).FontColor(Colors.Blue.Medium);
+                            signCol.Item().Text($"☎ {psicologo.Telefone}").FontSize(9).FontColor(Colors.Blue.Medium);
                         });
                     });
 
                 page.Footer()
+                    .Padding(10)
                     .AlignCenter()
-                    .Text(text =>
+                    .Column(footerCol =>
                     {
-                        text.Span("Documento gerado eletronicamente em ").FontSize(8).FontColor(Colors.Grey.Medium);
-                        text.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Medium);
+                        footerCol.Item().LineHorizontal(1).LineColor(Colors.Green.Lighten2);
+                        footerCol.Item().PaddingTop(5).Text(text =>
+                        {
+                            text.Span("Documento gerado eletronicamente em ").FontSize(8).FontColor(Colors.Grey.Medium);
+                            text.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Darken1);
+                        });
                     });
             });
         });
@@ -646,79 +683,94 @@ namespace ClinicaPsi.Application.Services
                 page.Header()
                     .Column(col =>
                     {
-                        col.Item().AlignCenter().Text("ATESTADO MÉDICO").FontSize(18).Bold();
-                        col.Item().PaddingTop(10).LineHorizontal(1).LineColor(Colors.Grey.Medium);
+                        col.Item().Background(Colors.Red.Lighten4).Padding(15).Column(headerCol =>
+                        {
+                            headerCol.Item().AlignCenter().Text("ATESTADO MÉDICO")
+                                .FontSize(20).Bold().FontColor(Colors.Red.Darken2);
+                            headerCol.Item().PaddingTop(5).AlignCenter().Text("Atendimento em Saúde Mental")
+                                .FontSize(11).FontColor(Colors.Grey.Darken1);
+                        });
+                        col.Item().PaddingTop(5).LineHorizontal(3).LineColor(Colors.Red.Medium);
                     });
 
                 page.Content()
-                    .PaddingTop(40)
+                    .PaddingTop(30)
                     .Column(col =>
                     {
-                        col.Spacing(20);
+                        col.Spacing(15);
 
-                        // Texto do atestado
-                        col.Item().Text(text =>
+                        // Texto do atestado com estilo moderno
+                        col.Item().Background(Colors.Grey.Lighten5).Padding(20).Column(textCol =>
                         {
-                            text.Span("Atesto para os devidos fins que ").FontSize(12);
-                            text.Span(paciente.Nome).Bold().FontSize(12);
-                            text.Span(", portador(a) do CPF ").FontSize(12);
-                            text.Span(paciente.CPF).Bold().FontSize(12);
-                            text.Span(", esteve sob meus cuidados profissionais no dia ").FontSize(12);
-                            text.Span(dataHorario.ToString("dd/MM/yyyy")).Bold().FontSize(12);
+                            textCol.Item().Text(text =>
+                            {
+                                text.Span("Atesto para os devidos fins que ").FontSize(12).LineHeight(1.5f);
+                                text.Span(paciente.Nome).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
+                                text.Span(", portador(a) do CPF ").FontSize(12);
+                                text.Span(paciente.CPF).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
+                                text.Span(", esteve sob meus cuidados profissionais no dia ").FontSize(12);
+                                text.Span(dataHorario.ToString("dd/MM/yyyy")).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
+                                text.Span(".").FontSize(12);
+                            });
+
+                            if (!string.IsNullOrEmpty(cid))
+                            {
+                                textCol.Item().PaddingTop(10).Text(text =>
+                                {
+                                    text.Span("CID-10: ").FontSize(12).Bold();
+                                    text.Span(cid).Bold().FontSize(12).FontColor(Colors.Red.Darken1);
+                                });
+                            }
+
+                            textCol.Item().PaddingTop(10).Text(text =>
+                            {
+                                text.Span("Necessitando de afastamento de suas atividades pelo período de ").FontSize(12).LineHeight(1.5f);
+                                text.Span($"{diasAfastamento} dia(s)").Bold().FontSize(12).FontColor(Colors.Red.Darken1);
+                                text.Span(", no período de ").FontSize(12);
+                                text.Span(dataInicio.ToString("dd/MM/yyyy")).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
+                                text.Span(" a ").FontSize(12);
+                                text.Span(dataFim.ToString("dd/MM/yyyy")).Bold().FontSize(12).FontColor(Colors.Blue.Darken2);
+                                text.Span(".").FontSize(12);
+                            });
+
+                            if (!string.IsNullOrEmpty(observacoes))
+                            {
+                                textCol.Item().PaddingTop(15).Text(text =>
+                                {
+                                    text.Span("Observações: ").Bold().FontSize(12);
+                                    text.Span(observacoes).FontSize(12).LineHeight(1.4f);
+                                });
+                            }
                         });
 
-                        if (!string.IsNullOrEmpty(cid))
+                        col.Item().PaddingTop(50).AlignCenter().Text(text =>
                         {
-                            col.Item().Text(text =>
-                            {
-                                text.Span("CID-10: ").FontSize(12);
-                                text.Span(cid).Bold().FontSize(12);
-                            });
-                        }
-
-                        col.Item().Text(text =>
-                        {
-                            text.Span("Necessitando de afastamento de suas atividades pelo período de ").FontSize(12);
-                            text.Span($"{diasAfastamento} dia(s)").Bold().FontSize(12);
-                            text.Span(", no período de ").FontSize(12);
-                            text.Span(dataInicio.ToString("dd/MM/yyyy")).Bold().FontSize(12);
-                            text.Span(" a ").FontSize(12);
-                            text.Span(dataFim.ToString("dd/MM/yyyy")).Bold().FontSize(12);
-                            text.Span(".").FontSize(12);
-                        });
-
-                        if (!string.IsNullOrEmpty(observacoes))
-                        {
-                            col.Item().PaddingTop(20).Text(text =>
-                            {
-                                text.Span("Observações: ").Bold().FontSize(12);
-                                text.Span(observacoes).FontSize(12);
-                            });
-                        }
-
-                        col.Item().PaddingTop(60).AlignCenter().Text(text =>
-                        {
-                            text.Span("São Paulo, ").FontSize(12);
+                            text.Span("Londrina - PR, ").FontSize(12);
                             text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))).FontSize(12);
                         });
 
-                        // Assinatura
-                        col.Item().PaddingTop(60).AlignCenter().Column(signCol =>
+                        // Assinatura moderna
+                        col.Item().PaddingTop(50).AlignCenter().Column(signCol =>
                         {
-                            signCol.Item().LineHorizontal(1).LineColor(Colors.Grey.Darken3);
-                            signCol.Item().PaddingTop(5).Text(psicologo.Nome).Bold().FontSize(12);
-                            signCol.Item().Text($"CRP: {psicologo.CRP}").FontSize(11);
-                            signCol.Item().Text($"Email: {psicologo.Email}").FontSize(10).FontColor(Colors.Grey.Darken2);
-                            signCol.Item().Text($"Telefone: {psicologo.Telefone}").FontSize(10).FontColor(Colors.Grey.Darken2);
+                            signCol.Item().Width(200).LineHorizontal(2).LineColor(Colors.Red.Medium);
+                            signCol.Item().PaddingTop(8).Text(psicologo.Nome).Bold().FontSize(13).FontColor(Colors.Red.Darken2);
+                            signCol.Item().PaddingTop(2).Text($"CRP: {psicologo.CRP}").FontSize(11).FontColor(Colors.Grey.Darken2);
+                            signCol.Item().PaddingTop(5).Text($"✉ {psicologo.Email}").FontSize(9).FontColor(Colors.Blue.Medium);
+                            signCol.Item().Text($"☎ {psicologo.Telefone}").FontSize(9).FontColor(Colors.Blue.Medium);
                         });
                     });
 
                 page.Footer()
+                    .Padding(10)
                     .AlignCenter()
-                    .Text(text =>
+                    .Column(footerCol =>
                     {
-                        text.Span("Documento gerado eletronicamente em ").FontSize(8).FontColor(Colors.Grey.Medium);
-                        text.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Medium);
+                        footerCol.Item().LineHorizontal(1).LineColor(Colors.Red.Lighten2);
+                        footerCol.Item().PaddingTop(5).Text(text =>
+                        {
+                            text.Span("Documento gerado eletronicamente em ").FontSize(8).FontColor(Colors.Grey.Medium);
+                            text.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Darken1);
+                        });
                     });
             });
         });
