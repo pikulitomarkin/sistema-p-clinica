@@ -6,6 +6,7 @@ using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 using ClinicaPsi.Web.Extensions;
 using System.Security.Claims;
+using System.Globalization;
 
 namespace ClinicaPsi.Web.Pages.Psicologo
 {
@@ -17,6 +18,10 @@ namespace ClinicaPsi.Web.Pages.Psicologo
         public AgendaModel(AppDbContext context)
         {
             _context = context;
+            // Configurar cultura brasileira
+            var culturaBrasileira = new CultureInfo("pt-BR");
+            Thread.CurrentThread.CurrentCulture = culturaBrasileira;
+            Thread.CurrentThread.CurrentUICulture = culturaBrasileira;
         }
 
         public DateTime SemanaAtual { get; set; } = DateTime.Today;

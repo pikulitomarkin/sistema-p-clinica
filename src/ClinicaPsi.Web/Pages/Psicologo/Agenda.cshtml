@@ -4,21 +4,23 @@
 @{
     ViewData["Title"] = "Minha Agenda";
     Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+    var culturaBR = new System.Globalization.CultureInfo("pt-BR");
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="gradient-text mb-0">
         <i class="bi bi-calendar-week me-2"></i>
-        Minha Agenda
+        Agenda Semanal
     </h2>
     <div class="btn-group">
-        <button type="button" class="btn btn-primary btn-modern" data-bs-toggle="modal" data-bs-target="#agendarConsultaModal">
-            <i class="bi bi-plus-circle me-2"></i>
-            Nova Consulta
-        </button>
+        <a href="/psicologo/agenda/diaria" class="btn btn-outline-primary">
+            <i class="bi bi-calendar-day me-2"></i>Diária
+        </a>
+        <a href="/psicologo/agenda/mensal" class="btn btn-outline-primary">
+            <i class="bi bi-calendar3 me-2"></i>Mensal
+        </a>
         <button type="button" class="btn btn-outline-primary" onclick="exportarAgenda()">
-            <i class="bi bi-download me-2"></i>
-            Exportar
+            <i class="bi bi-download me-2"></i>Exportar
         </button>
     </div>
 </div>
@@ -41,11 +43,17 @@
             </div>
             <div class="col-md-3">
                 <label for="visualizacao" class="form-label">Visualização</label>
-                <select class="form-select" id="visualizacao" onchange="changeView()">
-                    <option value="semana" selected>Semana</option>
-                    <option value="dia">Dia</option>
-                    <option value="mes">Mês</option>
-                </select>
+                <div class="btn-group w-100" role="group">
+                    <a href="/psicologo/agenda/diaria" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-day"></i> Dia
+                    </a>
+                    <a href="/psicologo/agenda" class="btn btn-primary">
+                        <i class="bi bi-calendar-week"></i> Semana
+                    </a>
+                    <a href="/psicologo/agenda/mensal" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar3"></i> Mês
+                    </a>
+                </div>
             </div>
             <div class="col-md-3">
                 <label for="filtroStatus" class="form-label">Status</label>
@@ -79,8 +87,9 @@
                     var dia = Model.SemanaAtual.AddDays(i - (int)Model.SemanaAtual.DayOfWeek + 1);
                     var isToday = dia.Date == DateTime.Today;
                     <div class="day-header @(isToday ? "today" : "")">
-                        <div class="day-name">@dia.ToString("ddd")</div>
+                        <div class="day-name">@dia.ToString("ddd", culturaBR).ToUpper()</div>
                         <div class="day-number">@dia.Day</div>
+                        <div class="day-month">@dia.ToString("MMM", culturaBR)</div>
                     </div>
                 }
             </div>

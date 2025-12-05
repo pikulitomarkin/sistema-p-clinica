@@ -1,0 +1,314 @@
+@page "/psicologo/agenda/diaria/{data?}"
+@model ClinicaPsi.Web.Pages.Psicologo.AgendaDiariaModel
+@{
+    ViewData["Title"] = "Agenda Diária";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-calendar-day me-2"></i>
+                        Agenda Diária
+                    </h2>
+                    <p class="text-muted mb-0">@Model.DataSelecionada.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-BR"))</p>
+                </div>
+                <div class="btn-group">
+                    <a href="/psicologo/agenda/mensal" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar3 me-2"></i>Mensal
+                    </a>
+                    <a href="/psicologo/agenda" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-week me-2"></i>Semanal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegação de Data -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <a href="?data=@Model.DataSelecionada.AddDays(-1).ToString("yyyy-MM-dd")" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-chevron-left"></i> Anterior
+                        </a>
+                        <input type="date" class="form-control text-center" 
+                               value="@Model.DataSelecionada.ToString("yyyy-MM-dd")"
+                               onchange="window.location.href='?data=' + this.value">
+                        <a href="?data=@Model.DataSelecionada.AddDays(1).ToString("yyyy-MM-dd")" 
+                           class="btn btn-outline-secondary">
+                            Próximo <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <a href="/psicologo/agenda/diaria" class="btn btn-success w-100">
+                        <i class="bi bi-calendar-event me-2"></i>Hoje
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="filtroStatus" onchange="filterConsultas(this.value)">
+                        <option value="">Todos os Status</option>
+                        <option value="Agendada">Agendadas</option>
+                        <option value="Confirmada">Confirmadas</option>
+                        <option value="Realizada">Realizadas</option>
+                        <option value="Cancelada">Canceladas</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Timeline do Dia -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Horários do Dia
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.ConsultasDia.Any())
+                    {
+                        <div class="timeline-day">
+                            @foreach (var hora in Enumerable.Range(7, 13))
+                            {
+                                <div class="hour-block">
+                                    <div class="hour-label">
+                                        @hora:00
+                                    </div>
+                                    <div class="hour-content">
+                                        @{
+                                            var consultasHora = Model.ConsultasDia
+                                                .Where(c => c.DataHorario.Hour == hora)
+                                                .OrderBy(c => c.DataHorario.Minute);
+                                        }
+                                        
+                                        @foreach (var consulta in consultasHora)
+                                        {
+                                            var statusClass = consulta.Status.ToString().ToLower();
+                                            var statusColor = consulta.Status switch
+                                            {
+                                                StatusConsulta.Agendada => "info",
+                                                StatusConsulta.Confirmada => "primary",
+                                                StatusConsulta.Realizada => "success",
+                                                StatusConsulta.Cancelada => "secondary",
+                                                StatusConsulta.NoShow => "warning",
+                                                _ => "secondary"
+                                            };
+
+                                            <div class="consulta-card border-start border-@statusColor border-4 mb-2 @statusClass" 
+                                                 data-status="@consulta.Status">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <span class="badge bg-@statusColor me-2">
+                                                                @consulta.DataHorario.ToString("HH:mm")
+                                                            </span>
+                                                            <span class="badge bg-secondary">
+                                                                @consulta.DuracaoMinutos min
+                                                            </span>
+                                                            @if (consulta.Formato == FormatoConsulta.Online)
+                                                            {
+                                                                <span class="badge bg-info ms-2">
+                                                                    <i class="bi bi-camera-video"></i> Online
+                                                                </span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-dark ms-2">
+                                                                    <i class="bi bi-building"></i> Presencial
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                        <h6 class="mb-1">
+                                                            <i class="bi bi-person me-1"></i>
+                                                            @consulta.Paciente?.Nome
+                                                        </h6>
+                                                        @if (!string.IsNullOrEmpty(consulta.Observacoes))
+                                                        {
+                                                            <p class="text-muted small mb-0">
+                                                                <i class="bi bi-chat-left-text me-1"></i>
+                                                                @consulta.Observacoes
+                                                            </p>
+                                                        }
+                                                    </div>
+                                                    <div class="btn-group-vertical btn-group-sm">
+                                                        <a href="/psicologo/consultas/detalhes/@consulta.Id" 
+                                                           class="btn btn-outline-primary btn-sm" title="Ver Detalhes">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        
+                                        @if (!consultasHora.Any())
+                                        {
+                                            <div class="text-muted small py-2 px-3">
+                                                <i class="bi bi-dash"></i> Horário livre
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-calendar-x display-4 text-muted"></i>
+                            <p class="text-muted mt-3">Nenhuma consulta agendada para este dia</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumo e Estatísticas -->
+        <div class="col-lg-4">
+            <!-- Resumo do Dia -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Resumo do Dia
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <span class="text-muted">Total de Consultas</span>
+                        <span class="badge bg-primary fs-6">@Model.ConsultasDia.Count</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <span class="text-muted">Confirmadas</span>
+                        <span class="badge bg-success">@Model.ConsultasDia.Count(c => c.Status == StatusConsulta.Confirmada)</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <span class="text-muted">Agendadas</span>
+                        <span class="badge bg-info">@Model.ConsultasDia.Count(c => c.Status == StatusConsulta.Agendada)</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Realizadas</span>
+                        <span class="badge bg-success">@Model.ConsultasDia.Count(c => c.Status == StatusConsulta.Realizada)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Primeira e Última Consulta -->
+            @if (Model.ConsultasDia.Any())
+            {
+                var primeira = Model.ConsultasDia.OrderBy(c => c.DataHorario).First();
+                var ultima = Model.ConsultasDia.OrderByDescending(c => c.DataHorario).First();
+                
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning">
+                        <h6 class="mb-0">
+                            <i class="bi bi-alarm me-2"></i>Horários
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">Primeira consulta</small>
+                            <strong>@primeira.DataHorario.ToString("HH:mm")</strong>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block mb-1">Última consulta</small>
+                            <strong>@ultima.DataHorario.ToString("HH:mm")</strong>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Ações Rápidas -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>Ações Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <a href="/psicologo/consultas" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="bi bi-list me-2"></i>Todas as Consultas
+                    </a>
+                    <a href="/psicologo/pacientes" class="btn btn-outline-info w-100 mb-2">
+                        <i class="bi bi-people me-2"></i>Meus Pacientes
+                    </a>
+                    <a href="/psicologo/relatorios" class="btn btn-outline-success w-100">
+                        <i class="bi bi-file-earmark-bar-graph me-2"></i>Relatórios
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline-day {
+        max-height: 800px;
+        overflow-y: auto;
+    }
+    
+    .hour-block {
+        display: flex;
+        border-bottom: 1px solid #e0e0e0;
+        min-height: 80px;
+    }
+    
+    .hour-label {
+        width: 80px;
+        padding: 12px;
+        font-weight: 600;
+        color: #666;
+        background-color: #f8f9fa;
+        border-right: 2px solid #dee2e6;
+        flex-shrink: 0;
+    }
+    
+    .hour-content {
+        flex-grow: 1;
+        padding: 8px 12px;
+    }
+    
+    .consulta-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .consulta-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .consulta-card.cancelada {
+        opacity: 0.6;
+    }
+</style>
+
+<script>
+    function filterConsultas(status) {
+        const cards = document.querySelectorAll('.consulta-card');
+        cards.forEach(card => {
+            if (status === '' || card.dataset.status === status) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

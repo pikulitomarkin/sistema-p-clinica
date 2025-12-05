@@ -1,0 +1,263 @@
+@page "/psicologo/agenda/mensal/{ano:int?}/{mes:int?}"
+@model ClinicaPsi.Web.Pages.Psicologo.AgendaMensalModel
+@{
+    ViewData["Title"] = "Agenda Mensal";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+    var culturaBR = new System.Globalization.CultureInfo("pt-BR");
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-calendar3 me-2"></i>
+                        Agenda Mensal
+                    </h2>
+                    <p class="text-muted mb-0">@Model.MesSelecionado.ToString("MMMM 'de' yyyy", culturaBR).ToUpper()</p>
+                </div>
+                <div class="btn-group">
+                    <a href="/psicologo/agenda/diaria" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-day me-2"></i>Diária
+                    </a>
+                    <a href="/psicologo/agenda" class="btn btn-outline-primary">
+                        <i class="bi bi-calendar-week me-2"></i>Semanal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegação do Mês -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <a href="/psicologo/agenda/mensal/@Model.MesSelecionado.AddMonths(-1).Year/@Model.MesSelecionado.AddMonths(-1).Month" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-chevron-left"></i> Anterior
+                        </a>
+                        <input type="month" class="form-control text-center" 
+                               value="@Model.MesSelecionado.ToString("yyyy-MM")"
+                               onchange="window.location.href='/psicologo/agenda/mensal/' + this.value.replace('-', '/')">
+                        <a href="/psicologo/agenda/mensal/@Model.MesSelecionado.AddMonths(1).Year/@Model.MesSelecionado.AddMonths(1).Month" 
+                           class="btn btn-outline-secondary">
+                            Próximo <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <a href="/psicologo/agenda/mensal/@DateTime.Today.Year/@DateTime.Today.Month" 
+                       class="btn btn-success w-100">
+                        <i class="bi bi-calendar-event me-2"></i>Mês Atual
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge bg-info">@Model.TotalConsultasMes consultas</span>
+                        <span class="badge bg-success">@Model.ConsultasRealizadas realizadas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendário Mensal -->
+    <div class="card shadow-sm">
+        <div class="card-body p-3">
+            <div class="calendar-month">
+                <!-- Cabeçalho dos dias da semana -->
+                <div class="calendar-header row g-0 mb-2">
+                    <div class="col text-center fw-bold text-danger">DOM</div>
+                    <div class="col text-center fw-bold">SEG</div>
+                    <div class="col text-center fw-bold">TER</div>
+                    <div class="col text-center fw-bold">QUA</div>
+                    <div class="col text-center fw-bold">QUI</div>
+                    <div class="col text-center fw-bold">SEX</div>
+                    <div class="col text-center fw-bold text-primary">SÁB</div>
+                </div>
+
+                <!-- Dias do mês -->
+                @{
+                    var primeiroDiaMes = new DateTime(Model.MesSelecionado.Year, Model.MesSelecionado.Month, 1);
+                    var ultimoDiaMes = primeiroDiaMes.AddMonths(1).AddDays(-1);
+                    var diaAtual = primeiroDiaMes.AddDays(-(int)primeiroDiaMes.DayOfWeek);
+                    
+                    while (diaAtual <= ultimoDiaMes)
+                    {
+                        <div class="calendar-week row g-0 mb-2">
+                            @for (int i = 0; i < 7; i++)
+                            {
+                                var dia = diaAtual;
+                                var mesAtual = dia.Month == Model.MesSelecionado.Month;
+                                var hoje = dia.Date == DateTime.Today;
+                                var consultasDia = Model.ConsultasMes.Where(c => c.DataHorario.Date == dia.Date).ToList();
+                                var temConsultas = consultasDia.Any();
+                                
+                                <div class="col">
+                                    <div class="calendar-day @(mesAtual ? "" : "other-month") @(hoje ? "today" : "") @(temConsultas ? "has-events" : "")"
+                                         onclick="window.location.href='/psicologo/agenda/diaria?data=@dia.ToString("yyyy-MM-dd")'"
+                                         style="cursor: pointer;">
+                                        <div class="day-number @(hoje ? "fw-bold text-primary" : "")">
+                                            @dia.Day
+                                        </div>
+                                        
+                                        @if (temConsultas && mesAtual)
+                                        {
+                                            <div class="day-events">
+                                                <div class="event-summary">
+                                                    <span class="badge bg-primary badge-sm">
+                                                        @consultasDia.Count consulta@(consultasDia.Count > 1 ? "s" : "")
+                                                    </span>
+                                                </div>
+                                                
+                                                @foreach (var consulta in consultasDia.Take(3))
+                                                {
+                                                    var statusColor = consulta.Status switch
+                                                    {
+                                                        StatusConsulta.Agendada => "info",
+                                                        StatusConsulta.Confirmada => "primary",
+                                                        StatusConsulta.Realizada => "success",
+                                                        StatusConsulta.Cancelada => "secondary",
+                                                        _ => "secondary"
+                                                    };
+                                                    
+                                                    <div class="event-item bg-@statusColor bg-opacity-10 border-start border-@statusColor border-3">
+                                                        <small class="d-block text-truncate">
+                                                            @consulta.DataHorario.ToString("HH:mm") - @consulta.Paciente?.Nome
+                                                        </small>
+                                                    </div>
+                                                }
+                                                
+                                                @if (consultasDia.Count > 3)
+                                                {
+                                                    <small class="text-muted">+@(consultasDia.Count - 3) mais</small>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                
+                                diaAtual = diaAtual.AddDays(1);
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo do Mês -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <i class="bi bi-calendar-check display-4 text-primary"></i>
+                    <h3 class="mt-3 mb-0">@Model.TotalConsultasMes</h3>
+                    <p class="text-muted mb-0">Total de Consultas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <i class="bi bi-check-circle display-4 text-success"></i>
+                    <h3 class="mt-3 mb-0">@Model.ConsultasRealizadas</h3>
+                    <p class="text-muted mb-0">Realizadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <i class="bi bi-clock-history display-4 text-info"></i>
+                    <h3 class="mt-3 mb-0">@Model.ConsultasAgendadas</h3>
+                    <p class="text-muted mb-0">Agendadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <i class="bi bi-x-circle display-4 text-danger"></i>
+                    <h3 class="mt-3 mb-0">@Model.ConsultasCanceladas</h3>
+                    <p class="text-muted mb-0">Canceladas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .calendar-month {
+        font-size: 0.9rem;
+    }
+    
+    .calendar-header {
+        padding: 10px 0;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .calendar-day {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 8px;
+        min-height: 120px;
+        background-color: #fff;
+        transition: all 0.2s;
+    }
+    
+    .calendar-day:hover {
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    
+    .calendar-day.other-month {
+        background-color: #f8f9fa;
+        opacity: 0.5;
+    }
+    
+    .calendar-day.today {
+        background-color: #e3f2fd;
+        border: 2px solid #2196F3;
+        font-weight: bold;
+    }
+    
+    .calendar-day.has-events {
+        background-color: #fff8e1;
+    }
+    
+    .day-number {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+    
+    .day-events {
+        font-size: 0.75rem;
+    }
+    
+    .event-summary {
+        margin-bottom: 6px;
+        text-align: center;
+    }
+    
+    .event-item {
+        padding: 4px 6px;
+        margin-bottom: 4px;
+        border-radius: 4px;
+    }
+    
+    .badge-sm {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
