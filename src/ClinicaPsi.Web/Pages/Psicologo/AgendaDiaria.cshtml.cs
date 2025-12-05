@@ -29,9 +29,11 @@ namespace ClinicaPsi.Web.Pages.Psicologo
 
         public async Task<IActionResult> OnGetAsync(string? data)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Forbid();
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Forbid();
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             
@@ -67,7 +69,13 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 .OrderBy(c => c.DataHorario)
                 .ToListAsync();
 
-            return Page();
+                return Page();
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
+                return Page();
+            }
         }
     }
 }

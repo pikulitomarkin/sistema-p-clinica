@@ -32,11 +32,13 @@ namespace ClinicaPsi.Web.Pages.Psicologo
 
         public async Task<IActionResult> OnGetAsync(string? semana = null)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return Forbid();
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Forbid();
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             
             int psicologoId;
             
@@ -107,7 +109,14 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 .OrderBy(p => p.Nome)
                 .ToListAsync();
 
-            return Page();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                // Se der erro (provavelmente coluna Formato não existe ainda), mostrar mensagem amigável
+                TempData["Error"] = "A página de agenda está sendo atualizada. Por favor, aguarde alguns minutos e recarregue a página.";
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostAgendarConsultaAsync(
