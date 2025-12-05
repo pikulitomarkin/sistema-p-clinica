@@ -1,0 +1,32 @@
+# EditorConfig para otimizar performance do VS Code
+# https://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cs,csx,razor}]
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+
+[*.{json,js,yml,yaml,toml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+# Configurações .NET para melhor performance
+[*.cs]
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# Code style rules (desabilitadas para performance)
+dotnet_style_qualification_for_field = false:silent
+dotnet_style_qualification_for_property = false:silent
+dotnet_style_qualification_for_method = false:silent
+dotnet_style_qualification_for_event = false:silent

@@ -30,8 +30,12 @@ bld/
 # Visual Studio cache/options directory
 .vs/
 
-# Visual Studio Code
-.vscode/
+# Visual Studio Code (manter settings e extensions para compartilhar)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 *.code-workspace
 
 # Rider

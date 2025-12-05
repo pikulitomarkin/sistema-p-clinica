@@ -1,4 +1,4 @@
-# 🚀 Configuração Railway - WhatsApp Web Integration
+Invoke-RestMethod -Uri "https://whatsapp-bot-production-0624.up.railway.app/qrcode?sessionName=default"# 🚀 Configuração Railway - WhatsApp Web Integration
 
 ## Status Atual
 ✅ **Fase 1** - Estrutura de Banco de Dados - COMPLETO  
