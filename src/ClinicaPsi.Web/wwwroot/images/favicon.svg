@@ -1,35 +1,35 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Background circle -->
   <circle cx="256" cy="256" r="256" fill="#667eea"/>
-  
+
   <!-- Brain/Mind symbol -->
   <g transform="translate(256, 256)">
     <!-- Head silhouette -->
     <ellipse cx="0" cy="-20" rx="80" ry="100" fill="#764ba2" opacity="0.3"/>
-    
+
     <!-- Brain waves / thought symbol -->
-    <path d="M -60 -60 Q -40 -80, -20 -60 T 20 -60 T 60 -60" 
-          stroke="white" 
-          stroke-width="8" 
-          fill="none" 
+    <path d="M -60 -60 Q -40 -80, -20 -60 T 20 -60 T 60 -60"
+          stroke="white"
+          stroke-width="8"
+          fill="none"
           stroke-linecap="round"/>
-    
-    <path d="M -50 -30 Q -30 -50, -10 -30 T 30 -30 T 70 -30" 
-          stroke="white" 
-          stroke-width="8" 
-          fill="none" 
-          stroke-linecap="round" 
+
+    <path d="M -50 -30 Q -30 -50, -10 -30 T 30 -30 T 70 -30"
+          stroke="white"
+          stroke-width="8"
+          fill="none"
+          stroke-linecap="round"
           opacity="0.7"/>
-    
+
     <!-- Heart symbol (representing care) -->
-    <path d="M 0 40 L -25 15 Q -35 5, -35 -5 Q -35 -20, -20 -20 Q -10 -20, 0 -10 Q 10 -20, 20 -20 Q 35 -20, 35 -5 Q 35 5, 25 15 Z" 
+    <path d="M 0 40 L -25 15 Q -35 5, -35 -5 Q -35 -20, -20 -20 Q -10 -20, 0 -10 Q 10 -20, 20 -20 Q 35 -20, 35 -5 Q 35 5, 25 15 Z"
           fill="white"/>
-    
+
     <!-- Initials AS -->
-    <text x="-15" y="100" 
-          font-family="Arial, sans-serif" 
-          font-size="60" 
-          font-weight="bold" 
+    <text x="-15" y="100"
+          font-family="Arial, sans-serif"
+          font-size="60"
+          font-weight="bold"
           fill="white">AS</text>
   </g>
 </svg>

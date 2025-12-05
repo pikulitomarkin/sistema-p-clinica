@@ -33,6 +33,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
             public DateTime DataHorario { get; set; }
             public int DuracaoMinutos { get; set; } = 50;
             public TipoConsulta Tipo { get; set; } = TipoConsulta.Normal;
+            public FormatoConsulta Formato { get; set; } = FormatoConsulta.Presencial;
             public string? Observacoes { get; set; }
         }
 

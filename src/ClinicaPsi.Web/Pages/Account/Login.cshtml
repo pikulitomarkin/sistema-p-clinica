@@ -25,7 +25,7 @@
             padding-top: 70px; /* Espaço para a navbar */
             padding-bottom: 2rem; /* Espaço inferior */
         }
-        
+
         .login-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -34,14 +34,14 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             overflow: hidden;
         }
-        
+
         .login-header {
             background: linear-gradient(135deg, #28a745, #20c997);
             padding: 2rem;
             text-align: center;
             position: relative;
         }
-        
+
         .login-header::before {
             content: '';
             position: absolute;
@@ -52,7 +52,7 @@
             background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
             opacity: 0.3;
         }
-        
+
         .login-icon {
             width: 80px;
             height: 80px;
@@ -67,7 +67,7 @@
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.3);
         }
-        
+
         .login-title {
             color: white;
             font-weight: 700;
@@ -76,18 +76,18 @@
             position: relative;
             z-index: 2;
         }
-        
+
         .login-subtitle {
             color: rgba(255, 255, 255, 0.9);
             font-size: 0.9rem;
             position: relative;
             z-index: 2;
         }
-        
+
         .login-body {
             padding: 2.5rem;
         }
-        
+
         .form-control {
             border: 2px solid #e8f5e8;
             border-radius: 10px;
@@ -95,19 +95,19 @@
             background: #f8f9fa;
             transition: all 0.3s ease;
         }
-        
+
         .form-control:focus {
             border-color: #28a745;
             box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
             background: white;
         }
-        
+
         .form-label {
             color: #2d5016;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
-        
+
         .login-btn {
             background: linear-gradient(135deg, #28a745, #20c997);
             border: none;
@@ -119,41 +119,41 @@
             transition: all 0.3s ease;
             width: 100%;
         }
-        
+
         .login-btn:hover {
             background: linear-gradient(135deg, #20c997, #28a745);
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
             color: white;
         }
-        
+
         .form-check-input:checked {
             background-color: #28a745;
             border-color: #28a745;
         }
-        
+
         .form-check-label {
             color: #495057;
         }
-        
+
         .login-footer {
             background: #f8f9fa;
             padding: 1.5rem;
             text-align: center;
             border-top: 1px solid #e9ecef;
         }
-        
+
         .navbar-brand {
             color: white !important;
             text-decoration: none;
             font-weight: 700;
             font-size: 1.2rem;
         }
-        
+
         .navbar-brand:hover {
             color: rgba(255, 255, 255, 0.9) !important;
         }
-        
+
         .top-navbar {
             position: fixed;
             top: 0;
@@ -167,14 +167,14 @@
             display: flex;
             align-items: center;
         }
-        
+
         .alert-danger {
             background: rgba(220, 53, 69, 0.1);
             border: 1px solid rgba(220, 53, 69, 0.3);
             color: #dc3545;
             border-radius: 10px;
         }
-        
+
         /* Responsive Design */
         @@media (max-width: 768px) {
             body {
@@ -182,36 +182,36 @@
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
-            
+
             .top-navbar {
                 height: 60px;
             }
-            
+
             .login-container {
                 margin-top: 1rem;
                 margin-bottom: 1rem;
             }
-            
+
             .login-header {
                 padding: 1.5rem;
             }
-            
+
             .login-body {
                 padding: 2rem 1.5rem;
             }
         }
-        
+
         @@media (max-width: 480px) {
             .login-icon {
                 width: 60px;
                 height: 60px;
                 font-size: 1.5rem;
             }
-            
+
             .login-title {
                 font-size: 1.25rem;
             }
-            
+
             .login-body {
                 padding: 1.5rem 1rem;
             }
@@ -246,11 +246,11 @@
                         <h1 class="login-title">Acesso ao Sistema</h1>
                         <p class="login-subtitle">Entre com suas credenciais para continuar</p>
                     </div>
-                    
+
                     <div class="login-body">
                         <form method="post">
                             <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                            
+
                             <div class="mb-3">
                                 <label asp-for="Input.Email" class="form-label">
                                     <i class="bi bi-envelope me-2"></i>Email
@@ -258,7 +258,7 @@
                                 <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="Digite seu email">
                                 <span asp-validation-for="Input.Email" class="text-danger"></span>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label asp-for="Input.Password" class="form-label">
                                     <i class="bi bi-lock me-2"></i>Senha
@@ -266,21 +266,21 @@
                                 <input asp-for="Input.Password" class="form-control" autocomplete="current-password" placeholder="Digite sua senha">
                                 <span asp-validation-for="Input.Password" class="text-danger"></span>
                             </div>
-                            
+
                             <div class="mb-4 form-check">
                                 <input asp-for="Input.RememberMe" class="form-check-input">
                                 <label asp-for="Input.RememberMe" class="form-check-label">
                                     Lembrar de mim
                                 </label>
                             </div>
-                            
+
                             <button type="submit" class="login-btn">
                                 <i class="bi bi-box-arrow-in-right me-2"></i>
                                 Entrar no Sistema
                             </button>
                         </form>
                     </div>
-                    
+
                     <div class="login-footer">
                         <small class="text-muted">
                             <i class="bi bi-shield-check me-1"></i>

@@ -2,6 +2,12 @@
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.railway"
 
+# Configurações de timeout para evitar falhas de rede
+[build.buildCommand]
+timeout = 900  # 15 minutos (padrão é 10)
+
 [deploy]
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
+healthcheckPath = "/health"
+healthcheckTimeout = 300

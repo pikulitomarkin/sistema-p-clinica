@@ -13,7 +13,7 @@
       <image:caption>Psicóloga Clínica especializada em Terapia Cognitivo-Comportamental</image:caption>
     </image:image>
   </url>
-  
+
   <!-- Área de Login -->
   <url>
     <loc>https://www.psiianasantos.com.br/Account/Login</loc>
@@ -21,7 +21,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
-  
+
   <!-- Agendamento -->
   <url>
     <loc>https://www.psiianasantos.com.br/Agendamento</loc>

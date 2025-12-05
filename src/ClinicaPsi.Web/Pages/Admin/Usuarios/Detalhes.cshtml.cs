@@ -63,8 +63,8 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
 
                     TotalConsultas = consultas.Count;
                     ConsultasRealizadas = consultas.Count(c => c.Status == StatusConsulta.Realizada);
-                    ConsultasAgendadas = consultas.Count(c => 
-                        c.Status == StatusConsulta.Agendada || 
+                    ConsultasAgendadas = consultas.Count(c =>
+                        c.Status == StatusConsulta.Agendada ||
                         c.Status == StatusConsulta.Confirmada);
 
                     UltimaConsulta = consultas
@@ -94,8 +94,8 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
 
                     TotalConsultas = consultas.Count;
                     ConsultasRealizadas = consultas.Count(c => c.Status == StatusConsulta.Realizada);
-                    ConsultasAgendadas = consultas.Count(c => 
-                        c.Status == StatusConsulta.Agendada || 
+                    ConsultasAgendadas = consultas.Count(c =>
+                        c.Status == StatusConsulta.Agendada ||
                         c.Status == StatusConsulta.Confirmada);
 
                     UltimaConsulta = consultas

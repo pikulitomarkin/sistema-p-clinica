@@ -57,7 +57,7 @@
                     <div class="stats-label">Pontos Atuais</div>
                 </div>
             </div>
-            
+
             <!-- Barra de progresso -->
             <div class="mt-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -65,7 +65,7 @@
                     <small class="text-muted">@(Model.PsicoPontos % 10)/10</small>
                 </div>
                 <div class="progress" style="height: 8px; background: rgba(255, 193, 7, 0.2);">
-                    <div class="progress-bar" 
+                    <div class="progress-bar"
                          style="background: linear-gradient(135deg, #ffc107, #ffab00); width: @((Model.PsicoPontos % 10) * 10)%">
                     </div>
                 </div>
@@ -85,7 +85,7 @@
             <div class="stats-label">Consultas Realizadas</div>
         </div>
     </div>
-    
+
     <div class="col-xl-4 col-md-6">
         <div class="admin-stats-card">
             <div class="stats-icon" style="background: linear-gradient(135deg, #17a2b8, #138496);">
@@ -95,7 +95,7 @@
             <div class="stats-label">Consultas Agendadas</div>
         </div>
     </div>
-    
+
     <div class="col-xl-4 col-md-6">
         <div class="admin-stats-card">
             <div class="stats-icon" style="background: linear-gradient(135deg, #ffc107, #ffab00);">
@@ -218,7 +218,7 @@
                             </div>
                         }
                     </div>
-                    
+
                     @if (Model.HistoricoConsultas.Count > 5)
                     {
                         <div class="text-center mt-3">
@@ -238,7 +238,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Right Sidebar - Patient Info -->
     <div class="col-lg-4">
         <!-- Informações do Paciente -->
@@ -259,9 +259,9 @@
                         <h6 class="mt-2 mb-1">@Model.PacienteInfo.Nome</h6>
                         <small class="text-muted">@Model.PacienteInfo.Email</small>
                     </div>
-                    
+
                     <hr>
-                    
+
                     <div class="row text-center">
                         <div class="col-6">
                             <strong class="text-primary">@Model.PacienteInfo.PsicoPontos</strong>
@@ -272,7 +272,7 @@
                             <div class="small text-muted">Consultas</div>
                         </div>
                     </div>
-                    
+
                     <div class="mt-3 text-center">
                         <a href="/Cliente/MeuPerfil" class="admin-action-btn-secondary">
                             <i class="bi bi-pencil me-1"></i>
@@ -308,7 +308,7 @@
                         <small class="text-muted">Cada consulta realizada = 1 ponto</small>
                     </div>
                 </div>
-                
+
                 <div class="d-flex align-items-start mb-3">
                     <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px; min-width: 30px;">
                         <i class="bi bi-2-circle text-white small"></i>
@@ -318,7 +318,7 @@
                         <small class="text-muted">Junte 10 pontos para uma consulta gratuita</small>
                     </div>
                 </div>
-                
+
                 <div class="d-flex align-items-start">
                     <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px; min-width: 30px;">
                         <i class="bi bi-3-circle text-white small"></i>

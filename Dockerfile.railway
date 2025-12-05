@@ -5,21 +5,25 @@ WORKDIR /source
 # Copy solution file
 COPY *.sln ./
 
-# Copy csproj files
+# Copy csproj files (cached layer - só rebuilda se mudar dependências)
 COPY src/ClinicaPsi.Shared/*.csproj ./src/ClinicaPsi.Shared/
 COPY src/ClinicaPsi.Infrastructure/*.csproj ./src/ClinicaPsi.Infrastructure/
 COPY src/ClinicaPsi.Application/*.csproj ./src/ClinicaPsi.Application/
 COPY src/ClinicaPsi.Web/*.csproj ./src/ClinicaPsi.Web/
 
-# Restore dependencies
-RUN dotnet restore
+# Restore dependencies (cached layer)
+RUN dotnet restore --verbosity minimal
 
 # Copy all source code
 COPY src/ ./src/
 
-# Build and publish
+# Build and publish com otimizações
 WORKDIR /source/src/ClinicaPsi.Web
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish -c Release -o /app/publish \
+    --no-restore \
+    --verbosity minimal \
+    /p:PublishTrimmed=false \
+    /p:PublishSingleFile=false
 
 # Runtime Stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
@@ -41,4 +45,5 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 # ASPNETCORE_URLS will be set in CMD using Railway's PORT variable
 
 # Run app - Railway injects PORT variable
-CMD dotnet ClinicaPsi.Web.dll --urls http://0.0.0.0:$PORT
+# Usar ENTRYPOINT com array format (fix JSONArgsRecommended warning)
+ENTRYPOINT ["sh", "-c", "dotnet ClinicaPsi.Web.dll --urls http://0.0.0.0:$PORT"]
