@@ -39,10 +39,20 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
         public async Task<IActionResult> OnGetAsync(DateTime? data)
         {
-            if (data.HasValue)
-                DataSelecionada = data.Value;
+            try
+            {
+                if (data.HasValue)
+                    DataSelecionada = data.Value;
 
-            await CarregarDadosAsync();
+                await CarregarDadosAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao carregar AgendarConsulta: {ex.Message}");
+                // Define valores padrão para a página funcionar
+                Psicologos = new List<ClinicaPsi.Shared.Models.Psicologo>();
+                ConsultasExistentes = new List<Consulta>();
+            }
             return Page();
         }
 

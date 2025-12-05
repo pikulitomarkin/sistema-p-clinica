@@ -28,10 +28,21 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
         public async Task<IActionResult> OnGetAsync(string filtroStatus = "proximas", string busca = "")
         {
-            FiltroStatus = filtroStatus;
-            Busca = busca;
+            try
+            {
+                FiltroStatus = filtroStatus;
+                Busca = busca;
 
-            await CarregarDadosAsync();
+                await CarregarDadosAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao carregar MinhasConsultas: {ex.Message}");
+                // Define valores padrão
+                ConsultasProximas = new List<Consulta>();
+                ConsultasRealizadas = new List<Consulta>();
+                ConsultasCanceladas = new List<Consulta>();
+            }
             return Page();
         }
 

@@ -45,12 +45,22 @@ namespace ClinicaPsi.Web.Pages.Cliente
         public async Task<IActionResult> OnGetAsync(DateTime? dataInicio, DateTime? dataFim,
             string filtroTipo = "todos", int pagina = 1)
         {
-            if (dataInicio.HasValue) DataInicio = dataInicio.Value;
-            if (dataFim.HasValue) DataFim = dataFim.Value;
-            FiltroTipo = filtroTipo;
-            PaginaAtual = pagina;
+            try
+            {
+                if (dataInicio.HasValue) DataInicio = dataInicio.Value;
+                if (dataFim.HasValue) DataFim = dataFim.Value;
+                FiltroTipo = filtroTipo;
+                PaginaAtual = pagina;
 
-            await CarregarDadosAsync();
+                await CarregarDadosAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao carregar Historico: {ex.Message}");
+                // Define valores padrão
+                ConsultasHistorico = new List<Consulta>();
+                HistoricoPontos = new List<HistoricoPontos>();
+            }
             return Page();
         }
 
