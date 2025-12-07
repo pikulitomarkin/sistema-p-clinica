@@ -247,6 +247,9 @@ app.UseAuthorization();
 // Health check endpoint (DEVE vir após UseRouting)
 app.MapHealthChecks("/health");
 
+// API Controllers (necessário para WhatsAppWebhookController)
+app.MapControllers();
+
 app.MapRazorPages();
 
 // Webhook endpoint para WhatsApp
