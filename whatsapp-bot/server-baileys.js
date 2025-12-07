@@ -234,16 +234,36 @@ async function processIncomingMessage(sessionName, from, text, fullMessage) {
       [sessionName, from, text, JSON.stringify(fullMessage)]
     );
 
-    // Resposta automática básica
-    const sock = activeSockets.get(sessionName);
-    if (sock) {
-      const lowerText = text.toLowerCase();
-      
-      if (lowerText.includes('oi') || lowerText.includes('olá') || lowerText.includes('ola')) {
-        await sock.sendMessage(from, { 
-          text: '🏥 Olá! Bem-vindo à ClinicaPsi.\n\nEm que posso ajudá-lo?' 
+    console.log(`[${sessionName}] 💾 Mensagem salva no banco`);
+
+    // Chamar webhook do ASP.NET para processar mensagem
+    const aspnetWebhookUrl = process.env.ASPNET_WEBHOOK_URL;
+    
+    if (aspnetWebhookUrl) {
+      try {
+        console.log(`[${sessionName}] 📡 Enviando para ASP.NET: ${aspnetWebhookUrl}`);
+        
+        const response = await fetch(`${aspnetWebhookUrl}/webhook/whatsapp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionName: sessionName,
+            from: from,
+            message: text,
+            timestamp: new Date().toISOString()
+          })
         });
+
+        if (response.ok) {
+          console.log(`[${sessionName}] ✅ Mensagem processada pelo ASP.NET`);
+        } else {
+          console.warn(`[${sessionName}] ⚠️ ASP.NET retornou erro: ${response.status}`);
+        }
+      } catch (webhookError) {
+        console.warn(`[${sessionName}] ⚠️ Erro ao chamar webhook ASP.NET:`, webhookError.message);
       }
+    } else {
+      console.log(`[${sessionName}] ℹ️ ASPNET_WEBHOOK_URL não configurada - webhook não será chamado`);
     }
 
   } catch (error) {
