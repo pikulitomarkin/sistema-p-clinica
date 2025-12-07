@@ -169,6 +169,7 @@ builder.Services.AddScoped<ConfiguracaoService>();
 builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<OpenAIService>();
 builder.Services.AddScoped<WhatsAppBotService>();
+builder.Services.AddScoped<WhatsAppNotificationService>();
 
 // Configurar HttpClient para WhatsApp Web (Venom-Bot)
 builder.Services.AddHttpClient<WhatsAppWebService>(client =>
@@ -178,6 +179,9 @@ builder.Services.AddHttpClient<WhatsAppWebService>(client =>
 });
 builder.Services.AddScoped<WhatsAppWebService>();
 
+// Registrar Background Service para notificações automáticas
+builder.Services.AddHostedService<WhatsAppNotificationBackgroundService>();
+
 // Configurar HttpClient para WhatsApp (legado)
 builder.Services.AddHttpClient("WhatsApp", client =>
 {
@@ -185,8 +189,9 @@ builder.Services.AddHttpClient("WhatsApp", client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-// Serviço em background para notificações
+// Serviços em background para notificações
 builder.Services.AddHostedService<ClinicaPsi.Web.Services.NotificacaoBackgroundService>();
+builder.Services.AddHostedService<ClinicaPsi.Web.Services.WhatsAppNotificacaoBackgroundService>();
 
 var app = builder.Build();
 
