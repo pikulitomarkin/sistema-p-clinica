@@ -282,12 +282,20 @@ async function sendMessage(sessionName, to, message) {
   // Formatar número (adicionar @s.whatsapp.net se necessário)
   let formattedTo = to.includes('@') ? to : `${to}@s.whatsapp.net`;
   
+  console.log(`[${sessionName}] 📤 Tentando enviar mensagem:`);
+  console.log(`  - De: ${sock.user?.id}`);
+  console.log(`  - Para: ${formattedTo}`);
+  console.log(`  - Mensagem: ${message.substring(0, 50)}...`);
+  
   try {
-    await sock.sendMessage(formattedTo, { text: message });
-    console.log(`[${sessionName}] ✅ Mensagem enviada para ${to}`);
-    return { success: true };
+    const result = await sock.sendMessage(formattedTo, { text: message });
+    console.log(`[${sessionName}] ✅ Mensagem enviada com sucesso!`);
+    console.log(`  - Result:`, JSON.stringify(result, null, 2));
+    return { success: true, result };
   } catch (error) {
-    console.error(`[${sessionName}] ❌ Erro ao enviar mensagem:`, error);
+    console.error(`[${sessionName}] ❌ ERRO ao enviar mensagem:`, error.message);
+    console.error(`  - Stack:`, error.stack);
+    console.error(`  - Data:`, error.data);
     throw error;
   }
 }
