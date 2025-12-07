@@ -1,6 +1,7 @@
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Diagnostics;
@@ -15,18 +16,25 @@ public class WhatsAppWebService
     private readonly ILogger<WhatsAppWebService> _logger;
     private readonly HttpClient _httpClient;
     private readonly string _venomBotUrl;
+    private readonly IConfiguration _configuration;
 
     public WhatsAppWebService(
         AppDbContext context,
         ILogger<WhatsAppWebService> logger,
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration)
     {
         _context = context;
         _logger = logger;
         _httpClient = httpClientFactory.CreateClient();
+        _configuration = configuration;
         
-        // URL do container Venom-Bot no Railway (será configurada depois)
-        _venomBotUrl = Environment.GetEnvironmentVariable("VENOM_BOT_URL") ?? "http://localhost:3000";
+        // URL do bot Baileys no Railway
+        _venomBotUrl = _configuration["WhatsApp:BotUrl"] 
+            ?? Environment.GetEnvironmentVariable("VENOM_BOT_URL") 
+            ?? "http://localhost:3000";
+            
+        _logger.LogInformation("WhatsApp Bot URL configurada: {Url}", _venomBotUrl);
     }
 
     public async Task<WhatsAppSession> ObterSessaoAsync(string sessionName = "default")
