@@ -290,8 +290,20 @@ public class VenomBotResponse
 
 public class VenomBotStatusResponse
 {
-    public bool Connected { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("status")]
+    public string? Status { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("phoneNumber")]
     public string? PhoneNumber { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("name")]
+    public string? Name { get; set; }
+    
+    [System.Text.Json.Serialization.JsonPropertyName("message")]
+    public string? Message { get; set; }
+    
+    // Propriedade helper para compatibilidade
+    public bool Connected => Status?.ToLower() == "connected";
 }
 
 public class WhatsAppStatusInfo
