@@ -11,18 +11,18 @@ namespace ClinicaPsi.Application.Services;
 /// </summary>
 public class WhatsAppNotificationService
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly WhatsAppWebService _whatsAppService;
     private readonly ILogger<WhatsAppNotificationService> _logger;
     private readonly IConfiguration _configuration;
 
     public WhatsAppNotificationService(
-        AppDbContext context,
+        IDbContextFactory<AppDbContext> contextFactory,
         WhatsAppWebService whatsAppService,
         ILogger<WhatsAppNotificationService> logger,
         IConfiguration configuration)
     {
-        _context = context;
+        _contextFactory = contextFactory;
         _whatsAppService = whatsAppService;
         _logger = logger;
         _configuration = configuration;
@@ -48,8 +48,11 @@ public class WhatsAppNotificationService
             var inicioJanela = agora.AddHours(23);
             var fimJanela = agora.AddHours(25);
 
+            // Criar contexto usando factory
+            using var context = await _contextFactory.CreateDbContextAsync();
+            
             // Buscar consultas agendadas para amanhã
-            var consultas = await _context.Consultas
+            var consultas = await context.Consultas
                 .Include(c => c.Paciente)
                 .Include(c => c.Psicologo)
                 .Where(c => c.Status == StatusConsulta.Agendada || c.Status == StatusConsulta.Confirmada)
@@ -160,8 +163,11 @@ Se tiver alguma dúvida, responda esta mensagem que um atendente entrará em con
             // Limpar telefone
             var telefoneLimpo = LimparTelefone(telefone);
 
+            // Criar contexto usando factory
+            using var context = await _contextFactory.CreateDbContextAsync();
+            
             // Verificar se é paciente cadastrado
-            var paciente = await _context.Pacientes
+            var paciente = await context.Pacientes
                 .FirstOrDefaultAsync(p => p.Telefone.Contains(telefoneLimpo.Substring(telefoneLimpo.Length - 8)));
 
             var mensagemLower = mensagem.ToLower().Trim();

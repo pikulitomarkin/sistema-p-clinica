@@ -116,6 +116,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     }
 });
 
+// Adicionar DbContextFactory para uso em background services e webhooks
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+{
+    if (usePostgreSql)
+    {
+        options.UseNpgsql(connectionString)
+            .EnableSensitiveDataLogging()
+            .LogTo(Console.WriteLine);
+    }
+    else
+    {
+        options.UseSqlite(connectionString);
+    }
+});
+
 // Configurar Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
