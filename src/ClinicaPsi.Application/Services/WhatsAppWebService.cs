@@ -171,13 +171,13 @@ public class WhatsAppWebService
     {
         try
         {
-            _logger.LogInformation("Enviando mensagem para {Numero}", numeroDestino);
+            _logger.LogInformation("Enviando mensagem para {Numero} via sessão {Session}", numeroDestino, sessionName);
 
             var payload = new
             {
-                session = sessionName,
-                number = numeroDestino,
-                message = mensagem
+                to = numeroDestino,
+                message = mensagem,
+                sessionName = sessionName
             };
 
             var content = new StringContent(
@@ -186,12 +186,23 @@ public class WhatsAppWebService
                 "application/json");
 
             var response = await _httpClient.PostAsync($"{_venomBotUrl}/send", content);
-
-            return response.IsSuccessStatusCode;
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("✅ Mensagem enviada com sucesso para {Numero}", numeroDestino);
+                return true;
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("❌ Falha ao enviar mensagem. Status: {Status}, Erro: {Error}", 
+                    response.StatusCode, errorContent);
+                return false;
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao enviar mensagem");
+            _logger.LogError(ex, "Erro ao enviar mensagem para {Numero}", numeroDestino);
             return false;
         }
     }
