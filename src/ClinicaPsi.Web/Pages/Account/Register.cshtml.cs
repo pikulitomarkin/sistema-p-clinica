@@ -70,7 +70,7 @@ namespace ClinicaPsi.Web.Pages.Account
                         NomeCompleto = Input?.Nome ?? string.Empty,
                         DataCadastro = DateTime.Now,
                         Ativo = true,
-                        TipoUsuario = TipoUsuario.Paciente
+                        TipoUsuario = TipoUsuario.Cliente
                     };
 
                     var result = await _userManager.CreateAsync(user, Input?.Password ?? string.Empty);
