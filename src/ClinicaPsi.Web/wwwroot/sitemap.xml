@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <!-- Página Principal -->
+  <!-- Página Principal - Psicóloga Ana Santos Londrina -->
   <url>
     <loc>https://www.psiianasantos.com.br/</loc>
-    <lastmod>2025-12-04</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://www.psiianasantos.com.br/images/ana-santos.jpg</image:loc>
-      <image:title>Psicóloga Ana Santos</image:title>
+      <image:title>Psicóloga Ana Santos - Londrina</image:title>
       <image:caption>Psicóloga Clínica especializada em Terapia Cognitivo-Comportamental</image:caption>
     </image:image>
   </url>
@@ -17,16 +17,18 @@
   <!-- Área de Login -->
   <url>
     <loc>https://www.psiianasantos.com.br/Account/Login</loc>
-    <lastmod>2025-12-04</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.7</priority>
   </url>
 
-  <!-- Agendamento -->
+  <!-- Agendamento de Consultas -->
   <url>
     <loc>https://www.psiianasantos.com.br/Agendamento</loc>
-    <lastmod>2025-12-04</lastmod>
+    <lastmod>2025-12-13</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
+  </url>
+</urlset>
   </url>
 </urlset>
