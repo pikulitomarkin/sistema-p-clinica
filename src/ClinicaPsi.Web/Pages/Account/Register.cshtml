@@ -269,6 +269,23 @@
                                 <span asp-validation-for="Input.Nome" class="error-message"></span>
                             </div>
 
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="Input.CPF" class="form-label">CPF</label>
+                                        <input asp-for="Input.CPF" class="form-control" placeholder="12345678901" maxlength="11" />
+                                        <span asp-validation-for="Input.CPF" class="error-message"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="Input.DataNascimento" class="form-label">Data de Nascimento</label>
+                                        <input asp-for="Input.DataNascimento" class="form-control" type="date" />
+                                        <span asp-validation-for="Input.DataNascimento" class="error-message"></span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="mb-3">
                                 <label asp-for="Input.Email" class="form-label">Email</label>
                                 <input asp-for="Input.Email" class="form-control" type="email" placeholder="seu@email.com" />

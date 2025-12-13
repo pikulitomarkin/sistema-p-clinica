@@ -26,6 +26,17 @@ namespace ClinicaPsi.Web.Pages.Account
             [Display(Name = "Nome Completo")]
             public string Nome { get; set; } = string.Empty;
 
+            [Required(ErrorMessage = "CPF é obrigatório")]
+            [StringLength(11, MinimumLength = 11, ErrorMessage = "CPF deve ter 11 dígitos")]
+            [RegularExpression(@"^\d{11}$", ErrorMessage = "CPF deve conter apenas números")]
+            [Display(Name = "CPF")]
+            public string CPF { get; set; } = string.Empty;
+
+            [Required(ErrorMessage = "Data de nascimento é obrigatória")]
+            [DataType(DataType.Date)]
+            [Display(Name = "Data de Nascimento")]
+            public DateTime DataNascimento { get; set; }
+
             [Required(ErrorMessage = "Email é obrigatório")]
             [EmailAddress(ErrorMessage = "Email inválido")]
             [Display(Name = "Email")]
@@ -68,6 +79,7 @@ namespace ClinicaPsi.Web.Pages.Account
                         Email = Input?.Email ?? string.Empty,
                         PhoneNumber = Input?.PhoneNumber,
                         NomeCompleto = Input?.Nome ?? string.Empty,
+                        CPF = Input?.CPF ?? string.Empty,
                         DataCadastro = DateTime.Now,
                         Ativo = true,
                         TipoUsuario = TipoUsuario.Cliente
