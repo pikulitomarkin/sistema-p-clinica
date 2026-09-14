@@ -202,6 +202,7 @@ builder.Services.AddScoped<ConsultaService>();
 builder.Services.AddScoped<PsicologoService>();
 builder.Services.AddScoped<UsuarioPsicologoSyncService>();
 builder.Services.AddScoped<ProntuarioService>();
+builder.Services.AddScoped<VideoConsultaService>();
 builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<NotificacaoService>();
 builder.Services.AddScoped<PdfService>();
@@ -265,6 +266,8 @@ using (var scope = app.Services.CreateScope())
         {
             logger.LogInformation("Nenhuma migration pendente.");
         }
+
+        await GarantirSchemaProntuarioEVideoAsync(context, logger);
     }
     catch (Exception ex)
     {
@@ -276,6 +279,16 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     
     await DbInitializer.SeedAsync(context, userManager, roleManager);
+
+    try
+    {
+        var configService = scope.ServiceProvider.GetRequiredService<ConfiguracaoService>();
+        await configService.InicializarConfiguracoesAsync();
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Falha ao inicializar configurações padrão (não bloqueia o boot)");
+    }
 
     try
     {
@@ -450,3 +463,48 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+static async Task GarantirSchemaProntuarioEVideoAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomName"" character varying(100) NULL;
+              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomUrl"" character varying(500) NULL;");
+
+        await context.Database.ExecuteSqlRawAsync(
+            @"CREATE TABLE IF NOT EXISTS ""ProntuariosEletronicos"" (
+                ""Id"" SERIAL PRIMARY KEY,
+                ""PacienteId"" integer NOT NULL,
+                ""ConsultaId"" integer NULL,
+                ""PsicologoId"" integer NOT NULL,
+                ""DataSessao"" timestamp without time zone NOT NULL,
+                ""TipoAtendimento"" character varying(50) NOT NULL DEFAULT 'Individual',
+                ""QueixaPrincipal"" text NOT NULL,
+                ""Observacoes"" text NOT NULL,
+                ""Evolucao"" text NULL,
+                ""Intervencoes"" text NULL,
+                ""PlanoTerapeutico"" text NULL,
+                ""ProximaSessao"" text NULL,
+                ""EstadoEmocional"" character varying(100) NULL,
+                ""MedicamentosAtuais"" text NULL,
+                ""Anexos"" text NULL,
+                ""Finalizado"" boolean NOT NULL DEFAULT FALSE,
+                ""DataCriacao"" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                ""DataAtualizacao"" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                ""Confidencial"" boolean NOT NULL DEFAULT TRUE
+              );");
+
+        await context.Database.ExecuteSqlRawAsync(
+            @"CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_PacienteId"" ON ""ProntuariosEletronicos"" (""PacienteId"");
+              CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_PsicologoId"" ON ""ProntuariosEletronicos"" (""PsicologoId"");
+              CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_ConsultaId"" ON ""ProntuariosEletronicos"" (""ConsultaId"");
+              CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_DataSessao"" ON ""ProntuariosEletronicos"" (""DataSessao"");");
+
+        logger.LogInformation("Schema de prontuário/vídeo verificado (colunas e tabela).");
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Não foi possível garantir schema de prontuário/vídeo (pode ser SQLite local).");
+    }
+}

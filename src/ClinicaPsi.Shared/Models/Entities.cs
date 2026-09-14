@@ -143,6 +143,12 @@ public class Consulta
     public TipoConsulta Tipo { get; set; } = TipoConsulta.Normal;
     public FormatoConsulta Formato { get; set; } = FormatoConsulta.Presencial;
 
+    [StringLength(100)]
+    public string? VideoRoomName { get; set; }
+
+    [StringLength(500)]
+    public string? VideoRoomUrl { get; set; }
+
     [StringLength(1000, ErrorMessage = "Observações deve ter no máximo 1000 caracteres")]
     public string? Observacoes { get; set; }
 

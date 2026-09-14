@@ -196,7 +196,11 @@ public class ConfiguracaoService
             { "Backup.Automatico.DiasRetencao", ("30", "Dias de retenção dos backups", "Backup", "number") },
             
             { "Seguranca.SessaoTimeout", ("30", "Tempo de expiração da sessão em minutos", "Seguranca", "number") },
-            { "Seguranca.TentativasLoginMax", ("5", "Número máximo de tentativas de login", "Seguranca", "number") }
+            { "Seguranca.TentativasLoginMax", ("5", "Número máximo de tentativas de login", "Seguranca", "number") },
+
+            { "Prontuario.Habilitado", ("true", "Habilitar prontuário eletrônico online", "Prontuario", "boolean") },
+            { "Video.ConsultasOnline.Habilitado", ("true", "Habilitar videochamada embutida em consultas online", "Video", "boolean") },
+            { "Video.JitsiBaseUrl", ("https://meet.jit.si", "URL base do provedor de vídeo (Jitsi Meet)", "Video", "string") }
         };
 
         foreach (var (chave, (valor, descricao, categoria, tipo)) in configuracoesPadrao)

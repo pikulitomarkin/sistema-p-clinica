@@ -3,9 +3,9 @@ using ClinicaPsi.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
-using System.Linq;
 
 namespace ClinicaPsi.Web.Pages.Prontuario;
 
@@ -13,15 +13,22 @@ namespace ClinicaPsi.Web.Pages.Prontuario;
 public class IndexModel : PageModel
 {
     private readonly ProntuarioService _prontuarioService;
-    private readonly ConsultaService _consultaService;
     private readonly PsicologoService _psicologoService;
+    private readonly ConfiguracaoService _configuracaoService;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<IndexModel> _logger;
 
-    public IndexModel(ProntuarioService prontuarioService, ConsultaService consultaService, PsicologoService psicologoService, ILogger<IndexModel> logger)
+    public IndexModel(
+        ProntuarioService prontuarioService,
+        PsicologoService psicologoService,
+        ConfiguracaoService configuracaoService,
+        UserManager<ApplicationUser> userManager,
+        ILogger<IndexModel> logger)
     {
         _prontuarioService = prontuarioService;
-        _consultaService = consultaService;
         _psicologoService = psicologoService;
+        _configuracaoService = configuracaoService;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -31,48 +38,59 @@ public class IndexModel : PageModel
     public DateTime DataFiltro { get; set; } = DateTime.Today;
     public string? MensagemErro { get; set; }
     public string? MensagemSucesso { get; set; }
+    public bool IsAdmin { get; set; }
 
     public async Task OnGetAsync(int? pacienteId = null)
     {
         try
         {
-            // Obter userId (GUID) do usuário logado
-            string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
-            if (string.IsNullOrEmpty(userId))
+            if (!await _configuracaoService.ObterValorBoolAsync("Prontuario.Habilitado", true))
             {
-                MensagemErro = "Não foi possível identificar o psicólogo logado.";
+                MensagemErro = "O prontuário eletrônico está desabilitado nas configurações do sistema.";
                 return;
             }
 
-            // Buscar psicólogo pelo UserId
-            var todosPsicologos = await _psicologoService.GetAllAsync();
-            var psicologo = todosPsicologos.FirstOrDefault(p => p.UserId == userId);
-            
-            if (psicologo == null)
+            IsAdmin = User.IsInRole("Admin");
+            var user = await _userManager.GetUserAsync(User);
+            string? userId = user?.Id ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            Shared.Models.Psicologo? psicologo = null;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var todosPsicologos = await _psicologoService.GetAllAsync();
+                psicologo = todosPsicologos.FirstOrDefault(p => p.UserId == userId)
+                    ?? (user?.PsicologoId != null
+                        ? todosPsicologos.FirstOrDefault(p => p.Id == user.PsicologoId)
+                        : null);
+            }
+
+            if (IsAdmin && psicologo == null)
+            {
+                if (pacienteId.HasValue)
+                    Prontuarios = await _prontuarioService.ObterPorPacienteAsync(pacienteId.Value);
+                else
+                    Prontuarios = await _prontuarioService.BuscarProntuariosAsync(string.Empty);
+            }
+            else if (psicologo == null)
             {
                 MensagemErro = "Psicólogo não encontrado. Verifique se seu cadastro está completo.";
                 return;
             }
-
-            // Buscar prontuários do psicólogo
-            if (pacienteId.HasValue)
+            else if (pacienteId.HasValue)
             {
-                // Filtrar por paciente específico
                 Prontuarios = await _prontuarioService.ObterPorPacienteAsync(pacienteId.Value);
-                // Filtrar apenas os do psicólogo logado
-                Prontuarios = Prontuarios?.Where(p => p.PsicologoId == psicologo.Id).ToList();
+                if (!IsAdmin)
+                    Prontuarios = Prontuarios?.Where(p => p.PsicologoId == psicologo.Id).ToList();
             }
             else
             {
                 Prontuarios = await _prontuarioService.ObterPorPsicologoAsync(psicologo.Id);
             }
 
-            // Calcular estatísticas
             TotalProntuarios = Prontuarios?.Count ?? 0;
             ProntuariosFinalizados = Prontuarios?.Count(p => p.Finalizado) ?? 0;
 
-            _logger.LogInformation($"Carregados {TotalProntuarios} prontuários para psicólogo {psicologo.Nome} (ID: {psicologo.Id})");
+            _logger.LogInformation("Carregados {Count} prontuários", TotalProntuarios);
         }
         catch (Exception ex)
         {
@@ -85,6 +103,20 @@ public class IndexModel : PageModel
     {
         try
         {
+            var prontuario = await _prontuarioService.ObterPorIdAsync(id);
+            if (prontuario == null)
+                return NotFound();
+
+            if (!User.IsInRole("Admin"))
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var todos = await _psicologoService.GetAllAsync();
+                var psicologo = todos.FirstOrDefault(p => p.UserId == user?.Id)
+                    ?? (user?.PsicologoId != null ? todos.FirstOrDefault(p => p.Id == user.PsicologoId) : null);
+                if (psicologo == null || prontuario.PsicologoId != psicologo.Id)
+                    return Forbid();
+            }
+
             await _prontuarioService.ExcluirProntuarioAsync(id);
             MensagemSucesso = "Prontuário excluído com sucesso.";
             return RedirectToPage();

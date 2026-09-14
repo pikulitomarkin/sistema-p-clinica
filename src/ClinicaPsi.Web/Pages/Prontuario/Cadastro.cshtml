@@ -2,6 +2,7 @@
 @model CadastroModel
 @{
     ViewData["Title"] = Model.Edicao ? "Editar Prontuário" : "Novo Prontuário";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
 }
 <h1>@ViewData["Title"]</h1>
 

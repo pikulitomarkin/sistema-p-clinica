@@ -108,6 +108,10 @@
                         <i class="bi bi-person-lines-fill me-2"></i>
                         Meus Pacientes
                     </a>
+                    <a href="/prontuario" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Prontuario") == true ? "active" : "")">
+                        <i class="bi bi-journal-medical me-2"></i>
+                        Prontuário
+                    </a>
                     <a href="/psicologo/relatorios" class="nav-link">
                         <i class="bi bi-file-text me-2"></i>
                         Relatórios

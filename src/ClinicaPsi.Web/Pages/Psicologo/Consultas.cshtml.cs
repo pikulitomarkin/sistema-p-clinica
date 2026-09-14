@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
+using ClinicaPsi.Application.Services;
 using ClinicaPsi.Web.Extensions;
 using System.Security.Claims;
 
@@ -13,10 +14,12 @@ namespace ClinicaPsi.Web.Pages.Psicologo
     public class ConsultasModel : PageModel
     {
         private readonly AppDbContext _context;
+        private readonly VideoConsultaService _videoConsultaService;
 
-        public ConsultasModel(AppDbContext context)
+        public ConsultasModel(AppDbContext context, VideoConsultaService videoConsultaService)
         {
             _context = context;
+            _videoConsultaService = videoConsultaService;
         }
 
         public List<Consulta> Consultas { get; set; } = new();
@@ -149,7 +152,8 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             string horaConsulta,
             int duracao,
             decimal valor,
-            string? observacoes)
+            string? observacoes,
+            string formatoConsulta = "Presencial")
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -183,6 +187,10 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 }
 
                 // Criar consulta
+                var formato = Enum.TryParse<FormatoConsulta>(formatoConsulta, true, out var f)
+                    ? f
+                    : FormatoConsulta.Presencial;
+
                 var novaConsulta = new Consulta
                 {
                     PacienteId = pacienteId,
@@ -192,12 +200,16 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     Valor = valor,
                     Status = StatusConsulta.Agendada,
                     Tipo = Enum.Parse<TipoConsulta>(tipoConsulta),
+                    Formato = formato,
                     Observacoes = observacoes,
-                    DataCriacao = DateTime.Now
+                    DataCriacao = DateTime.Now,
+                    DataAgendamento = DateTime.Now
                 };
 
+                await _videoConsultaService.GarantirSalaAsync(novaConsulta);
                 _context.Consultas.Add(novaConsulta);
                 await _context.SaveChangesAsync();
+                await _videoConsultaService.FinalizarSalaAposCriacaoAsync(novaConsulta);
 
                 TempData["Success"] = "Consulta criada com sucesso!";
                 return RedirectToPage();

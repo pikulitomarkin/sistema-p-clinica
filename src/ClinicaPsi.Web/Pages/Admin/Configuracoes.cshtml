@@ -244,6 +244,49 @@
             </div>
         </div>
 
+        <!-- Prontuário e Videochamada -->
+        <div class="col-lg-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-camera-video me-2"></i>
+                        Prontuário Online e Videochamada
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="prontuarioOnlineHabilitado"
+                                       asp-for="Configuracoes.ProntuarioOnlineHabilitado">
+                                <label class="form-check-label" for="prontuarioOnlineHabilitado">
+                                    Habilitar prontuário eletrônico
+                                </label>
+                            </div>
+                            <div class="form-text">Área do psicólogo/admin em /prontuario</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="videoConsultasOnlineHabilitado"
+                                       asp-for="Configuracoes.VideoConsultasOnlineHabilitado">
+                                <label class="form-check-label" for="videoConsultasOnlineHabilitado">
+                                    Habilitar videochamada em consultas online
+                                </label>
+                            </div>
+                            <div class="form-text">Sala Jitsi embutida em /consulta/{id}/video</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="videoJitsiBaseUrl" class="form-label">URL base do Jitsi</label>
+                            <input type="url" class="form-control" id="videoJitsiBaseUrl"
+                                   asp-for="Configuracoes.VideoJitsiBaseUrl"
+                                   placeholder="https://meet.jit.si">
+                            <div class="form-text">Padrão: https://meet.jit.si</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Configurações do Sistema -->
         <div class="col-lg-12 mb-4">
             <div class="card">

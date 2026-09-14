@@ -226,5 +226,9 @@ namespace ClinicaPsi.Web.Pages.Admin
         public bool ManterHistoricoCompleto { get; set; }
         public bool BackupAutomatico { get; set; }
         public string FrequenciaBackup { get; set; } = string.Empty;
+
+        public bool ProntuarioOnlineHabilitado { get; set; } = true;
+        public bool VideoConsultasOnlineHabilitado { get; set; } = true;
+        public string VideoJitsiBaseUrl { get; set; } = "https://meet.jit.si";
     }
 }

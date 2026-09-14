@@ -7,8 +7,13 @@ namespace ClinicaPsi.Application.Services;
 public class ConsultaService
 {
     private readonly AppDbContext _context;
+    private readonly VideoConsultaService _videoConsultaService;
 
-    public ConsultaService(AppDbContext context) => _context = context;
+    public ConsultaService(AppDbContext context, VideoConsultaService videoConsultaService)
+    {
+        _context = context;
+        _videoConsultaService = videoConsultaService;
+    }
 
     public async Task<List<Consulta>> GetAllAsync()
     {
@@ -54,8 +59,10 @@ public class ConsultaService
         consulta.DataAgendamento = DateTime.UtcNow;
         consulta.Status = StatusConsulta.Agendada;
 
+        await _videoConsultaService.GarantirSalaAsync(consulta);
         _context.Consultas.Add(consulta);
         await _context.SaveChangesAsync();
+        await _videoConsultaService.FinalizarSalaAposCriacaoAsync(consulta);
 
         return consulta;
     }

@@ -142,6 +142,10 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-info">@consulta.Tipo.GetDisplayName()</span>
+                                        @if (consulta.Formato == FormatoConsulta.Online)
+                                        {
+                                            <span class="badge bg-primary ms-1"><i class="bi bi-camera-video"></i> Online</span>
+                                        }
                                     </td>
                                     <td>@consulta.DuracaoMinutos min</td>
                                     <td>@consulta.Valor.ToString("C")</td>
@@ -152,6 +156,19 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
+                                            @if (consulta.Formato == FormatoConsulta.Online &&
+                                                 (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                                            {
+                                                <a class="btn btn-info" href="/consulta/@consulta.Id/video"
+                                                   title="Entrar na videochamada">
+                                                    <i class="bi bi-camera-video"></i>
+                                                </a>
+                                            }
+                                            <a class="btn btn-outline-success"
+                                               href="/prontuario/cadastro?pacienteId=@consulta.PacienteId&consultaId=@consulta.Id"
+                                               title="Prontuário">
+                                                <i class="bi bi-journal-medical"></i>
+                                            </a>
                                             <button class="btn btn-outline-primary" onclick="viewConsulta(@consulta.Id)" 
                                                     title="Visualizar">
                                                 <i class="bi bi-eye"></i>
@@ -229,6 +246,17 @@
                                             <button class="btn btn-outline-primary btn-sm" onclick="viewConsulta(@consulta.Id)">
                                                 <i class="bi bi-eye"></i>
                                             </button>
+                                            @if (consulta.Formato == FormatoConsulta.Online &&
+                                                 (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                                            {
+                                                <a class="btn btn-info btn-sm" href="/consulta/@consulta.Id/video">
+                                                    <i class="bi bi-camera-video"></i>
+                                                </a>
+                                            }
+                                            <a class="btn btn-outline-success btn-sm"
+                                               href="/prontuario/cadastro?pacienteId=@consulta.PacienteId&consultaId=@consulta.Id">
+                                                <i class="bi bi-journal-medical"></i>
+                                            </a>
                                             @if (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada)
                                             {
                                                 <button class="btn btn-outline-success btn-sm" onclick="editConsulta(@consulta.Id)">
@@ -327,6 +355,13 @@
                                 <option value="Retorno">Retorno</option>
                                 <option value="Avaliacao">Avaliação</option>
                                 <option value="Gratuita">Gratuita (PsicoPontos)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="formatoConsulta" class="form-label">Formato</label>
+                            <select class="form-select" id="formatoConsulta" name="formatoConsulta" required>
+                                <option value="Presencial">Presencial</option>
+                                <option value="Online">Online (videochamada)</option>
                             </select>
                         </div>
                         <div class="col-md-6">

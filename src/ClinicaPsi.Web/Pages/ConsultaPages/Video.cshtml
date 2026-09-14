@@ -1,0 +1,45 @@
+@page "/consulta/{id:int}/video"
+@model ClinicaPsi.Web.Pages.ConsultaPages.VideoModel
+@{
+    ViewData["Title"] = "Videochamada";
+    Layout = User.IsInRole("Cliente")
+        ? "~/Pages/Shared/_Layout.cshtml"
+        : "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+        <h1 class="h3 mb-1"><i class="bi bi-camera-video me-2"></i>Consulta online</h1>
+        @if (Model.Consulta != null)
+        {
+            <p class="text-muted mb-0">
+                @Model.Consulta.DataHorario.ToString("dd/MM/yyyy HH:mm") · @Model.Consulta.DuracaoMinutos min
+                @if (User.IsInRole("Cliente")) { <text>· @Model.Consulta.Psicologo?.Nome</text> }
+                else { <text>· @Model.Consulta.Paciente?.Nome</text> }
+            </p>
+        }
+    </div>
+    <div class="d-flex gap-2">
+        @if (!string.IsNullOrWhiteSpace(Model.EmbedUrl))
+        {
+            <a class="btn btn-outline-primary" href="@Model.EmbedUrl" target="_blank" rel="noopener">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Abrir em nova aba
+            </a>
+        }
+        <a class="btn btn-secondary" href="@(User.IsInRole("Cliente") ? "/Cliente/MinhasConsultas" : "/psicologo/consultas")">Voltar</a>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.MensagemErro))
+{
+    <div class="alert alert-danger">@Model.MensagemErro</div>
+}
+else if (Model.Consulta != null)
+{
+    <div class="alert alert-info mb-3">
+        A videochamada usa Jitsi Meet. Permita câmera e microfone. Se o embed falhar, abra em nova aba.
+    </div>
+    <div class="ratio ratio-16x9 border rounded overflow-hidden bg-dark" style="min-height: 70vh;">
+        <iframe src="@Model.EmbedUrl" allow="camera; microphone; fullscreen; display-capture; autoplay" allowfullscreen title="Sala de videochamada"></iframe>
+    </div>
+}

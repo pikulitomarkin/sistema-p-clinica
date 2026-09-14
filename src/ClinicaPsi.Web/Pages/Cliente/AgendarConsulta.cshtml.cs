@@ -131,6 +131,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     Valor = valorConsulta,
                     Status = StatusConsulta.Agendada,
                     Tipo = tipoConsulta,
+                    Formato = Input.Formato,
                     Observacoes = Input.Observacoes,
                     DataAgendamento = DateTime.Now,
                     DataCriacao = DateTime.Now,
@@ -138,6 +139,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     ConfirmacaoRecebida = false
                 };
 
+                await _videoConsultaService.GarantirSalaAsync(consulta);
                 _context.Consultas.Add(consulta);
 
                 // Se for consulta gratuita, decrementar do paciente
@@ -148,8 +150,11 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 }
 
                 await _context.SaveChangesAsync();
+                await _videoConsultaService.FinalizarSalaAposCriacaoAsync(consulta);
 
-                TempData["Success"] = "Consulta agendada com sucesso!";
+                TempData["Success"] = Input.Formato == FormatoConsulta.Online
+                    ? "Consulta online agendada! Use o botão de videochamada em Minhas Consultas no horário."
+                    : "Consulta agendada com sucesso!";
                 return RedirectToPage("MinhasConsultas");
             }
             catch (Exception ex)

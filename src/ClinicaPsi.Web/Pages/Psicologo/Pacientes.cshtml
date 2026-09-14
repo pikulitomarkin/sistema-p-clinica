@@ -211,6 +211,9 @@
                                             <button class="btn btn-outline-info btn-sm" onclick="agendarConsulta(@paciente.Id)">
                                                 <i class="bi bi-calendar-plus"></i>
                                             </button>
+                                            <a class="btn btn-outline-success btn-sm" href="/prontuario?pacienteId=@paciente.Id" title="Prontuário">
+                                                <i class="bi bi-journal-medical"></i>
+                                            </a>
                                             <button class="btn btn-outline-secondary btn-sm" onclick="historicoConsultas(@paciente.Id)">
                                                 <i class="bi bi-clock-history"></i>
                                             </button>
@@ -312,6 +315,9 @@
                                             <button class="btn btn-outline-info" onclick="agendarConsulta(@paciente.Id)" title="Agendar">
                                                 <i class="bi bi-calendar-plus"></i>
                                             </button>
+                                            <a class="btn btn-outline-success" href="/prontuario?pacienteId=@paciente.Id" title="Prontuário">
+                                                <i class="bi bi-journal-medical"></i>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
