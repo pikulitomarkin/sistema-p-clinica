@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
+using ClinicaPsi.Application.Services;
 using ClinicaPsi.Web.Extensions;
 using System.Security.Claims;
 using System.Globalization;
@@ -14,10 +15,12 @@ namespace ClinicaPsi.Web.Pages.Psicologo
     public class AgendaModel : PageModel
     {
         private readonly AppDbContext _context;
+        private readonly VideoConsultaService _videoConsultaService;
 
-        public AgendaModel(AppDbContext context)
+        public AgendaModel(AppDbContext context, VideoConsultaService videoConsultaService)
         {
             _context = context;
+            _videoConsultaService = videoConsultaService;
             // Configurar cultura brasileira
             var culturaBrasileira = new CultureInfo("pt-BR");
             Thread.CurrentThread.CurrentCulture = culturaBrasileira;
@@ -80,25 +83,38 @@ namespace ClinicaPsi.Web.Pages.Psicologo
 
             var inicioSemana = SemanaAtual;
             var fimSemana = SemanaAtual.AddDays(6);
+            var agora = DateTime.Now;
 
-            // Buscar consultas da semana
-            ConsultasSemana = await _context.Consultas
+            // Agenda ativa: exclui passadas (fim < agora) e status finalizados
+            var consultasSemana = await _context.Consultas
                 .Include(c => c.Paciente)
                 .Where(c => c.PsicologoId == psicologoId &&
                            c.DataHorario.Date >= inicioSemana.Date &&
-                           c.DataHorario.Date <= fimSemana.Date)
+                           c.DataHorario.Date <= fimSemana.Date &&
+                           c.Status != StatusConsulta.Cancelada &&
+                           c.Status != StatusConsulta.Realizada &&
+                           c.Status != StatusConsulta.NoShow)
                 .OrderBy(c => c.DataHorario)
                 .ToListAsync();
 
-            // Buscar próximas consultas (próximos 7 dias)
-            ProximasConsultas = await _context.Consultas
+            ConsultasSemana = consultasSemana
+                .Where(c => c.DataHorario.AddMinutes(c.DuracaoMinutos) >= agora)
+                .ToList();
+
+            // Buscar próximas consultas (próximos 7 dias) — só ativas / futuras
+            var proximas = await _context.Consultas
                 .Include(c => c.Paciente)
                 .Where(c => c.PsicologoId == psicologoId &&
-                           c.DataHorario >= DateTime.Now &&
-                           c.DataHorario <= DateTime.Now.AddDays(7) &&
-                           c.Status != StatusConsulta.Cancelada)
+                           c.DataHorario <= agora.AddDays(7) &&
+                           c.Status != StatusConsulta.Cancelada &&
+                           c.Status != StatusConsulta.Realizada &&
+                           c.Status != StatusConsulta.NoShow)
                 .OrderBy(c => c.DataHorario)
                 .ToListAsync();
+
+            ProximasConsultas = proximas
+                .Where(c => c.DataHorario.AddMinutes(c.DuracaoMinutos) >= agora)
+                .ToList();
 
             // Buscar pacientes disponíveis
             PacientesDisponiveis = await _context.Pacientes
@@ -126,7 +142,8 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             string horaConsulta,
             int duracao,
             decimal valor,
-            string? observacoes)
+            string? observacoes,
+            string formatoConsulta = "Presencial")
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -160,6 +177,10 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 }
 
                 // Criar nova consulta
+                var formato = Enum.TryParse<FormatoConsulta>(formatoConsulta, true, out var f)
+                    ? f
+                    : FormatoConsulta.Presencial;
+
                 var novaConsulta = new Consulta
                 {
                     PacienteId = pacienteId,
@@ -169,12 +190,16 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     Valor = valor,
                     Status = StatusConsulta.Agendada,
                     Tipo = Enum.Parse<TipoConsulta>(tipoConsulta),
+                    Formato = formato,
                     Observacoes = observacoes,
-                    DataCriacao = DateTime.Now
+                    DataCriacao = DateTime.Now,
+                    DataAgendamento = DateTime.Now
                 };
 
+                await _videoConsultaService.GarantirSalaAsync(novaConsulta);
                 _context.Consultas.Add(novaConsulta);
                 await _context.SaveChangesAsync();
+                await _videoConsultaService.FinalizarSalaAposCriacaoAsync(novaConsulta);
 
                 TempData["Success"] = "Consulta agendada com sucesso!";
                 return RedirectToPage();

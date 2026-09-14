@@ -196,9 +196,14 @@ TestResults/
 *.nunit.xml
 *.specflow*
 
-# Docker
-Dockerfile*
-.dockerignore
+# Docker — manter Dockerfiles de deploy versionados
+# (exceções explícitas abaixo)
+Dockerfile.local
+.dockerignore.local
+!Dockerfile
+!Dockerfile.railway
+!Dockerfile.*
+!.dockerignore
 
 # Backup
 *.bak
@@ -257,5 +262,6 @@ yarn-error.log*
 # Visual Studio Code
 .vscode/
 
-# EF Core Migrations
-Migrations/
+# EF Core Migrations — versionar migrations de producao
+# Migrations/
+

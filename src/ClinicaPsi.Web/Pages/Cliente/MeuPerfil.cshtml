@@ -3,6 +3,7 @@
 @model ClinicaPsi.Web.Pages.Cliente.MeuPerfilModel
 @{
     ViewData["Title"] = "Meu Perfil";
+    Layout = "_AdminLayout";
 }
 
 <div class="container-fluid">
@@ -233,22 +234,10 @@
                         </div>
 
                         <div class="row g-2 text-center">
-                            <div class="col-4">
-                                <div class="bg-light rounded p-2">
-                                    <div class="fw-bold text-success">@Model.Paciente.PsicoPontos</div>
-                                    <small class="text-muted">PsicoPontos</small>
-                                </div>
-                            </div>
-                            <div class="col-4">
+                            <div class="col-12">
                                 <div class="bg-light rounded p-2">
                                     <div class="fw-bold text-info">@Model.Paciente.ConsultasRealizadas</div>
-                                    <small class="text-muted">Consultas</small>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="bg-light rounded p-2">
-                                    <div class="fw-bold text-warning">@Model.Paciente.ConsultasGratuitas</div>
-                                    <small class="text-muted">Gratuitas</small>
+                                    <small class="text-muted">Consultas Realizadas</small>
                                 </div>
                             </div>
                         </div>

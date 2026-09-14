@@ -244,7 +244,7 @@
 {
     <!-- Análise de Pacientes -->
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div class="card card-modern">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -254,32 +254,6 @@
                 </div>
                 <div class="card-body">
                     <canvas id="faixaEtariaChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card card-modern">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-heart-pulse me-2"></i>
-                        PsicoPontos Distribuídos
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <h3 class="text-primary">@Model.TotalPontosDistribuidos</h3>
-                            <small class="text-muted">Total de Pontos</small>
-                        </div>
-                        <div class="col-4">
-                            <h3 class="text-success">@Model.ConsultasGratuitasRealizadas</h3>
-                            <small class="text-muted">Consultas Gratuitas</small>
-                        </div>
-                        <div class="col-4">
-                            <h3 class="text-info">@Model.MediaPontosPorPaciente.ToString("F1")</h3>
-                            <small class="text-muted">Média por Paciente</small>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

@@ -16,7 +16,16 @@ public class PsicologoService
     public async Task<List<Psicologo>> GetAllAsync()
     {
         return await _context.Psicologos
-            .Where(p => p.Ativo)
+            .Where(p => p.Ativo && p.ExcluidoEm == null)
+            .OrderBy(p => p.Nome)
+            .ToListAsync();
+    }
+
+    /// <summary>Lista psicólogos não excluídos (ativos e inativos) — uso admin.</summary>
+    public async Task<List<Psicologo>> GetAllIncludingInactiveAsync()
+    {
+        return await _context.Psicologos
+            .Where(p => p.ExcluidoEm == null)
             .OrderBy(p => p.Nome)
             .ToListAsync();
     }
@@ -26,10 +35,17 @@ public class PsicologoService
         return await _context.Psicologos.FindAsync(id);
     }
 
+    public async Task<Psicologo?> GetByIdNaoExcluidoAsync(int id)
+    {
+        return await _context.Psicologos
+            .FirstOrDefaultAsync(p => p.Id == id && p.ExcluidoEm == null);
+    }
+
     public async Task<List<DateTime>> GetHorariosDisponiveisAsync(int psicologoId, DateTime data)
     {
         var psicologo = await GetByIdAsync(psicologoId);
-        if (psicologo == null) return new List<DateTime>();
+        if (psicologo == null || psicologo.ExcluidoEm != null || !psicologo.Ativo)
+            return new List<DateTime>();
 
         var diaSemana = data.DayOfWeek;
         var atende = diaSemana switch
@@ -96,10 +112,12 @@ public class PsicologoService
     public async Task DeleteAsync(int id)
     {
         var psicologo = await GetByIdAsync(id);
-        if (psicologo != null)
-        {
-            psicologo.Ativo = false;
-            await UpdateAsync(psicologo);
-        }
+        if (psicologo == null)
+            return;
+
+        psicologo.Ativo = false;
+        psicologo.ExcluidoEm = DateTime.UtcNow;
+        psicologo.DataAtualizacao = DateTime.UtcNow;
+        await UpdateAsync(psicologo);
     }
 }

@@ -71,6 +71,9 @@ public class LoginModel : PageModel
                 var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
                 if (user != null)
                 {
+                    if (user.MustChangePassword)
+                        return RedirectToPage("./ChangePassword");
+
                     return user.TipoUsuario switch
                     {
                         TipoUsuario.Admin => LocalRedirect("/Admin"),

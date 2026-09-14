@@ -306,7 +306,6 @@
                             <li><strong>Consultas Realizadas:</strong> @Model.ConsultasRealizadas (@(Model.TotalConsultas > 0 ? Math.Round((double)Model.ConsultasRealizadas / Model.TotalConsultas * 100, 1) : 0)%)</li>
                             <li><strong>Consultas Canceladas:</strong> @Model.ConsultasCanceladas (@(Model.TotalConsultas > 0 ? Math.Round((double)Model.ConsultasCanceladas / Model.TotalConsultas * 100, 1) : 0)%)</li>
                             <li><strong>No-Shows:</strong> @Model.NoShows (@(Model.TotalConsultas > 0 ? Math.Round((double)Model.NoShows / Model.TotalConsultas * 100, 1) : 0)%)</li>
-                            <li><strong>Consultas Gratuitas:</strong> @Model.ConsultasGratuitas (@(Model.TotalConsultas > 0 ? Math.Round((double)Model.ConsultasGratuitas / Model.TotalConsultas * 100, 1) : 0)%)</li>
                         </ul>
                     </div>
                 </div>

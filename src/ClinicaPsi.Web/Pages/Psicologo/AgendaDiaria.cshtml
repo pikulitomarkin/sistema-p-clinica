@@ -143,9 +143,21 @@
                                                         }
                                                     </div>
                                                     <div class="btn-group-vertical btn-group-sm">
-                                                        <a href="/psicologo/consultas/detalhes/@consulta.Id" 
-                                                           class="btn btn-outline-primary btn-sm" title="Ver Detalhes">
-                                                            <i class="bi bi-eye"></i>
+                                                        @if (consulta.Formato == FormatoConsulta.Online &&
+                                                             (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                                                        {
+                                                            <a href="/consulta/@consulta.Id/video"
+                                                               class="btn btn-info btn-sm" title="Entrar na videochamada">
+                                                                <i class="bi bi-camera-video"></i>
+                                                            </a>
+                                                        }
+                                                        <a href="/prontuario/cadastro?pacienteId=@consulta.PacienteId&consultaId=@consulta.Id"
+                                                           class="btn btn-outline-success btn-sm" title="Prontuário">
+                                                            <i class="bi bi-journal-medical"></i>
+                                                        </a>
+                                                        <a href="/consulta/@consulta.Id/video"
+                                                           class="btn btn-outline-primary btn-sm" title="Abrir sala da consulta">
+                                                            <i class="bi bi-camera-video"></i>
                                                         </a>
                                                     </div>
                                                 </div>

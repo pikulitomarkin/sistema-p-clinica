@@ -1,0 +1,484 @@
+/* Google Meet–style full-height video consultation */
+
+.meet-body-root {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100vh;
+  height: 100dvh;
+  background: #111827;
+  color: #f3f4f6;
+}
+
+.meet-app {
+  --meet-bg: #111827;
+  --meet-surface: #1f2937;
+  --meet-surface-2: #374151;
+  --meet-accent: #0d9488;
+  --meet-danger: #dc2626;
+  --meet-panel-w: min(380px, 100vw);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  background: var(--meet-bg);
+  color: #f3f4f6;
+}
+
+.meet-topbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: rgba(17, 24, 39, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 20;
+}
+
+.meet-topbar__info {
+  min-width: 0;
+  flex: 1;
+}
+
+.meet-topbar__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meet-topbar__meta {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meet-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.meet-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: #e5e7eb;
+  text-decoration: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.meet-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.meet-btn-panel {
+  display: none;
+}
+
+.meet-app--psych .meet-btn-panel {
+  display: inline-flex;
+}
+
+.meet-body {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+  position: relative;
+}
+
+.meet-stage {
+  flex: 1 1 auto;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: #0b0f14;
+  overflow: hidden;
+}
+
+.meet-stage__remote {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #0b0f14;
+  display: block;
+}
+
+.meet-stage__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #9ca3af;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, #1f2937 0%, #0b0f14 70%);
+}
+
+.meet-stage__placeholder.hidden {
+  display: none;
+}
+
+.meet-stage__placeholder i {
+  font-size: 4rem;
+  opacity: 0.7;
+}
+
+.meet-label {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.65);
+  font-size: 0.85rem;
+  font-weight: 600;
+  max-width: min(50%, 280px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 3;
+}
+
+.meet-label--remote {
+  left: 1rem;
+  bottom: 5.5rem;
+  font-size: 0.95rem;
+}
+
+.meet-pip {
+  position: absolute;
+  right: 1rem;
+  bottom: 5.5rem;
+  width: min(22vw, 200px);
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+  background: #000;
+  z-index: 4;
+}
+
+.meet-pip video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+
+.meet-pip .meet-label {
+  left: 0.4rem;
+  bottom: 0.4rem;
+  font-size: 0.7rem;
+  max-width: calc(100% - 0.8rem);
+  padding: 0.15rem 0.45rem;
+}
+
+.meet-controls {
+  position: absolute;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(31, 41, 55, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  z-index: 10;
+  flex-wrap: nowrap;
+}
+
+.meet-ctrl {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #fff;
+  background: var(--meet-surface-2);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.meet-ctrl:hover:not(:disabled) {
+  background: #4b5563;
+  transform: scale(1.05);
+}
+
+.meet-ctrl:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.meet-ctrl--start {
+  background: #059669;
+  width: auto;
+  padding: 0 1rem;
+  border-radius: 999px;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.meet-ctrl--call {
+  background: #2563eb;
+  width: auto;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.meet-ctrl--hang {
+  background: var(--meet-danger);
+}
+
+.meet-ctrl--hang:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.meet-ctrl.is-off {
+  background: #ef4444;
+}
+
+.meet-status {
+  position: absolute;
+  top: 0.85rem;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(90%, 420px);
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(31, 41, 55, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.8rem;
+  text-align: center;
+  z-index: 5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meet-status[data-kind="success"] {
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #a7f3d0;
+}
+
+.meet-status[data-kind="warning"] {
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #fde68a;
+}
+
+.meet-status[data-kind="danger"] {
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fecaca;
+}
+
+.meet-status[data-kind="info"],
+.meet-status[data-kind="secondary"] {
+  color: #e5e7eb;
+}
+
+/* Side panel (psicólogo) */
+.meet-panel {
+  flex: 0 0 var(--meet-panel-w);
+  width: var(--meet-panel-w);
+  max-width: 100%;
+  background: #f8fafc;
+  color: #111827;
+  border-left: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  z-index: 15;
+  transition: transform 0.25s ease, margin 0.25s ease;
+}
+
+.meet-panel.is-collapsed {
+  display: none;
+}
+
+.meet-panel__header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.meet-panel__header h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.meet-panel__tabs {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.meet-panel__tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.4rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.meet-panel__tab.active {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.meet-panel__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0.85rem 1rem 1.25rem;
+  min-height: 0;
+}
+
+.meet-panel__pane {
+  display: none;
+}
+
+.meet-panel__pane.active {
+  display: block;
+}
+
+.meet-panel .form-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.meet-panel .form-control,
+.meet-panel .form-select {
+  font-size: 0.85rem;
+  border-radius: 8px;
+}
+
+.meet-panel .form-control:focus,
+.meet-panel .form-select:focus {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.2);
+}
+
+.meet-panel__footer {
+  flex: 0 0 auto;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.meet-toast {
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  min-height: 1.2rem;
+}
+
+.meet-error-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  height: 100dvh;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+  background: #111827;
+  color: #f3f4f6;
+}
+
+.meet-error-page .alert {
+  max-width: 480px;
+}
+
+@media (max-width: 900px) {
+  .meet-app--psych .meet-panel:not(.is-collapsed) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.35);
+  }
+
+  .meet-pip {
+    width: min(36vw, 140px);
+    right: 0.65rem;
+    bottom: 5rem;
+  }
+
+  .meet-label--remote {
+    bottom: 5rem;
+  }
+
+  .meet-controls {
+    bottom: 0.85rem;
+    gap: 0.45rem;
+    padding: 0.45rem 0.65rem;
+  }
+
+  .meet-ctrl {
+    width: 44px;
+    height: 44px;
+    font-size: 1.05rem;
+  }
+
+  .meet-ctrl--start,
+  .meet-ctrl--call {
+    padding: 0 0.7rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .meet-topbar__meta {
+    display: none;
+  }
+
+  .meet-ctrl--call span,
+  .meet-ctrl--start span {
+    display: none;
+  }
+}

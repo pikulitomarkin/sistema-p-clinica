@@ -4,6 +4,8 @@ using ClinicaPsi.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 using System.Text.Json;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -12,23 +14,45 @@ using OpenTelemetry.Trace;
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 
+// Cultura padrão pt-BR (moeda R$, datas e números brasileiros)
+var culturaPtBr = new CultureInfo("pt-BR");
+CultureInfo.DefaultThreadCurrentCulture = culturaPtBr;
+CultureInfo.DefaultThreadCurrentUICulture = culturaPtBr;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar Data Protection para usar EFS (armazenamento compartilhado)
-// Isso garante que múltiplas instâncias possam compartilhar as chaves de criptografia
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture(culturaPtBr);
+    options.SupportedCultures = new[] { culturaPtBr };
+    options.SupportedUICultures = new[] { culturaPtBr };
+    // App 100% BR: não deixar Accept-Language do browser sobrescrever (evita ¤ / $)
+    options.RequestCultureProviders.Clear();
+});
+
+// Configurar Data Protection com armazenamento persistente quando disponivel
+// Prioridade: EFS (AWS) -> /app/keys (Docker VPS) -> padrao em memoria/temp
 try
 {
-    var dataProtectionPath = Path.Combine("/mnt/efs", "DataProtection-Keys");
+    string? keysPath = null;
     if (Directory.Exists("/mnt/efs"))
     {
-        Directory.CreateDirectory(dataProtectionPath);
+        keysPath = Path.Combine("/mnt/efs", "DataProtection-Keys");
+    }
+    else if (Directory.Exists("/app/keys"))
+    {
+        keysPath = "/app/keys";
+    }
+
+    if (keysPath is not null)
+    {
+        Directory.CreateDirectory(keysPath);
         builder.Services.AddDataProtection()
-            .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionPath))
+            .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
             .SetApplicationName("ClinicaPsi");
     }
     else
     {
-        // Fallback para diretório local se EFS não estiver montado
         builder.Services.AddDataProtection()
             .SetApplicationName("ClinicaPsi");
     }
@@ -72,6 +96,7 @@ builder.Services.AddOpenTelemetry()
 
 // Adicionar serviços
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 
 // Health checks
 builder.Services.AddHealthChecks()
@@ -176,7 +201,10 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<PacienteService>();
 builder.Services.AddScoped<ConsultaService>();
 builder.Services.AddScoped<PsicologoService>();
+builder.Services.AddScoped<UsuarioPsicologoSyncService>();
+builder.Services.AddScoped<UsuarioPacienteOnboardingService>();
 builder.Services.AddScoped<ProntuarioService>();
+builder.Services.AddScoped<VideoConsultaService>();
 builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<NotificacaoService>();
 builder.Services.AddScoped<PdfService>();
@@ -185,6 +213,27 @@ builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<OpenAIService>();
 builder.Services.AddScoped<WhatsAppBotService>();
 builder.Services.AddScoped<WhatsAppNotificationService>();
+
+
+// E-mail via Resend (API key só por env/secret — nunca no git)
+builder.Services.Configure<ClinicaPsi.Application.Services.Email.EmailOptions>(options =>
+{
+    builder.Configuration.GetSection(ClinicaPsi.Application.Services.Email.EmailOptions.SectionName).Bind(options);
+    options.ApiKey ??= builder.Configuration["RESEND_API_KEY"]
+        ?? builder.Configuration["Email:ApiKey"];
+    if (string.IsNullOrWhiteSpace(options.From))
+        options.From = builder.Configuration["Email:From"] ?? "noreply@psiianasantos.com.br";
+    if (string.IsNullOrWhiteSpace(options.FromName))
+        options.FromName = builder.Configuration["Email:FromName"] ?? "Psicóloga Ana Santos";
+    options.PublicAppUrl ??= builder.Configuration["PUBLIC_APP_URL"]
+        ?? builder.Configuration["WhatsApp:SiteUrl"]
+        ?? "https://psiianasantos.com.br";
+});
+builder.Services.AddHttpClient("Resend", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddScoped<ClinicaPsi.Application.Services.Email.IEmailService, ClinicaPsi.Application.Services.Email.ResendEmailService>();
 
 // Configurar HttpClient para WhatsApp Web (Venom-Bot)
 builder.Services.AddHttpClient<WhatsAppWebService>(client =>
@@ -218,23 +267,37 @@ using (var scope = app.Services.CreateScope())
     
     try
     {
-        // Aplicar migrations pendentes automaticamente
-        logger.LogInformation("Verificando migrations pendentes...");
-        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-        if (pendingMigrations.Any())
+        // Aplicar migrations pendentes automaticamente; se nao houver, EnsureCreated
+        logger.LogInformation("Verificando schema do banco...");
+        var pendingMigrations = (await context.Database.GetPendingMigrationsAsync()).ToList();
+        var appliedMigrations = (await context.Database.GetAppliedMigrationsAsync()).ToList();
+
+        if (pendingMigrations.Count > 0)
         {
-            logger.LogInformation($"Aplicando {pendingMigrations.Count()} migration(s) pendente(s): {string.Join(", ", pendingMigrations)}");
+            logger.LogInformation("Aplicando {Count} migration(s) pendente(s): {List}",
+                pendingMigrations.Count, string.Join(", ", pendingMigrations));
             await context.Database.MigrateAsync();
-            logger.LogInformation("✅ Migrations aplicadas com sucesso!");
+            logger.LogInformation("Migrations aplicadas com sucesso!");
+        }
+        else if (appliedMigrations.Count == 0)
+        {
+            logger.LogWarning("Nenhuma migration no assembly. Criando schema com EnsureCreated...");
+            await context.Database.EnsureCreatedAsync();
+            logger.LogInformation("Schema criado com EnsureCreated.");
         }
         else
         {
             logger.LogInformation("Nenhuma migration pendente.");
         }
+
+        await GarantirSchemaProntuarioEVideoAsync(context, logger);
+        await GarantirSchemaEmailAsync(context, logger);
+        await GarantirSchemaPsicologoExcluidoAsync(context, logger);
+        await GarantirSchemaOnboardingAsync(context, logger);
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "❌ Erro ao aplicar migrations: {Message}", ex.Message);
+        logger.LogError(ex, "Erro ao preparar schema: {Message}", ex.Message);
         throw;
     }
     
@@ -242,9 +305,49 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     
     await DbInitializer.SeedAsync(context, userManager, roleManager);
+
+    try
+    {
+        var configService = scope.ServiceProvider.GetRequiredService<ConfiguracaoService>();
+        await configService.InicializarConfiguracoesAsync();
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Falha ao inicializar configurações padrão (não bloqueia o boot)");
+    }
+
+    try
+    {
+        var sync = scope.ServiceProvider.GetRequiredService<UsuarioPsicologoSyncService>();
+        var syncResult = await sync.SincronizarTodosAsync();
+        if (syncResult.TeveAlteracoes)
+        {
+            logger.LogInformation(
+                "Backfill usuários↔psicólogos no boot: users={U}, psicólogos={P}, vínculos={V}",
+                syncResult.UsuariosCriados, syncResult.PsicologosCriados, syncResult.VinculosAtualizados);
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Falha no backfill usuários↔psicólogos (não bloqueia o boot)");
+    }
 }
 
 // Configurar pipeline HTTP
+// Confiar no proxy (nginx) para esquema/host corretos em HTTPS
+{
+    var forwarded = new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor
+                         | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+                         | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost
+    };
+    // Nginx em rede Docker nao e loopback — limpar listas padrao
+    forwarded.KnownNetworks.Clear();
+    forwarded.KnownProxies.Clear();
+    app.UseForwardedHeaders(forwarded);
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
@@ -254,6 +357,7 @@ if (!app.Environment.IsDevelopment())
 // COMENTADO: WhatsApp webhook precisa aceitar HTTP  
 // app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseRequestLocalization();
 app.UseRouting();
 
 app.UseAuthentication();
@@ -262,8 +366,26 @@ app.UseAuthorization();
 // Health check endpoint (DEVE vir após UseRouting)
 app.MapHealthChecks("/health");
 
+// Diagnóstico de cultura (moeda R$ / pt-BR)
+app.MapGet("/health/culture", () =>
+{
+    var culture = System.Globalization.CultureInfo.CurrentCulture;
+    return Results.Json(new
+    {
+        culture = culture.Name,
+        currencySymbol = culture.NumberFormat.CurrencySymbol,
+        sample = 0m.ToString("C")
+    });
+});
+
 // API Controllers (necessário para WhatsAppWebhookController)
 app.MapControllers();
+
+app.MapHub<ClinicaPsi.Web.Hubs.VideoConsultaHub>("/hubs/video-consulta");
+
+// Aliases amigáveis da sala de consulta
+app.MapGet("/Psicologo/SalaConsulta/{id:int}", (int id) => Results.Redirect($"/consulta/{id}/video"));
+app.MapGet("/Cliente/SalaConsulta/{id:int}", (int id) => Results.Redirect($"/consulta/{id}/video"));
 
 app.MapRazorPages();
 
@@ -373,3 +495,119 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+static async Task GarantirSchemaProntuarioEVideoAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomName"" character varying(100) NULL;
+              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomUrl"" character varying(500) NULL;
+              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoChamadaAtivaEm"" timestamp without time zone NULL;");
+
+        await context.Database.ExecuteSqlRawAsync(
+            @"CREATE TABLE IF NOT EXISTS ""ProntuariosEletronicos"" (
+                ""Id"" SERIAL PRIMARY KEY,
+                ""PacienteId"" integer NOT NULL,
+                ""ConsultaId"" integer NULL,
+                ""PsicologoId"" integer NOT NULL,
+                ""DataSessao"" timestamp without time zone NOT NULL,
+                ""TipoAtendimento"" character varying(50) NOT NULL DEFAULT 'Individual',
+                ""QueixaPrincipal"" text NOT NULL,
+                ""Observacoes"" text NOT NULL,
+                ""Evolucao"" text NULL,
+                ""Intervencoes"" text NULL,
+                ""PlanoTerapeutico"" text NULL,
+                ""ProximaSessao"" text NULL,
+                ""EstadoEmocional"" character varying(100) NULL,
+                ""MedicamentosAtuais"" text NULL,
+                ""Anexos"" text NULL,
+                ""Finalizado"" boolean NOT NULL DEFAULT FALSE,
+                ""DataCriacao"" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                ""DataAtualizacao"" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                ""Confidencial"" boolean NOT NULL DEFAULT TRUE
+              );");
+
+        await context.Database.ExecuteSqlRawAsync(
+            @"CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_PacienteId"" ON ""ProntuariosEletronicos"" (""PacienteId"");
+              CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_PsicologoId"" ON ""ProntuariosEletronicos"" (""PsicologoId"");
+              CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_ConsultaId"" ON ""ProntuariosEletronicos"" (""ConsultaId"");
+              CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_DataSessao"" ON ""ProntuariosEletronicos"" (""DataSessao"");");
+
+        logger.LogInformation("Schema de prontuário/vídeo verificado (colunas e tabela).");
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Não foi possível garantir schema de prontuário/vídeo (pode ser SQLite local).");
+    }
+}
+
+static async Task GarantirSchemaEmailAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""MustChangePassword"" boolean NOT NULL DEFAULT FALSE;");
+        logger.LogInformation("Schema de e-mail/senha provisória verificado (MustChangePassword).");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""AspNetUsers"" ADD COLUMN ""MustChangePassword"" INTEGER NOT NULL DEFAULT 0;");
+            logger.LogInformation("Coluna MustChangePassword adicionada (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "MustChangePassword já existe ou schema não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+
+static async Task GarantirSchemaPsicologoExcluidoAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""ExcluidoEm"" timestamp without time zone NULL;");
+        logger.LogInformation("Schema Psicologos.ExcluidoEm verificado.");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""ExcluidoEm"" TEXT NULL;");
+            logger.LogInformation("Coluna ExcluidoEm adicionada (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "ExcluidoEm já existe ou schema não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+
+static async Task GarantirSchemaOnboardingAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""OnboardingCompleted"" boolean NOT NULL DEFAULT FALSE;");
+        logger.LogInformation("Schema de onboarding verificado (OnboardingCompleted).");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""AspNetUsers"" ADD COLUMN ""OnboardingCompleted"" INTEGER NOT NULL DEFAULT 0;");
+            logger.LogInformation("Coluna OnboardingCompleted adicionada (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "OnboardingCompleted já existe ou schema não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+

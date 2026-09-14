@@ -1,4 +1,4 @@
-@page
+@page "/admin/usuarios/novo"
 @model ClinicaPsi.Web.Pages.Admin.Usuarios.NovoModel
 @{
     ViewData["Title"] = "Novo Usuário";
@@ -28,9 +28,10 @@
     </div>
 }
 
-<form method="post">
+<form method="post" id="formNovoUsuario">
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
     <div class="row">
-        <!-- Informações Básicas -->
         <div class="col-lg-8">
             <div class="card mb-4">
                 <div class="card-header">
@@ -42,61 +43,55 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label for="nomeCompleto" class="form-label">Nome Completo <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @(ViewData.ModelState["Input.NomeCompleto"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                   id="nomeCompleto" asp-for="Input.NomeCompleto" required>
-                            <span asp-validation-for="Input.NomeCompleto" class="invalid-feedback"></span>
+                            <label asp-for="Input.NomeCompleto" class="form-label">Nome Completo <span class="text-danger">*</span></label>
+                            <input asp-for="Input.NomeCompleto" class="form-control" autocomplete="name" />
+                            <span asp-validation-for="Input.NomeCompleto" class="text-danger small d-block"></span>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <label asp-for="Input.Email" class="form-label">Email <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" class="form-control @(ViewData.ModelState["Input.Email"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="email" asp-for="Input.Email" required>
-                                <span asp-validation-for="Input.Email" class="invalid-feedback"></span>
+                                <input asp-for="Input.Email" class="form-control" type="email" autocomplete="email" />
                             </div>
+                            <span asp-validation-for="Input.Email" class="text-danger small d-block"></span>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="tipoUsuario" class="form-label">Tipo de Usuário <span class="text-danger">*</span></label>
-                            <select class="form-select @(ViewData.ModelState["Input.TipoUsuario"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                    id="tipoUsuario" asp-for="Input.TipoUsuario" required onchange="toggleCamposEspecificos()">
+                            <label asp-for="Input.TipoUsuario" class="form-label">Tipo de Usuário <span class="text-danger">*</span></label>
+                            <select asp-for="Input.TipoUsuario" class="form-select" id="tipoUsuario" onchange="toggleCamposEspecificos()">
                                 <option value="">Selecione...</option>
-                                <option value="@TipoUsuario.Admin">Administrador</option>
-                                <option value="@TipoUsuario.Psicologo">Psicólogo</option>
-                                <option value="@TipoUsuario.Cliente">Cliente/Paciente</option>
+                                <option value="@((int)TipoUsuario.Admin)">Administrador</option>
+                                <option value="@((int)TipoUsuario.Psicologo)">Psicólogo</option>
+                                <option value="@((int)TipoUsuario.Cliente)">Cliente/Paciente</option>
                             </select>
-                            <span asp-validation-for="Input.TipoUsuario" class="invalid-feedback"></span>
+                            <span asp-validation-for="Input.TipoUsuario" class="text-danger small d-block"></span>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="senha" class="form-label">Senha <span class="text-danger">*</span></label>
+                            <label asp-for="Input.Senha" class="form-label">Senha <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                <input type="password" class="form-control @(ViewData.ModelState["Input.Senha"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="senha" asp-for="Input.Senha" required>
-                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('senha')">
+                                <input asp-for="Input.Senha" class="form-control" type="password" autocomplete="new-password" id="senha" />
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('senha')" tabindex="-1">
                                     <i class="bi bi-eye" id="senha-icon"></i>
                                 </button>
-                                <span asp-validation-for="Input.Senha" class="invalid-feedback"></span>
                             </div>
-                            <div class="form-text">Mínimo de 6 caracteres</div>
+                            <span asp-validation-for="Input.Senha" class="text-danger small d-block"></span>
+                            <div class="form-text">Mínimo de 6 caracteres, com pelo menos 1 número</div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="confirmarSenha" class="form-label">Confirmar Senha <span class="text-danger">*</span></label>
+                            <label asp-for="Input.ConfirmarSenha" class="form-label">Confirmar Senha <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                                <input type="password" class="form-control @(ViewData.ModelState["Input.ConfirmarSenha"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="confirmarSenha" asp-for="Input.ConfirmarSenha" required>
-                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirmarSenha')">
+                                <input asp-for="Input.ConfirmarSenha" class="form-control" type="password" autocomplete="new-password" id="confirmarSenha" />
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirmarSenha')" tabindex="-1">
                                     <i class="bi bi-eye" id="confirmarSenha-icon"></i>
                                 </button>
-                                <span asp-validation-for="Input.ConfirmarSenha" class="invalid-feedback"></span>
                             </div>
+                            <span asp-validation-for="Input.ConfirmarSenha" class="text-danger small d-block"></span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Campos Específicos para Cliente -->
             <div class="card mb-4" id="camposCliente" style="display: none;">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -107,29 +102,26 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="cpf" class="form-label">CPF</label>
+                            <label asp-for="Input.CPF" class="form-label">CPF</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                                <input type="text" class="form-control @(ViewData.ModelState["Input.CPF"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="cpf" asp-for="Input.CPF" placeholder="00000000000" maxlength="11">
-                                <span asp-validation-for="Input.CPF" class="invalid-feedback"></span>
+                                <input asp-for="Input.CPF" class="form-control" id="cpf" placeholder="00000000000" maxlength="11" />
                             </div>
+                            <span asp-validation-for="Input.CPF" class="text-danger small d-block"></span>
                             <div class="form-text">Apenas números, sem pontos ou traços</div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="telefone" class="form-label">Telefone</label>
+                            <label asp-for="Input.Telefone" class="form-label">Telefone</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-phone"></i></span>
-                                <input type="tel" class="form-control @(ViewData.ModelState["Input.Telefone"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                       id="telefone" asp-for="Input.Telefone" placeholder="(11) 99999-9999">
-                                <span asp-validation-for="Input.Telefone" class="invalid-feedback"></span>
+                                <input asp-for="Input.Telefone" class="form-control" type="tel" id="telefone" placeholder="(11) 99999-9999" />
                             </div>
+                            <span asp-validation-for="Input.Telefone" class="text-danger small d-block"></span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Campos Específicos para Psicólogo -->
             <div class="card mb-4" id="camposPsicologo" style="display: none;">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -142,23 +134,22 @@
                     {
                         <div class="row">
                             <div class="col-md-8 mb-3">
-                                <label for="psicologoId" class="form-label">Selecionar Psicólogo <span class="text-danger">*</span></label>
-                                <select class="form-select @(ViewData.ModelState["Input.PsicologoId"]?.Errors.Count > 0 ? "is-invalid" : "")" 
-                                        id="psicologoId" asp-for="Input.PsicologoId">
+                                <label asp-for="Input.PsicologoId" class="form-label">Selecionar Psicólogo <span class="text-danger">*</span></label>
+                                <select asp-for="Input.PsicologoId" class="form-select" id="psicologoId">
                                     <option value="">Selecione um psicólogo...</option>
                                     @foreach (var psicologo in Model.PsicologosDisponiveis)
                                     {
-                                        <option value="@psicologo.Id">@psicologo.Nome - CRP: @psicologo.CRP</option>
+                                        <option value="@psicologo.Id" data-crp="@psicologo.CRP">@psicologo.Nome - CRP: @psicologo.CRP</option>
                                     }
                                 </select>
-                                <span asp-validation-for="Input.PsicologoId" class="invalid-feedback"></span>
+                                <span asp-validation-for="Input.PsicologoId" class="text-danger small d-block"></span>
                                 <div class="form-text">Selecione o psicólogo que será associado a este usuário</div>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="crp" class="form-label">CRP</label>
+                                <label asp-for="Input.CRP" class="form-label">CRP</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-award"></i></span>
-                                    <input type="text" class="form-control" id="crp" asp-for="Input.CRP" readonly>
+                                    <input asp-for="Input.CRP" class="form-control" id="crp" readonly />
                                 </div>
                                 <div class="form-text">Preenchido automaticamente</div>
                             </div>
@@ -166,7 +157,7 @@
                     }
                     else
                     {
-                        <div class="alert alert-warning">
+                        <div class="alert alert-warning mb-0">
                             <i class="bi bi-exclamation-triangle me-2"></i>
                             <strong>Atenção!</strong> Não há psicólogos disponíveis para associar a um usuário.
                             <br>
@@ -179,7 +170,6 @@
             </div>
         </div>
 
-        <!-- Painel de Ajuda -->
         <div class="col-lg-4">
             <div class="card">
                 <div class="card-header">
@@ -215,7 +205,7 @@
                             Cliente/Paciente
                         </h6>
                         <p class="small text-muted mb-0">
-                            Acesso ao portal do cliente. Pode agendar consultas, ver histórico e pontos.
+                            Acesso ao portal do cliente. Pode agendar consultas e ver histórico.
                         </p>
                     </div>
                 </div>
@@ -229,8 +219,8 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <ul class="list-unstyled small">
-                        <li><i class="bi bi-check-circle text-success me-2"></i>Senha deve ter pelo menos 6 caracteres</li>
+                    <ul class="list-unstyled small mb-0">
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Senha deve ter pelo menos 6 caracteres e 1 número</li>
                         <li><i class="bi bi-check-circle text-success me-2"></i>Email deve ser único no sistema</li>
                         <li><i class="bi bi-check-circle text-success me-2"></i>CPF deve ser único para clientes</li>
                         <li><i class="bi bi-check-circle text-success me-2"></i>Usuários criados pelo admin são ativados automaticamente</li>
@@ -240,12 +230,11 @@
         </div>
     </div>
 
-    <!-- Botões de Ação -->
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-between">
                 <div>
-                    <button type="submit" class="btn btn-primary btn-lg">
+                    <button type="submit" class="btn btn-primary btn-lg" id="btnCriarUsuario">
                         <i class="bi bi-check-circle me-2"></i>
                         Criar Usuário
                     </button>
@@ -255,7 +244,7 @@
                     </a>
                 </div>
                 <div>
-                    <button type="reset" class="btn btn-outline-warning">
+                    <button type="reset" class="btn btn-outline-warning" onclick="setTimeout(toggleCamposEspecificos, 0)">
                         <i class="bi bi-arrow-clockwise me-2"></i>
                         Limpar Formulário
                     </button>
@@ -267,30 +256,32 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <style>
+        .validation-summary-valid { display: none !important; }
+        .validation-summary-errors:empty { display: none !important; }
+        .input-validation-error { border-color: #dc3545 !important; }
+    </style>
     <script>
-        // Alternar campos específicos baseado no tipo de usuário
         function toggleCamposEspecificos() {
-            const tipoUsuario = document.getElementById('tipoUsuario').value;
+            const tipoUsuario = document.getElementById('tipoUsuario')?.value;
             const camposCliente = document.getElementById('camposCliente');
             const camposPsicologo = document.getElementById('camposPsicologo');
-            
-            // Esconder todos os campos específicos
-            camposCliente.style.display = 'none';
-            camposPsicologo.style.display = 'none';
-            
-            // Mostrar campos baseado no tipo
-            if (tipoUsuario === '@TipoUsuario.Cliente') {
-                camposCliente.style.display = 'block';
-            } else if (tipoUsuario === '@TipoUsuario.Psicologo') {
-                camposPsicologo.style.display = 'block';
+
+            if (camposCliente) camposCliente.style.display = 'none';
+            if (camposPsicologo) camposPsicologo.style.display = 'none';
+
+            if (tipoUsuario === '@((int)TipoUsuario.Cliente)') {
+                if (camposCliente) camposCliente.style.display = 'block';
+            } else if (tipoUsuario === '@((int)TipoUsuario.Psicologo)') {
+                if (camposPsicologo) camposPsicologo.style.display = 'block';
             }
         }
 
-        // Alternar visibilidade da senha
         function togglePassword(fieldId) {
             const field = document.getElementById(fieldId);
             const icon = document.getElementById(fieldId + '-icon');
-            
+            if (!field || !icon) return;
+
             if (field.type === 'password') {
                 field.type = 'text';
                 icon.className = 'bi bi-eye-slash';
@@ -300,40 +291,40 @@
             }
         }
 
-        // Atualizar CRP quando psicólogo for selecionado
-        document.getElementById('psicologoId').addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const crpField = document.getElementById('crp');
-            
-            if (selectedOption.value) {
-                const crp = selectedOption.text.split('CRP: ')[1];
-                crpField.value = crp || '';
-            } else {
-                crpField.value = '';
-            }
-        });
-
-        // Formatar CPF (apenas números)
-        document.getElementById('cpf').addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '');
-        });
-
-        // Formatar telefone
-        document.getElementById('telefone').addEventListener('input', function() {
-            let value = this.value.replace(/\D/g, '');
-            if (value.length >= 11) {
-                value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-            } else if (value.length >= 7) {
-                value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
-            } else if (value.length >= 3) {
-                value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
-            }
-            this.value = value;
-        });
-
-        // Inicializar campos na carga da página
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             toggleCamposEspecificos();
+
+            const psicologoId = document.getElementById('psicologoId');
+            if (psicologoId) {
+                psicologoId.addEventListener('change', function () {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const crpField = document.getElementById('crp');
+                    if (!crpField) return;
+                    crpField.value = selectedOption?.dataset?.crp || '';
+                });
+            }
+
+            const cpf = document.getElementById('cpf');
+            if (cpf) {
+                cpf.addEventListener('input', function () {
+                    this.value = this.value.replace(/\D/g, '');
+                });
+            }
+
+            const telefone = document.getElementById('telefone');
+            if (telefone) {
+                telefone.addEventListener('input', function () {
+                    let value = this.value.replace(/\D/g, '');
+                    if (value.length >= 11) {
+                        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                    } else if (value.length >= 7) {
+                        value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+                    } else if (value.length >= 3) {
+                        value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+                    }
+                    this.value = value;
+                });
+            }
         });
     </script>
 }

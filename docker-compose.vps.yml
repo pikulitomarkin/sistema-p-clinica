@@ -1,0 +1,91 @@
+# ClinicaPsi na VPS — coexistência com astraseduction
+# Astra: 80/443 (astrasedution.com)
+# ClinicaPsi: 8080 (HTTP) — não disputa 80/443
+services:
+  clinicapsi-db:
+    image: postgres:16-alpine
+    container_name: clinicapsi-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-clinicapsi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-clinicapsi}
+    volumes:
+      - clinicapsi_pgdata:/var/lib/postgresql/data
+    networks:
+      - clinicapsi-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-clinicapsi} -d ${POSTGRES_DB:-clinicapsi}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    # Sem publish de porta no host — evita conflito e exposicao
+
+  clinicapsi-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: clinicapsi:vps
+    container_name: clinicapsi-app
+    restart: unless-stopped
+    depends_on:
+      clinicapsi-db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      PORT: "8080"
+      # Usar Npgsql direto (sem DATABASE_URL) para nao forcar SSL Mode=Require
+      ConnectionStrings__DefaultConnection: Host=clinicapsi-db;Port=5432;Database=${POSTGRES_DB:-clinicapsi};Username=${POSTGRES_USER:-clinicapsi};Password=${POSTGRES_PASSWORD};SSL Mode=Disable
+      WhatsApp__VerifyToken: ${WHATSAPP_VERIFY_TOKEN:-clinicapsi_webhook_token_2025}
+      WhatsApp__AccessToken: ${WHATSAPP_ACCESS_TOKEN:-}
+      WhatsApp__PhoneNumberId: ${WHATSAPP_PHONE_NUMBER_ID:-}
+      WhatsApp__AppSecret: ${WHATSAPP_APP_SECRET:-}
+      WhatsApp__BotUrl: ${WHATSAPP_BOT_URL:-}
+      WhatsApp__SiteUrl: ${PUBLIC_APP_URL:-https://psiianasantos.com.br}
+      OpenAI__ApiKey: ${OPENAI_API_KEY:-}
+      # E-mail Resend (chave só no .env da VPS)
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      Email__From: ${Email__From:-noreply@psiianasantos.com.br}
+      Email__FromName: ${Email__FromName:-Psicóloga Ana Santos}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://psiianasantos.com.br}
+      # Video (opcional — produção usa WebRTC/SignalR sem chave)
+      DAILY_API_KEY: ${DAILY_API_KEY:-}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-}
+      LIVEKIT_URL: ${LIVEKIT_URL:-}
+      # Admin opcional (seed no boot; nao versionar senha real)
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-}
+      ADMIN_NOME: ${ADMIN_NOME:-Administrador}
+      ADMIN_RESET_PASSWORD: ${ADMIN_RESET_PASSWORD:-false}
+    volumes:
+      - clinicapsi_data:/app/data
+      - clinicapsi_keys:/app/keys
+    ports:
+      - "${CLINICAPSI_HTTP_PORT:-8080}:8080"
+    networks:
+      - clinicapsi-net
+      # Rede do nginx do Astra — permite proxy por dominio sem disputa de 80/443
+      - astra-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  clinicapsi_pgdata:
+  clinicapsi_data:
+  clinicapsi_keys:
+
+networks:
+  clinicapsi-net:
+    driver: bridge
+    name: clinicapsi-net
+  astra-net:
+    external: true
+    name: astraseduction_astra-net

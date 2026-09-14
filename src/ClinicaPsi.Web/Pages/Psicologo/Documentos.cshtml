@@ -8,164 +8,154 @@
     Layout = "_AdminLayout";
 }
 
-<div class="container my-5">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="bi bi-file-earmark-text"></i> Gerar Documentos</h2>
-                <a href="/psicologo" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Voltar
+<div class="admin-page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="admin-page-title mb-2">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                Gerar Documentos
+            </h1>
+            <p class="admin-page-subtitle mb-0">
+                Emita declarações e documentos em PDF para seus pacientes.
+            </p>
+        </div>
+        <a href="/psicologo" class="admin-action-btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show app-alert" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i> @Model.ErrorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show app-alert" role="alert">
+        <i class="bi bi-check-circle me-2"></i> @Model.SuccessMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (Model.Pacientes.Count == 0)
+{
+    <div class="admin-card mb-4">
+        <div class="admin-card-body">
+            <div class="empty-state">
+                <div class="empty-state__icon"><i class="bi bi-people"></i></div>
+                <div class="empty-state__title">Nenhum paciente cadastrado</div>
+                <p class="empty-state__text">Cadastre pacientes antes de gerar documentos.</p>
+                <a href="/psicologo/pacientes" class="admin-action-btn">
+                    <i class="bi bi-person-plus"></i> Ir para pacientes
                 </a>
             </div>
         </div>
     </div>
+}
 
-    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle"></i> @Model.SuccessMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <div class="row g-4">
-        <!-- Card Declaração de Comparecimento -->
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-file-earmark-check"></i> Declaração de Comparecimento</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">Gere uma declaração de comparecimento para consulta.</p>
-                    
-                    <form method="post" asp-page-handler="GerarDeclaracao">
-                        <div class="mb-3">
-                            <label class="form-label">Selecione o Paciente <span class="text-danger">*</span></label>
-                            <select class="form-select" name="pacienteId" required>
-                                <option value="">Escolha um paciente...</option>
-                                @foreach (var paciente in Model.Pacientes)
-                                {
-                                    <option value="@paciente.Id">
-                                        @paciente.Nome - CPF: @paciente.CPF
-                                    </option>
-                                }
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Data da Consulta <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" name="dataConsulta" 
-                                   value="@DateTime.Now.ToString("yyyy-MM-dd")" 
-                                   max="@DateTime.Now.ToString("yyyy-MM-dd")" required />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Horário da Consulta <span class="text-danger">*</span></label>
-                            <input type="time" class="form-control" name="horaConsulta" 
-                                   value="@DateTime.Now.ToString("HH:mm")" required />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Duração (minutos)</label>
-                            <input type="number" class="form-control" name="duracao" min="30" max="180" value="50" required />
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-file-pdf"></i> Gerar Declaração PDF
-                        </button>
-                    </form>
-                </div>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="admin-card h-100">
+            <div class="admin-card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-check me-2"></i> Declaração de Comparecimento</h5>
             </div>
-        </div>
-
-        <!-- Card Atestado -->
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-file-earmark-medical"></i> Atestado Médico</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">Gere um atestado médico com período de afastamento.</p>
-                    
-                    <form method="post" asp-page-handler="GerarAtestado">
-                        <div class="mb-3">
-                            <label class="form-label">Selecione o Paciente <span class="text-danger">*</span></label>
-                            <select class="form-select" name="pacienteId" required>
-                                <option value="">Escolha um paciente...</option>
-                                @foreach (var paciente in Model.Pacientes)
-                                {
-                                    <option value="@paciente.Id">
-                                        @paciente.Nome - CPF: @paciente.CPF
-                                    </option>
-                                }
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Data da Consulta <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" name="dataConsulta" 
-                                   value="@DateTime.Now.ToString("yyyy-MM-dd")" 
-                                   max="@DateTime.Now.ToString("yyyy-MM-dd")" required />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Horário da Consulta <span class="text-danger">*</span></label>
-                            <input type="time" class="form-control" name="horaConsulta" 
-                                   value="@DateTime.Now.ToString("HH:mm")" required />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">CID-10 (Opcional)</label>
-                            <input type="text" class="form-control" name="cid" placeholder="Ex: F41.1" maxlength="10" />
-                            <small class="text-muted">Código Internacional de Doenças</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Dias de Afastamento <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="diasAfastamento" min="1" max="90" value="1" required />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Observações (Opcional)</label>
-                            <textarea class="form-control" name="observacoes" rows="3" maxlength="500"></textarea>
-                        </div>
-
-                        <button type="submit" class="btn btn-success w-100">
-                            <i class="bi bi-file-pdf"></i> Gerar Atestado PDF
-                        </button>
-                    </form>
-                </div>
+            <div class="admin-card-body">
+                <p class="text-muted">Gere uma declaração de comparecimento para consulta.</p>
+                <form method="post" asp-page-handler="GerarDeclaracao">
+                    <div class="mb-3">
+                        <label class="form-label">Selecione o Paciente <span class="text-danger">*</span></label>
+                        <select class="form-select" name="pacienteId" required>
+                            <option value="">Escolha um paciente...</option>
+                            @foreach (var paciente in Model.Pacientes)
+                            {
+                                <option value="@paciente.Id">@paciente.Nome - CPF: @paciente.CPF</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Data da Consulta <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" name="dataConsulta"
+                               value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                               max="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Horário da Consulta <span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" name="horaConsulta"
+                               value="@DateTime.Now.ToString("HH:mm")" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Duração (minutos)</label>
+                        <input type="number" class="form-control" name="duracao" min="30" max="180" value="50" required />
+                    </div>
+                    <button type="submit" class="admin-action-btn w-100 justify-content-center">
+                        <i class="bi bi-file-pdf"></i> Gerar Declaração PDF
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Informação sobre Pacientes -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informação</h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-0">
-                        <i class="bi bi-lightbulb text-warning"></i> 
-                        <strong>Nota:</strong> Esta página permite gerar documentos para consultas que não estão registradas no sistema.
-                        Selecione o paciente e informe a data/hora da consulta manualmente.
-                    </p>
-                    <p class="mb-0 mt-2">
-                        <i class="bi bi-people text-primary"></i> 
-                        Total de pacientes disponíveis: <strong>@Model.Pacientes.Count</strong>
-                    </p>
-                </div>
+    <div class="col-md-6">
+        <div class="admin-card h-100">
+            <div class="admin-card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i> Atestado</h5>
+            </div>
+            <div class="admin-card-body">
+                <p class="text-muted">Gere um atestado com período de afastamento.</p>
+                <form method="post" asp-page-handler="GerarAtestado">
+                    <div class="mb-3">
+                        <label class="form-label">Selecione o Paciente <span class="text-danger">*</span></label>
+                        <select class="form-select" name="pacienteId" required>
+                            <option value="">Escolha um paciente...</option>
+                            @foreach (var paciente in Model.Pacientes)
+                            {
+                                <option value="@paciente.Id">@paciente.Nome - CPF: @paciente.CPF</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Data da Consulta <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" name="dataConsulta"
+                               value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                               max="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Horário da Consulta <span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" name="horaConsulta"
+                               value="@DateTime.Now.ToString("HH:mm")" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">CID-10 (Opcional)</label>
+                        <input type="text" class="form-control" name="cid" placeholder="Ex: F41.1" maxlength="10" />
+                        <small class="text-muted">Código Internacional de Doenças</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dias de Afastamento <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" name="diasAfastamento" min="1" max="90" value="1" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Observações (Opcional)</label>
+                        <textarea class="form-control" name="observacoes" rows="3" maxlength="500"></textarea>
+                    </div>
+                    <button type="submit" class="admin-action-btn w-100 justify-content-center">
+                        <i class="bi bi-file-pdf"></i> Gerar Atestado PDF
+                    </button>
+                </form>
             </div>
         </div>
+    </div>
+</div>
+
+<div class="admin-card mt-4">
+    <div class="admin-card-body">
+        <p class="mb-0">
+            <i class="bi bi-info-circle text-success me-1"></i>
+            Você pode gerar documentos para consultas que ainda não estão no sistema — informe paciente, data e horário.
+            Pacientes disponíveis: <strong>@Model.Pacientes.Count</strong>.
+        </p>
     </div>
 </div>

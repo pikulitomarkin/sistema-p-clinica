@@ -114,6 +114,9 @@ public class Psicologo
     public DateTime? DataAtualizacao { get; set; }
     public bool Ativo { get; set; } = true;
 
+    /// <summary>Soft-delete: quando preenchido, o psicólogo não reaparece na listagem nem no seed/sync.</summary>
+    public DateTime? ExcluidoEm { get; set; }
+
     // Relacionamentos
     public virtual ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
 }
@@ -142,6 +145,15 @@ public class Consulta
     public StatusConsulta Status { get; set; } = StatusConsulta.Agendada;
     public TipoConsulta Tipo { get; set; } = TipoConsulta.Normal;
     public FormatoConsulta Formato { get; set; } = FormatoConsulta.Presencial;
+
+    [StringLength(100)]
+    public string? VideoRoomName { get; set; }
+
+    [StringLength(500)]
+    public string? VideoRoomUrl { get; set; }
+
+    /// <summary>Quando o psicólogo inicia "Chamar paciente"; usado para notificação in-app / polling.</summary>
+    public DateTime? VideoChamadaAtivaEm { get; set; }
 
     [StringLength(1000, ErrorMessage = "Observações deve ter no máximo 1000 caracteres")]
     public string? Observacoes { get; set; }

@@ -43,6 +43,7 @@
 }
 
 <form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     <div class="row">
         <!-- Informações da Clínica -->
         <div class="col-lg-6 mb-4">
@@ -161,42 +162,6 @@
             </div>
         </div>
 
-        <!-- Sistema PsicoPontos -->
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-star me-2"></i>
-                        Sistema PsicoPontos
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label for="pontosConsultaRealizada" class="form-label">Pontos por Consulta Realizada</label>
-                        <input type="number" class="form-control" id="pontosConsultaRealizada" 
-                               asp-for="Configuracoes.PontosConsultaRealizada" 
-                               min="1" max="10" required>
-                        <span asp-validation-for="Configuracoes.PontosConsultaRealizada" class="text-danger"></span>
-                        <div class="form-text">Quantidade de pontos que o paciente ganha a cada consulta realizada.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="pontosParaConsultaGratis" class="form-label">Pontos para Consulta Grátis</label>
-                        <input type="number" class="form-control" id="pontosParaConsultaGratis" 
-                               asp-for="Configuracoes.PontosParaConsultaGratis" 
-                               min="5" max="50" required>
-                        <span asp-validation-for="Configuracoes.PontosParaConsultaGratis" class="text-danger"></span>
-                        <div class="form-text">Quantidade de pontos necessários para uma consulta gratuita.</div>
-                    </div>
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>Configuração Atual:</strong> 
-                        @Model.Configuracoes.PontosConsultaRealizada ponto(s) por consulta = 
-                        @Model.Configuracoes.PontosParaConsultaGratis consultas para 1 grátis
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Notificações -->
         <div class="col-lg-6 mb-4">
             <div class="card h-100">
@@ -243,6 +208,91 @@
             </div>
         </div>
 
+        <!-- E-mail (Resend) -->
+        <div class="col-lg-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-envelope-at me-2"></i>
+                        E-mail (Resend)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        A chave <code>RESEND_API_KEY</code> deve ficar apenas no <code>.env</code> da VPS / secrets do container — não é salva nesta tela.
+                        @if (ViewData["ResendConfigured"] as bool? == true)
+                        {
+                            <span class="badge bg-success ms-2">API key detectada</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark ms-2">API key ausente</span>
+                        }
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="emailFrom" class="form-label">From (endereço)</label>
+                            <input type="email" class="form-control" id="emailFrom"
+                                   asp-for="Configuracoes.EmailFrom"
+                                   placeholder="noreply@psiianasantos.com.br">
+                            <div class="form-text">
+                                Preferir domínio verificado no Resend. Sem verificação, use <code>noreply@psiianasantos.com.br</code>.
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="emailFromName" class="form-label">From (nome)</label>
+                            <input type="text" class="form-control" id="emailFromName"
+                                   asp-for="Configuracoes.EmailFromName"
+                                   placeholder="Psicóloga Ana Santos">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prontuário e Videochamada -->
+        <div class="col-lg-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-camera-video me-2"></i>
+                        Prontuário Online e Videochamada
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="prontuarioOnlineHabilitado"
+                                       asp-for="Configuracoes.ProntuarioOnlineHabilitado">
+                                <label class="form-check-label" for="prontuarioOnlineHabilitado">
+                                    Habilitar prontuário eletrônico
+                                </label>
+                            </div>
+                            <div class="form-text">Área do psicólogo/admin em /prontuario</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="videoConsultasOnlineHabilitado"
+                                       asp-for="Configuracoes.VideoConsultasOnlineHabilitado">
+                                <label class="form-check-label" for="videoConsultasOnlineHabilitado">
+                                    Habilitar videochamada em consultas online
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                WebRTC 1:1 (SignalR) em /consulta/{id}/video — exibe nome da psicóloga e do paciente, sem conta em provedor externo.
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Provedor de vídeo</label>
+                            <input type="text" class="form-control" value="WebRTC + SignalR (nativo)" readonly disabled>
+                            <div class="form-text">Opcional: defina DAILY_API_KEY no .env da VPS para Daily.co no futuro.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Configurações do Sistema -->
         <div class="col-lg-12 mb-4">
             <div class="card">
@@ -261,7 +311,7 @@
                                 <label class="form-check-label" for="manterHistoricoCompleto">
                                     <i class="bi bi-archive me-2"></i>Manter Histórico Completo
                                 </label>
-                                <div class="form-text">Mantém todo o histórico de consultas e pontos.</div>
+                                <div class="form-text">Mantém todo o histórico de consultas.</div>
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">
@@ -337,7 +387,7 @@
                 <ul>
                     <li>Apagar todos os dados de pacientes</li>
                     <li>Remover todo o histórico de consultas</li>
-                    <li>Zerar todos os pontos</li>
+                    <li>Limpar configurações e dados auxiliares</li>
                     <li>Restaurar configurações padrão</li>
                 </ul>
                 <p>Tem certeza que deseja continuar?</p>

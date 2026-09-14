@@ -103,7 +103,17 @@
                             <p class="text-muted mb-3">
                                 <i class="bi bi-star-fill me-1"></i> TCC, Psicologia Organizacional
                             </p>
-                            <h4 class="text-success mb-4">R$ 150,00 <small class="text-muted fs-6">por sessão</small></h4>
+                            @if (isLoggedIn)
+                            {
+                                <h4 class="text-success mb-4">R$ 150,00 <small class="text-muted fs-6">por sessão</small></h4>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-4">
+                                    <i class="bi bi-lock-fill me-1"></i>
+                                    Faça login para ver o valor da sessão
+                                </p>
+                            }
                             
                             <div class="alert alert-info border-0">
                                 <h5 class="alert-heading">
@@ -189,10 +199,20 @@
                                     <p class="small mb-0">@FormatarDias(psi)</p>
                                 </div>
 
-                                <!-- Valor -->
+                                <!-- Valor: visivel apenas para usuarios cadastrados -->
                                 <div class="text-center pt-3 border-top">
-                                    <h4 class="text-success mb-0">@psi.ValorConsulta.ToString("C")</h4>
-                                    <small class="text-muted">por sessão</small>
+                                    @if (isLoggedIn)
+                                    {
+                                        <h4 class="text-success mb-0">@psi.ValorConsulta.ToString("C")</h4>
+                                        <small class="text-muted">por sessão</small>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted mb-0">
+                                            <i class="bi bi-lock-fill me-1"></i>
+                                            Faça login para ver o valor
+                                        </p>
+                                    }
                                 </div>
 
                                 <!-- Botão -->
@@ -218,25 +238,6 @@
                 }
             </div>
         }
-
-        <!-- Sistema PsicoPontos -->
-        <div class="row justify-content-center mb-4">
-            <div class="col-lg-10">
-                <div class="card border-0 shadow-sm bg-success bg-opacity-10">
-                    <div class="card-body text-center py-4">
-                        <h5 class="text-success mb-3">
-                            <i class="bi bi-star-fill me-2"></i>
-                            Sistema PsicoPontos
-                        </h5>
-                        <p class="mb-2">A cada consulta realizada, você ganha <strong>1 PsicoPonto</strong>!</p>
-                        <p class="mb-0">
-                            <i class="bi bi-gift text-success me-2"></i>
-                            Acumule <strong>10 PsicoPontos</strong> e ganhe <strong>1 consulta gratuita</strong>!
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Botões de Ação -->
         <div class="row justify-content-center">

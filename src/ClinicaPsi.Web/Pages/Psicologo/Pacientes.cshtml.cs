@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using ClinicaPsi.Application.Services;
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 using ClinicaPsi.Web.Extensions;
@@ -13,10 +14,17 @@ namespace ClinicaPsi.Web.Pages.Psicologo
     public class PacientesModel : PageModel
     {
         private readonly AppDbContext _context;
+        private readonly UsuarioPacienteOnboardingService _onboardingService;
+        private readonly ILogger<PacientesModel> _logger;
 
-        public PacientesModel(AppDbContext context)
+        public PacientesModel(
+            AppDbContext context,
+            UsuarioPacienteOnboardingService onboardingService,
+            ILogger<PacientesModel> logger)
         {
             _context = context;
+            _onboardingService = onboardingService;
+            _logger = logger;
         }
 
         public List<Paciente> Pacientes { get; set; } = new();
@@ -39,7 +47,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
         // Estatísticas
         public int PacientesAtivos30Dias { get; set; }
         public int PacientesInativos90Dias { get; set; }
-        public double MediaPsicoPontos { get; set; }
 
         public async Task<IActionResult> OnGetAsync(
             string? busca = null,
@@ -100,7 +107,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 "totalConsultas" => pacientesQuery.OrderByDescending(p => 
                     _context.Consultas
                         .Count(c => c.PacienteId == p.Id && c.PsicologoId == psicologoId)),
-                "pontos" => pacientesQuery.OrderByDescending(p => p.PsicoPontos),
                 _ => pacientesQuery.OrderBy(p => p.Nome)
             };
 
@@ -264,15 +270,41 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 _context.Pacientes.Add(novoPaciente);
                 var resultado = await _context.SaveChangesAsync();
 
-                if (resultado > 0)
-                {
-                    TempData["Success"] = "Paciente cadastrado com sucesso!";
-                }
-                else
+                if (resultado <= 0)
                 {
                     TempData["Error"] = "Não foi possível salvar o paciente. Tente novamente.";
+                    return RedirectToPage();
                 }
-                
+
+                try
+                {
+                    var onboarding = await _onboardingService.GarantirAcessoClienteEEnviarBoasVindasAsync(novoPaciente);
+                    if (onboarding.UsuarioCriadoOuAtualizado && onboarding.EmailEnviado)
+                    {
+                        TempData["Success"] = "Paciente cadastrado com sucesso! E-mail com login e senha provisória enviado.";
+                    }
+                    else if (onboarding.UsuarioCriadoOuAtualizado && !onboarding.EmailEnviado)
+                    {
+                        TempData["Success"] = "Paciente cadastrado com sucesso!";
+                        TempData["Warning"] =
+                            $"Não foi possível enviar o e-mail de acesso ({onboarding.EmailErro}). " +
+                            $"Informe ao paciente — Login: {onboarding.LoginEmail} | Senha provisória: {onboarding.SenhaProvisoria}";
+                        _logger.LogWarning("Cadastro paciente {Id}: e-mail falhou ({Erro})", novoPaciente.Id, onboarding.EmailErro);
+                    }
+                    else
+                    {
+                        TempData["Success"] = "Paciente cadastrado com sucesso!";
+                        if (!string.IsNullOrWhiteSpace(onboarding.EmailErro))
+                            TempData["Warning"] = $"Acesso ao portal não criado: {onboarding.EmailErro}";
+                    }
+                }
+                catch (Exception onboardingEx)
+                {
+                    _logger.LogError(onboardingEx, "Erro no onboarding de e-mail do paciente {Id}", novoPaciente.Id);
+                    TempData["Success"] = "Paciente cadastrado com sucesso!";
+                    TempData["Warning"] = "Paciente salvo, mas houve falha ao criar acesso/enviar e-mail. Tente reenviar depois.";
+                }
+
                 return RedirectToPage();
             }
             catch (DbUpdateException dbEx)
@@ -308,15 +340,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 .CountAsync();
 
             PacientesInativos90Dias = pacientesComConsulta;
-
-            // Média de PsicoPontos
-            var pacientesComPontos = await _context.Pacientes
-                .Where(p => _context.Consultas
-                    .Any(c => c.PacienteId == p.Id && c.PsicologoId == psicologoId))
-                .Select(p => p.PsicoPontos)
-                .ToListAsync();
-
-            MediaPsicoPontos = pacientesComPontos.Any() ? pacientesComPontos.Average() : 0;
         }
     }
 }

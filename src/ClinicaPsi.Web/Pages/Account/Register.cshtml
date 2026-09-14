@@ -190,6 +190,15 @@
             margin-top: 0.25rem;
         }
 
+        /* Evita caixa vermelha vazia quando não há erros de validação */
+        .validation-summary-valid {
+            display: none;
+        }
+
+        .alert.alert-danger.validation-summary-errors:empty {
+            display: none;
+        }
+
         .password-strength {
             font-size: 0.85rem;
             margin-top: 0.5rem;
@@ -234,9 +243,8 @@
     <!-- Top Navigation -->
     <nav class="navbar top-navbar">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                <i class="bi bi-heart-fill me-2"></i>
-                Psicóloga Ana Santos
+            <a class="navbar-brand" href="/" aria-label="Psicóloga Ana Santos">
+                <span class="brand-name">Psicóloga Ana Santos</span>
             </a>
             <div>
                 <a href="/" class="btn btn-outline-light btn-sm">
@@ -261,7 +269,10 @@
 
                     <div class="register-body">
                         <form method="post">
-                            <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                            }
 
                             <div class="mb-3">
                                 <label asp-for="Input.Nome" class="form-label">Nome Completo</label>

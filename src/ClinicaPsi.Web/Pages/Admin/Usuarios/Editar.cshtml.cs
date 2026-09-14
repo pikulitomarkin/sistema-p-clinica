@@ -46,8 +46,8 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
                 return NotFound();
             }
 
-            await CarregarPsicologosDisponiveisAsync();
             await PreencherFormularioAsync(UsuarioAtual);
+            await CarregarPsicologosDisponiveisAsync();
 
             return Page();
         }
@@ -249,24 +249,39 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
                 return;
 
             var psicologoIdAnterior = usuario.PsicologoId;
-            
-            // Se mudou o psicólogo vinculado
-            if (psicologoIdAnterior != Input.PsicologoId.Value)
+
+            if (psicologoIdAnterior.HasValue && psicologoIdAnterior.Value != Input.PsicologoId.Value)
             {
-                // Desvincular psicólogo anterior se houver (não aplicável nesta versão - Psicologo não tem UsuarioId)
-                
-                // Vincular novo psicólogo
-                usuario.PsicologoId = Input.PsicologoId.Value;
-                await _userManager.UpdateAsync(usuario);
-                await _context.SaveChangesAsync();
+                var anterior = await _context.Psicologos.FindAsync(psicologoIdAnterior.Value);
+                if (anterior != null && anterior.UserId == usuario.Id)
+                    anterior.UserId = null;
             }
+
+            usuario.PsicologoId = Input.PsicologoId.Value;
+            await _userManager.UpdateAsync(usuario);
+
+            var psicologo = await _context.Psicologos.FindAsync(Input.PsicologoId.Value);
+            if (psicologo != null)
+            {
+                psicologo.UserId = usuario.Id;
+                psicologo.Nome = Input.NomeCompleto;
+                psicologo.Email = Input.Email;
+                psicologo.Ativo = Input.Ativo;
+                psicologo.DataAtualizacao = DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
         }
 
         private async Task CarregarPsicologosDisponiveisAsync()
         {
-            // Carregar todos os psicólogos ativos (nota: o modelo Psicologo não tem campo UsuarioId)
+            var ocupadosPorOutros = await _context.Users
+                .Where(u => u.PsicologoId.HasValue && u.Id != Input.UserId)
+                .Select(u => u.PsicologoId!.Value)
+                .ToListAsync();
+
             PsicologosDisponiveis = await _context.Psicologos
-                .Where(p => p.Ativo)
+                .Where(p => p.Ativo && (!ocupadosPorOutros.Contains(p.Id) || p.Id == Input.PsicologoId))
                 .OrderBy(p => p.Nome)
                 .ToListAsync();
         }
