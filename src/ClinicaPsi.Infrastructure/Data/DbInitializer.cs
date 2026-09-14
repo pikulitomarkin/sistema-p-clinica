@@ -95,6 +95,66 @@ public static class DbInitializer
         await context.Database.EnsureCreatedAsync();
     }
 
+    private static async Task EnsureAdminFromEnvironmentAsync(UserManager<ApplicationUser> userManager)
+    {
+        var email = Environment.GetEnvironmentVariable("ADMIN_EMAIL");
+        var password = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
+        var nome = Environment.GetEnvironmentVariable("ADMIN_NOME") ?? "Administrador";
+
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            return;
+        }
+
+        email = email.Trim();
+        var existing = await userManager.FindByEmailAsync(email);
+        if (existing is not null)
+        {
+            // Garante papel Admin e senha atualizada quando solicitado
+            if (!await userManager.IsInRoleAsync(existing, "Admin"))
+            {
+                await userManager.AddToRoleAsync(existing, "Admin");
+            }
+            existing.TipoUsuario = TipoUsuario.Admin;
+            existing.EmailConfirmed = true;
+            existing.Ativo = true;
+            await userManager.UpdateAsync(existing);
+
+            if (string.Equals(Environment.GetEnvironmentVariable("ADMIN_RESET_PASSWORD"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(existing);
+                var reset = await userManager.ResetPasswordAsync(existing, token, password);
+                Console.WriteLine(reset.Succeeded
+                    ? $"Senha do admin {email} atualizada."
+                    : $"Falha ao resetar senha de {email}: {string.Join(", ", reset.Errors.Select(e => e.Description))}");
+            }
+
+            Console.WriteLine($"Admin {email} ja existe.");
+            return;
+        }
+
+        var admin = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            NomeCompleto = nome,
+            TipoUsuario = TipoUsuario.Admin,
+            EmailConfirmed = true,
+            Ativo = true
+        };
+
+        var result = await userManager.CreateAsync(admin, password);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(admin, "Admin");
+            Console.WriteLine($"Admin {email} criado com sucesso!");
+        }
+        else
+        {
+            Console.WriteLine($"Erro ao criar admin {email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
+    }
+
     private static async Task CreateRolesAsync(RoleManager<IdentityRole> roleManager)
     {
         string[] roles = { "Admin", "Psicologo", "Cliente" };
