@@ -37,7 +37,12 @@
   VideoConsultaClient.prototype.setStatus = function (text, kind) {
     if (!this.statusEl) return;
     this.statusEl.textContent = text;
-    this.statusEl.className = 'video-status alert mb-3 alert-' + (kind || 'info');
+    var k = kind || 'info';
+    if (this.statusEl.classList.contains('meet-status')) {
+      this.statusEl.setAttribute('data-kind', k);
+      return;
+    }
+    this.statusEl.className = 'video-status alert mb-3 alert-' + k;
   };
 
   VideoConsultaClient.prototype.setRemoteName = function (name) {
