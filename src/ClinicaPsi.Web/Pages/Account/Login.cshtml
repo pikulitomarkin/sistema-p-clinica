@@ -175,6 +175,11 @@
             border-radius: 10px;
         }
 
+        /* Evita caixa vermelha vazia quando não há erros de validação */
+        .validation-summary-valid {
+            display: none;
+        }
+
         /* Responsive Design */
         @@media (max-width: 768px) {
             body {
@@ -249,7 +254,10 @@
 
                     <div class="login-body">
                         <form method="post">
-                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                            }
 
                             <div class="mb-3">
                                 <label asp-for="Input.Email" class="form-label">
