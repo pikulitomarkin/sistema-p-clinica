@@ -120,10 +120,6 @@ Londrina - PR, 86043-470
 - Em caso de atraso, avise com antecedência
 - Cancelamentos devem ser feitos com 24h de antecedência
 
-🎁 SISTEMA PSICOPONTOS:
-Você ganha 1 ponto a cada consulta realizada!
-Acumule 10 pontos e ganhe 1 consulta gratuita! 🎉
-
 Atenciosamente,
 PsiiAnaSantos - Clínica de Psicologia
 📞 (42) 99936-9724

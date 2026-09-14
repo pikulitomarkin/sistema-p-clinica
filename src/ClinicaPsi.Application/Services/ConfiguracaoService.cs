@@ -177,7 +177,7 @@ public class ConfiguracaoService
             { "Sistema.Telefone", ("(42) 98859-3775", "Telefone de contato", "Sistema", "string") },
             { "Sistema.Endereco", ("Rua Emma Marcelino Peralta - 168 - 86030-540 - Londrina, PR", "Endereço da clínica", "Sistema", "string") },
             { "Sistema.HorarioFuncionamento", ("Segunda a Sexta: 9h às 17h", "Horário de funcionamento exibido no site", "Sistema", "string") },
-            { "Sistema.ManterHistoricoCompleto", ("true", "Manter histórico completo de consultas e pontos", "Sistema", "boolean") },
+            { "Sistema.ManterHistoricoCompleto", ("true", "Manter histórico completo de consultas", "Sistema", "boolean") },
             
             { "Consultas.DuracaoPadrao", ("50", "Duração padrão das consultas em minutos", "Consultas", "number") },
             { "Consultas.IntervaloMinimo", ("15", "Intervalo mínimo entre consultas em minutos", "Consultas", "number") },
@@ -186,9 +186,6 @@ public class ConfiguracaoService
             { "Consultas.HorarioFim", ("17:00", "Horário de fim do atendimento", "Consultas", "string") },
             { "Consultas.PermitirSabado", ("true", "Permitir agendamento aos sábados", "Consultas", "boolean") },
             { "Consultas.PermitirDomingo", ("false", "Permitir agendamento aos domingos", "Consultas", "boolean") },
-            
-            { "PsicoPontos.PontosParaConsultaGratuita", ("10", "Quantidade de pontos necessários para consulta gratuita", "PsicoPontos", "number") },
-            { "PsicoPontos.PontosPorConsulta", ("1", "Pontos ganhos por consulta realizada", "PsicoPontos", "number") },
             
             { "Backup.Automatico.Habilitado", ("false", "Habilitar backup automático", "Backup", "boolean") },
             { "Backup.Automatico.Horario", ("02:00", "Horário do backup automático (HH:mm)", "Backup", "string") },

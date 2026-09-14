@@ -162,42 +162,6 @@
             </div>
         </div>
 
-        <!-- Sistema PsicoPontos -->
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-star me-2"></i>
-                        Sistema PsicoPontos
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label for="pontosConsultaRealizada" class="form-label">Pontos por Consulta Realizada</label>
-                        <input type="number" class="form-control" id="pontosConsultaRealizada" 
-                               asp-for="Configuracoes.PontosConsultaRealizada" 
-                               min="1" max="10" required>
-                        <span asp-validation-for="Configuracoes.PontosConsultaRealizada" class="text-danger"></span>
-                        <div class="form-text">Quantidade de pontos que o paciente ganha a cada consulta realizada.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="pontosParaConsultaGratis" class="form-label">Pontos para Consulta Grátis</label>
-                        <input type="number" class="form-control" id="pontosParaConsultaGratis" 
-                               asp-for="Configuracoes.PontosParaConsultaGratis" 
-                               min="5" max="50" required>
-                        <span asp-validation-for="Configuracoes.PontosParaConsultaGratis" class="text-danger"></span>
-                        <div class="form-text">Quantidade de pontos necessários para uma consulta gratuita.</div>
-                    </div>
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>Configuração Atual:</strong> 
-                        @Model.Configuracoes.PontosConsultaRealizada ponto(s) por consulta = 
-                        @Model.Configuracoes.PontosParaConsultaGratis consultas para 1 grátis
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Notificações -->
         <div class="col-lg-6 mb-4">
             <div class="card h-100">

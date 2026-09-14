@@ -18,8 +18,7 @@ public class PacienteService
     public async Task<int> GetTotalPacientesAsync() => 
         await _context.Pacientes.CountAsync(p => p.Ativo);
 
-    public async Task<int> GetTotalPontosAsync() => 
-        await _context.Pacientes.Where(p => p.Ativo).SumAsync(p => p.PsicoPontos);
+    public Task<int> GetTotalPontosAsync() => Task.FromResult(0); // PsicoPontos descontinuado (compliance)
 
     public async Task<Paciente?> GetByPhoneAsync(string telefone)
     {

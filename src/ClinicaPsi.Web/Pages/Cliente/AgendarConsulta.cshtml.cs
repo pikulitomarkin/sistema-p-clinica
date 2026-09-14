@@ -99,7 +99,6 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     return Page();
                 }
 
-                // Verificar se o paciente tem consultas gratuitas disponíveis
                 var paciente = await _context.Pacientes.FindAsync(user.PacienteId.Value);
                 if (paciente == null)
                 {
@@ -116,17 +115,10 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     return Page();
                 }
 
-                // Determinar o tipo e valor da consulta
-                var tipoConsulta = Input.Tipo;
+                // Sem programa de pontos/brindes: sempre consulta padrão paga
+                var tipoConsulta = TipoConsulta.Normal;
                 var valorConsulta = psicologo.ValorConsulta;
 
-                if (paciente.ConsultasGratuitas > 0 && Input.Tipo == TipoConsulta.Gratuita)
-                {
-                    valorConsulta = 0;
-                    tipoConsulta = TipoConsulta.Gratuita;
-                }
-
-                // Criar nova consulta
                 var consulta = new Consulta
                 {
                     PacienteId = user.PacienteId.Value,
@@ -146,13 +138,6 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
                 await _videoConsultaService.GarantirSalaAsync(consulta);
                 _context.Consultas.Add(consulta);
-
-                // Se for consulta gratuita, decrementar do paciente
-                if (tipoConsulta == TipoConsulta.Gratuita)
-                {
-                    paciente.ConsultasGratuitas--;
-                    _context.Pacientes.Update(paciente);
-                }
 
                 await _context.SaveChangesAsync();
                 await _videoConsultaService.FinalizarSalaAposCriacaoAsync(consulta);

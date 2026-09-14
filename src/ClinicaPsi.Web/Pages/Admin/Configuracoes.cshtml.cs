@@ -57,13 +57,6 @@ namespace ClinicaPsi.Web.Pages.Admin
                 return Page();
             }
 
-            if (Configuracoes.PontosParaConsultaGratis <= 0)
-            {
-                ModelState.AddModelError("Configuracoes.PontosParaConsultaGratis", "Pontos para consulta grátis deve ser maior que zero.");
-                TempData["ErrorMessage"] = "Por favor, corrija os erros no formulário.";
-                return Page();
-            }
-
             if (Configuracoes.HorarioInicioAtendimento >= Configuracoes.HorarioFimAtendimento)
             {
                 ModelState.AddModelError("Configuracoes.HorarioFimAtendimento", "Horário de fim deve ser maior que o horário de início.");
@@ -110,12 +103,6 @@ namespace ClinicaPsi.Web.Pages.Admin
             await _configuracaoService.SalvarAsync("Consultas.PermitirDomingo", Configuracoes.PermitirAgendamentoDomingo.ToString().ToLowerInvariant(),
                 "Permitir agendamento aos domingos", "Consultas", "boolean", usuarioNome);
 
-            await _configuracaoService.SalvarAsync("PsicoPontos.PontosPorConsulta", Configuracoes.PontosConsultaRealizada.ToString(CultureInfo.InvariantCulture),
-                "Pontos ganhos por consulta realizada", "PsicoPontos", "number", usuarioNome);
-
-            await _configuracaoService.SalvarAsync("PsicoPontos.PontosParaConsultaGratuita", Configuracoes.PontosParaConsultaGratis.ToString(CultureInfo.InvariantCulture),
-                "Quantidade de pontos necessários para consulta gratuita", "PsicoPontos", "number", usuarioNome);
-
             await _configuracaoService.SalvarAsync("Notificacoes.Lembrete.AntecedenciaHoras",
                 (Configuracoes.DiasLembreteConsulta * 24).ToString(CultureInfo.InvariantCulture),
                 "Antecedência em horas para envio de lembretes", "Notificacoes", "number", usuarioNome);
@@ -136,7 +123,7 @@ namespace ClinicaPsi.Web.Pages.Admin
                 "Nome exibido no From dos e-mails", "Email", "string", usuarioNome);
 
             await _configuracaoService.SalvarAsync("Sistema.ManterHistoricoCompleto", Configuracoes.ManterHistoricoCompleto.ToString().ToLowerInvariant(),
-                "Manter histórico completo de consultas e pontos", "Sistema", "boolean", usuarioNome);
+                "Manter histórico completo de consultas", "Sistema", "boolean", usuarioNome);
 
             await _configuracaoService.SalvarAsync("Backup.Automatico.Habilitado", Configuracoes.BackupAutomatico.ToString().ToLowerInvariant(),
                 "Habilitar backup automático", "Backup", "boolean", usuarioNome);
@@ -188,8 +175,6 @@ namespace ClinicaPsi.Web.Pages.Admin
                 ValorConsultaPadrao = await _configuracaoService.ObterValorDecimalAsync("Consultas.ValorPadrao", 150.00m),
                 DuracaoConsultaPadrao = await _configuracaoService.ObterValorIntAsync("Consultas.DuracaoPadrao", 50),
                 IntervaloEntreConsultas = await _configuracaoService.ObterValorIntAsync("Consultas.IntervaloMinimo", 15),
-                PontosConsultaRealizada = await _configuracaoService.ObterValorIntAsync("PsicoPontos.PontosPorConsulta", 1),
-                PontosParaConsultaGratis = await _configuracaoService.ObterValorIntAsync("PsicoPontos.PontosParaConsultaGratuita", 10),
                 DiasLembreteConsulta = Math.Max(0, antecedenciaHoras / 24),
                 PermitirAgendamentoSabado = await _configuracaoService.ObterValorBoolAsync("Consultas.PermitirSabado", true),
                 PermitirAgendamentoDomingo = await _configuracaoService.ObterValorBoolAsync("Consultas.PermitirDomingo", false),
@@ -222,9 +207,6 @@ namespace ClinicaPsi.Web.Pages.Admin
         public decimal ValorConsultaPadrao { get; set; }
         public int DuracaoConsultaPadrao { get; set; }
         public int IntervaloEntreConsultas { get; set; }
-
-        public int PontosConsultaRealizada { get; set; }
-        public int PontosParaConsultaGratis { get; set; }
 
         public int DiasLembreteConsulta { get; set; }
         public bool EmailNotificacoes { get; set; }
