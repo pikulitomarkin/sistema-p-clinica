@@ -96,6 +96,7 @@ builder.Services.AddOpenTelemetry()
 
 // Adicionar serviços
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 
 // Health checks
 builder.Services.AddHealthChecks()
@@ -378,6 +379,12 @@ app.MapGet("/health/culture", () =>
 
 // API Controllers (necessário para WhatsAppWebhookController)
 app.MapControllers();
+
+app.MapHub<ClinicaPsi.Web.Hubs.VideoConsultaHub>("/hubs/video-consulta");
+
+// Aliases amigáveis da sala de consulta
+app.MapGet("/Psicologo/SalaConsulta/{id:int}", (int id) => Results.Redirect($"/consulta/{id}/video"));
+app.MapGet("/Cliente/SalaConsulta/{id:int}", (int id) => Results.Redirect($"/consulta/{id}/video"));
 
 app.MapRazorPages();
 

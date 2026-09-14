@@ -14,7 +14,10 @@ public class VideoModel : PageModel
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<VideoModel> _logger;
 
-    public VideoModel(VideoConsultaService videoConsultaService, UserManager<ApplicationUser> userManager, ILogger<VideoModel> logger)
+    public VideoModel(
+        VideoConsultaService videoConsultaService,
+        UserManager<ApplicationUser> userManager,
+        ILogger<VideoModel> logger)
     {
         _videoConsultaService = videoConsultaService;
         _userManager = userManager;
@@ -22,8 +25,12 @@ public class VideoModel : PageModel
     }
 
     public Consulta? Consulta { get; set; }
-    public string? EmbedUrl { get; set; }
     public string? MensagemErro { get; set; }
+    public string MeuNome { get; set; } = "Participante";
+    public string NomeRemoto { get; set; } = "Participante";
+    public string MeuPapel { get; set; } = "Cliente";
+    public string? RoomName { get; set; }
+    public bool SouPsicologoOuAdmin { get; set; }
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -56,13 +63,36 @@ public class VideoModel : PageModel
         try
         {
             await _videoConsultaService.GarantirSalaAsync(Consulta);
-            EmbedUrl = Consulta.VideoRoomUrl;
+            RoomName = Consulta.VideoRoomName;
+
+            SouPsicologoOuAdmin = User.IsInRole("Admin") || User.IsInRole("Psicologo");
+            var nomePsicologo = Consulta.Psicologo?.Nome?.Trim();
+            var nomePaciente = Consulta.Paciente?.Nome?.Trim();
+
+            if (string.IsNullOrWhiteSpace(nomePsicologo))
+                nomePsicologo = "Psicóloga";
+            if (string.IsNullOrWhiteSpace(nomePaciente))
+                nomePaciente = "Paciente";
+
+            if (SouPsicologoOuAdmin)
+            {
+                MeuNome = nomePsicologo;
+                NomeRemoto = nomePaciente;
+                MeuPapel = User.IsInRole("Admin") ? "Admin" : "Psicologo";
+            }
+            else
+            {
+                MeuNome = nomePaciente;
+                NomeRemoto = nomePsicologo;
+                MeuPapel = "Cliente";
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao preparar sala de vídeo da consulta {Id}", id);
             MensagemErro = "Não foi possível preparar a sala de vídeo.";
         }
+
         return Page();
     }
 }

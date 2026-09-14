@@ -50,6 +50,11 @@ services:
       Email__From: ${Email__From:-noreply@psiianasantos.com.br}
       Email__FromName: ${Email__FromName:-Psicóloga Ana Santos}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://psiianasantos.com.br}
+      # Video (opcional — produção usa WebRTC/SignalR sem chave)
+      DAILY_API_KEY: ${DAILY_API_KEY:-}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-}
+      LIVEKIT_URL: ${LIVEKIT_URL:-}
       # Admin opcional (seed no boot; nao versionar senha real)
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}

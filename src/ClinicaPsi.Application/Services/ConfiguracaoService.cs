@@ -199,8 +199,8 @@ public class ConfiguracaoService
             { "Seguranca.TentativasLoginMax", ("5", "Número máximo de tentativas de login", "Seguranca", "number") },
 
             { "Prontuario.Habilitado", ("true", "Habilitar prontuário eletrônico online", "Prontuario", "boolean") },
-            { "Video.ConsultasOnline.Habilitado", ("true", "Habilitar videochamada embutida em consultas online", "Video", "boolean") },
-            { "Video.JitsiBaseUrl", ("https://meet.jit.si", "URL base do provedor de vídeo (Jitsi Meet)", "Video", "string") },
+            { "Video.ConsultasOnline.Habilitado", ("true", "Habilitar videochamada WebRTC 1:1 em consultas online", "Video", "boolean") },
+            { "Video.Provider", ("webrtc", "Provedor de vídeo: webrtc (SignalR 1:1, sem conta externa). Opcional: daily se DAILY_API_KEY no ambiente", "Video", "string") },
             { "Email.From", ("noreply@psiianasantos.com.br", "Endereço From dos e-mails (use domínio verificado no Resend quando disponível)", "Email", "string") },
             { "Email.FromName", ("Psicóloga Ana Santos", "Nome exibido no From dos e-mails", "Email", "string") }
         };

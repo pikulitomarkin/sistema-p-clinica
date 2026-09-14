@@ -144,6 +144,14 @@ namespace ClinicaPsi.Web.Pages.Admin
             await _configuracaoService.SalvarAsync("Backup.Automatico.Frequencia", Configuracoes.FrequenciaBackup,
                 "Frequência do backup automático", "Backup", "string", usuarioNome);
 
+            await _configuracaoService.SalvarAsync("Prontuario.Habilitado",
+                Configuracoes.ProntuarioOnlineHabilitado.ToString().ToLowerInvariant(),
+                "Habilitar prontuário eletrônico online", "Prontuario", "boolean", usuarioNome);
+
+            await _configuracaoService.SalvarAsync("Video.ConsultasOnline.Habilitado",
+                Configuracoes.VideoConsultasOnlineHabilitado.ToString().ToLowerInvariant(),
+                "Habilitar videochamada WebRTC 1:1 em consultas online", "Video", "boolean", usuarioNome);
+
             TempData["SuccessMessage"] = "Configurações salvas com sucesso!";
             return RedirectToPage();
         }
@@ -206,7 +214,9 @@ namespace ClinicaPsi.Web.Pages.Admin
                 EmailFromName = await _configuracaoService.ObterValorStringAsync("Email.FromName", "Psicóloga Ana Santos") ?? "Psicóloga Ana Santos",
                 ManterHistoricoCompleto = await _configuracaoService.ObterValorBoolAsync("Sistema.ManterHistoricoCompleto", true),
                 BackupAutomatico = await _configuracaoService.ObterValorBoolAsync("Backup.Automatico.Habilitado"),
-                FrequenciaBackup = await _configuracaoService.ObterValorStringAsync("Backup.Automatico.Frequencia", "Diário") ?? "Diário"
+                FrequenciaBackup = await _configuracaoService.ObterValorStringAsync("Backup.Automatico.Frequencia", "Diário") ?? "Diário",
+                ProntuarioOnlineHabilitado = await _configuracaoService.ObterValorBoolAsync("Prontuario.Habilitado", true),
+                VideoConsultasOnlineHabilitado = await _configuracaoService.ObterValorBoolAsync("Video.ConsultasOnline.Habilitado", true)
             };
         }
     }
@@ -245,6 +255,5 @@ namespace ClinicaPsi.Web.Pages.Admin
 
         public bool ProntuarioOnlineHabilitado { get; set; } = true;
         public bool VideoConsultasOnlineHabilitado { get; set; } = true;
-        public string VideoJitsiBaseUrl { get; set; } = "https://meet.jit.si";
     }
 }
