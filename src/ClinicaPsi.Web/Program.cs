@@ -327,6 +327,18 @@ app.UseAuthorization();
 // Health check endpoint (DEVE vir após UseRouting)
 app.MapHealthChecks("/health");
 
+// Diagnóstico de cultura (moeda R$ / pt-BR)
+app.MapGet("/health/culture", () =>
+{
+    var culture = System.Globalization.CultureInfo.CurrentCulture;
+    return Results.Json(new
+    {
+        culture = culture.Name,
+        currencySymbol = culture.NumberFormat.CurrencySymbol,
+        sample = 0m.ToString("C")
+    });
+});
+
 // API Controllers (necessário para WhatsAppWebhookController)
 app.MapControllers();
 
