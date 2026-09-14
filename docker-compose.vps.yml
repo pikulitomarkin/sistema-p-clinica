@@ -48,6 +48,7 @@ services:
       # Admin opcional (seed no boot; nao versionar senha real)
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-}
       ADMIN_NOME: ${ADMIN_NOME:-Administrador}
       ADMIN_RESET_PASSWORD: ${ADMIN_RESET_PASSWORD:-false}
     volumes:

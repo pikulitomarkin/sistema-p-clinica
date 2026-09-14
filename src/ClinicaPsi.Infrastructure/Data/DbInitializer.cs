@@ -16,12 +16,8 @@ public static class DbInitializer
             // Criar roles via Identity (não usa DateTime problemático)
             await CreateRolesAsync(roleManager);
 
-            // Admin opcional via env (ex.: ADMIN_EMAIL / ADMIN_PASSWORD na VPS)
+            // Admin opcional via env (ADMIN_EMAIL / ADMIN_PASSWORD) — senha nao vai no git
             await EnsureAdminFromEnvironmentAsync(userManager);
-
-            // Admin opcional via env (nao hardcodar senha no repositorio)
-            // ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME
-            await CreateAdminFromEnvironmentAsync(userManager);
 
             // Criar usuário admin "marcos" usando UserManager
             var marcosUser = new ApplicationUser
@@ -95,29 +91,39 @@ public static class DbInitializer
         await context.Database.EnsureCreatedAsync();
     }
 
+    /// <summary>
+    /// Cria admin a partir de ADMIN_EMAIL / ADMIN_PASSWORD (/ ADMIN_NAME ou ADMIN_NOME).
+    /// Se ja existir: garante role Admin; so reseta senha com ADMIN_RESET_PASSWORD=true.
+    /// </summary>
     private static async Task EnsureAdminFromEnvironmentAsync(UserManager<ApplicationUser> userManager)
     {
-        var email = Environment.GetEnvironmentVariable("ADMIN_EMAIL");
+        var email = Environment.GetEnvironmentVariable("ADMIN_EMAIL")?.Trim();
         var password = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
-        var nome = Environment.GetEnvironmentVariable("ADMIN_NOME") ?? "Administrador";
+        var nome = Environment.GetEnvironmentVariable("ADMIN_NAME")?.Trim()
+            ?? Environment.GetEnvironmentVariable("ADMIN_NOME")?.Trim()
+            ?? "Administrador";
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
             return;
         }
 
-        email = email.Trim();
         var existing = await userManager.FindByEmailAsync(email);
         if (existing is not null)
         {
-            // Garante papel Admin e senha atualizada quando solicitado
             if (!await userManager.IsInRoleAsync(existing, "Admin"))
             {
                 await userManager.AddToRoleAsync(existing, "Admin");
             }
+
             existing.TipoUsuario = TipoUsuario.Admin;
             existing.EmailConfirmed = true;
             existing.Ativo = true;
+            if (!string.IsNullOrWhiteSpace(nome) && nome != "Administrador")
+            {
+                existing.NomeCompleto = nome;
+            }
+
             await userManager.UpdateAsync(existing);
 
             if (string.Equals(Environment.GetEnvironmentVariable("ADMIN_RESET_PASSWORD"), "true", StringComparison.OrdinalIgnoreCase))
@@ -165,75 +171,6 @@ public static class DbInitializer
             {
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
-        }
-    }
-
-    /// <summary>
-    /// Cria (ou promove) admin a partir de ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME.
-    /// Se o usuario ja existir, garante role Admin e atualiza a senha quando ADMIN_PASSWORD estiver definido.
-    /// </summary>
-    private static async Task CreateAdminFromEnvironmentAsync(UserManager<ApplicationUser> userManager)
-    {
-        var email = Environment.GetEnvironmentVariable("ADMIN_EMAIL")?.Trim();
-        var password = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
-        var name = Environment.GetEnvironmentVariable("ADMIN_NAME")?.Trim();
-
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-        {
-            return;
-        }
-
-        var existing = await userManager.FindByEmailAsync(email);
-        if (existing is null)
-        {
-            var admin = new ApplicationUser
-            {
-                UserName = email,
-                Email = email,
-                NomeCompleto = string.IsNullOrWhiteSpace(name) ? "Administrador" : name,
-                TipoUsuario = TipoUsuario.Admin,
-                EmailConfirmed = true,
-                Ativo = true
-            };
-
-            var result = await userManager.CreateAsync(admin, password);
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(admin, "Admin");
-                Console.WriteLine($"Usuario admin criado via ADMIN_EMAIL: {email}");
-            }
-            else
-            {
-                Console.WriteLine($"Erro ao criar admin via env: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-            }
-
-            return;
-        }
-
-        existing.TipoUsuario = TipoUsuario.Admin;
-        existing.EmailConfirmed = true;
-        existing.Ativo = true;
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            existing.NomeCompleto = name;
-        }
-
-        await userManager.UpdateAsync(existing);
-
-        if (!await userManager.IsInRoleAsync(existing, "Admin"))
-        {
-            await userManager.AddToRoleAsync(existing, "Admin");
-        }
-
-        var token = await userManager.GeneratePasswordResetTokenAsync(existing);
-        var reset = await userManager.ResetPasswordAsync(existing, token, password);
-        if (reset.Succeeded)
-        {
-            Console.WriteLine($"Usuario admin atualizado via ADMIN_EMAIL: {email}");
-        }
-        else
-        {
-            Console.WriteLine($"Erro ao atualizar senha admin via env: {string.Join(", ", reset.Errors.Select(e => e.Description))}");
         }
     }
 
