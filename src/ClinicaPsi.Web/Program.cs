@@ -293,6 +293,7 @@ using (var scope = app.Services.CreateScope())
         await GarantirSchemaProntuarioEVideoAsync(context, logger);
         await GarantirSchemaEmailAsync(context, logger);
         await GarantirSchemaPsicologoExcluidoAsync(context, logger);
+        await GarantirSchemaOnboardingAsync(context, logger);
     }
     catch (Exception ex)
     {
@@ -583,6 +584,29 @@ static async Task GarantirSchemaPsicologoExcluidoAsync(AppDbContext context, ILo
         catch (Exception ex2)
         {
             logger.LogDebug(ex2, "ExcluidoEm já existe ou schema não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+
+static async Task GarantirSchemaOnboardingAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""OnboardingCompleted"" boolean NOT NULL DEFAULT FALSE;");
+        logger.LogInformation("Schema de onboarding verificado (OnboardingCompleted).");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""AspNetUsers"" ADD COLUMN ""OnboardingCompleted"" INTEGER NOT NULL DEFAULT 0;");
+            logger.LogInformation("Coluna OnboardingCompleted adicionada (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "OnboardingCompleted já existe ou schema não aplicável. PG err={Pg}", ex.Message);
         }
     }
 }

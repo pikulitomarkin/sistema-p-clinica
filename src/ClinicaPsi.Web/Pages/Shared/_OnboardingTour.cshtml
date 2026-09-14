@@ -1,0 +1,62 @@
+@using Microsoft.AspNetCore.Identity
+@using ClinicaPsi.Shared.Models
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var showTour = false;
+    var role = "";
+    var nome = User.Identity?.Name ?? "";
+
+    if (User.Identity?.IsAuthenticated == true &&
+        (User.IsInRole("Cliente") || User.IsInRole("Psicologo")) &&
+        !User.IsInRole("Admin"))
+    {
+        var user = await UserManager.GetUserAsync(User);
+        if (user is not null && !user.OnboardingCompleted)
+        {
+            showTour = true;
+            role = User.IsInRole("Psicologo") ? "psicologo" : "cliente";
+            nome = string.IsNullOrWhiteSpace(user.NomeCompleto) ? (user.Email ?? nome) : user.NomeCompleto;
+        }
+    }
+}
+
+@if (showTour)
+{
+    <div id="onboarding-root"
+         class="onboarding-root"
+         data-role="@role"
+         data-nome="@nome"
+         data-api-status="/api/onboarding/status"
+         data-api-complete="/api/onboarding/complete"
+         data-api-dismiss="/api/onboarding/dismiss"
+         hidden>
+        <div class="onboarding-backdrop" aria-hidden="true"></div>
+        <div class="onboarding-spotlight" aria-hidden="true"></div>
+        <div class="onboarding-panel" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+            <div class="onboarding-panel__progress" aria-hidden="true">
+                <div class="onboarding-panel__bar" id="onboarding-progress-bar"></div>
+            </div>
+            <p class="onboarding-panel__step-label" id="onboarding-step-label">Passo 1</p>
+            <h2 class="onboarding-panel__title" id="onboarding-title">Bem-vindo</h2>
+            <p class="onboarding-panel__text" id="onboarding-text"></p>
+            <div class="onboarding-panel__actions">
+                <button type="button" class="btn btn-link onboarding-btn-skip" id="onboarding-skip">
+                    Pular
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="onboarding-never">
+                    Não mostrar de novo
+                </button>
+                <div class="onboarding-panel__nav">
+                    <button type="button" class="btn btn-outline-success btn-sm" id="onboarding-prev" disabled>
+                        Anterior
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm" id="onboarding-next">
+                        Próximo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <link rel="stylesheet" href="~/css/onboarding.css" asp-append-version="true" />
+    <script src="~/js/onboarding.js" asp-append-version="true"></script>
+}

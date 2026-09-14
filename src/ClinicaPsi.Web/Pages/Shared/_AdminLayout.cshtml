@@ -5,27 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Psicóloga Ana Santos</title>
     <base href="~/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
-    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
     <link href="ClinicaPsi.Web.styles.css" rel="stylesheet" />
 </head>
-<body>
+<body class="app-shell">
+    <button type="button" class="admin-mobile-toggle" id="adminSidebarToggle" aria-label="Abrir menu" aria-controls="adminSidebar" aria-expanded="false">
+        <i class="bi bi-list"></i>
+    </button>
+    <div class="admin-sidebar-backdrop" id="adminSidebarBackdrop" hidden></div>
+
     <!-- Sidebar Navigation -->
-    <div class="admin-sidebar">
+    <div class="admin-sidebar" id="adminSidebar">
         <div class="sidebar-header">
             <a href="/" class="text-decoration-none">
                 <div class="d-flex align-items-center p-3">
                     <div class="text-white">
                         <h5 class="mb-0 brand-admin-title">Psicóloga Ana Santos</h5>
-                        <small class="opacity-75">Sistema Administrativo</small>
+                        <small class="opacity-75">Portal clínico</small>
                     </div>
                 </div>
             </a>
         </div>
 
         <nav class="sidebar-nav">
-            <!-- Menu Geral -->
             <div class="nav-section">
                 <div class="nav-section-title">
                     <i class="bi bi-house me-2"></i>
@@ -39,7 +46,6 @@
 
             @if (User.IsInRole("Admin"))
             {
-                <!-- Menu Admin -->
                 <div class="nav-section">
                     <div class="nav-section-title">
                         <i class="bi bi-shield-check me-2"></i>
@@ -82,33 +88,40 @@
 
             @if (User.IsInRole("Psicologo") || User.IsInRole("Admin"))
             {
-                <!-- Menu Psicólogo -->
                 <div class="nav-section">
                     <div class="nav-section-title">
                         <i class="bi bi-person-badge me-2"></i>
                         Área do Psicólogo
                     </div>
-                    <a href="/psicologo" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Psicologo/Index" ? "active" : "")">
+                    <a href="/psicologo" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Psicologo/Index" ? "active" : "")" data-tour="psico-dashboard">
                         <i class="bi bi-speedometer2 me-2"></i>
                         Dashboard
                     </a>
-                    <a href="/psicologo/agenda" class="nav-link">
+                    <a href="/psicologo/agenda" class="nav-link" data-tour="psico-agenda">
                         <i class="bi bi-calendar-week me-2"></i>
                         Minha Agenda
                     </a>
-                    <a href="/psicologo/consultas" class="nav-link">
+                    <a href="/psicologo/consultas" class="nav-link" data-tour="psico-consultas">
                         <i class="bi bi-clipboard-check me-2"></i>
                         Consultas
                     </a>
-                    <a href="/psicologo/pacientes" class="nav-link">
+                    <a href="/psicologo/pacientes" class="nav-link" data-tour="psico-pacientes">
                         <i class="bi bi-person-lines-fill me-2"></i>
                         Meus Pacientes
                     </a>
-                    <a href="/psicologo/relatorios" class="nav-link">
+                    <a href="/prontuario" class="nav-link" data-tour="psico-prontuario">
+                        <i class="bi bi-file-medical me-2"></i>
+                        Prontuário
+                    </a>
+                    <a href="/psicologo/documentos" class="nav-link" data-tour="psico-documentos">
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        Documentos
+                    </a>
+                    <a href="/psicologo/relatorios" class="nav-link" data-tour="psico-relatorios">
                         <i class="bi bi-file-text me-2"></i>
                         Relatórios
                     </a>
-                    <a href="/psicologo/perfil" class="nav-link">
+                    <a href="/psicologo/perfil" class="nav-link" data-tour="psico-perfil">
                         <i class="bi bi-person-gear me-2"></i>
                         Meu Perfil
                     </a>
@@ -117,41 +130,46 @@
 
             @if (User.IsInRole("Cliente"))
             {
-                <!-- Menu Cliente -->
                 <div class="nav-section">
                     <div class="nav-section-title">
                         <i class="bi bi-person-heart me-2"></i>
-                        Área do Cliente
+                        Área do Paciente
                     </div>
-                    <a href="/cliente" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Cliente/Index" ? "active" : "")">
+                    <a href="/cliente" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Cliente/Index" ? "active" : "")" data-tour="cliente-dashboard">
                         <i class="bi bi-speedometer2 me-2"></i>
                         Minha Área
                     </a>
-                    <a href="/Cliente/AgendarConsulta" class="nav-link">
+                    <a href="/Cliente/AgendarConsulta" class="nav-link" data-tour="cliente-agendar">
                         <i class="bi bi-calendar-plus me-2"></i>
                         Agendar Consulta
                     </a>
-                    <a href="/Cliente/MinhasConsultas" class="nav-link">
+                    <a href="/Cliente/MinhasConsultas" class="nav-link" data-tour="cliente-consultas">
                         <i class="bi bi-calendar-check me-2"></i>
                         Minhas Consultas
                     </a>
-                    <a href="/Cliente/Historico" class="nav-link">
+                    <a href="/Cliente/Historico" class="nav-link" data-tour="cliente-historico">
                         <i class="bi bi-clock-history me-2"></i>
                         Histórico
                     </a>
-                    <a href="/Cliente/MeuPerfil" class="nav-link">
+                    <a href="/Cliente/MeuPerfil" class="nav-link" data-tour="cliente-perfil">
                         <i class="bi bi-person-gear me-2"></i>
                         Meu Perfil
                     </a>
                 </div>
             }
 
-            <!-- Menu Usuário -->
             <div class="nav-section mt-auto">
                 <div class="nav-section-title">
                     <i class="bi bi-person-circle me-2"></i>
                     @User.Identity?.Name
                 </div>
+                @if (User.IsInRole("Cliente") || User.IsInRole("Psicologo"))
+                {
+                    <a href="#" class="nav-link" id="restartOnboardingLink">
+                        <i class="bi bi-compass me-2"></i>
+                        Ver guia inicial
+                    </a>
+                }
                 <a href="/Account/Logout" class="nav-link text-warning">
                     <i class="bi bi-box-arrow-right me-2"></i>
                     Sair do Sistema
@@ -162,7 +180,6 @@
 
     <!-- Main Content -->
     <div class="admin-content">
-        <!-- Top Bar -->
         <div class="admin-topbar">
             <div class="container-fluid">
                 <div class="row align-items-center">
@@ -189,7 +206,7 @@
                                 @if (User.IsInRole("Cliente"))
                                 {
                                     <li class="breadcrumb-item">
-                                        <a href="/cliente" class="text-white-50">Cliente</a>
+                                        <a href="/cliente" class="text-white-50">Paciente</a>
                                     </li>
                                 }
                                 <li class="breadcrumb-item active text-white">
@@ -198,21 +215,19 @@
                             </ol>
                         </nav>
                     </div>
-                    <div class="col-md-6 text-end">
+                    <div class="col-md-6 text-end d-none d-md-block">
                         <div class="d-flex align-items-center justify-content-end">
-                            <div class="me-3">
+                            <div class="me-3 text-start">
                                 <small class="text-white-50">Bem-vindo(a),</small>
                                 <div class="text-white fw-bold">@User.Identity?.Name</div>
                             </div>
                             <div class="dropdown">
-                                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-person-circle"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     @if (User.IsInRole("Admin"))
                                     {
-                                        <li><a class="dropdown-item" href="/admin/perfil">
-                                            <i class="bi bi-person-gear me-2"></i>Meu Perfil</a></li>
                                         <li><a class="dropdown-item" href="/admin/configuracoes">
                                             <i class="bi bi-gear me-2"></i>Configurações</a></li>
                                     }
@@ -223,7 +238,7 @@
                                     }
                                     @if (User.IsInRole("Cliente"))
                                     {
-                                        <li><a class="dropdown-item" href="/cliente/perfil">
+                                        <li><a class="dropdown-item" href="/Cliente/MeuPerfil">
                                             <i class="bi bi-person-gear me-2"></i>Meu Perfil</a></li>
                                     }
                                     <li><hr class="dropdown-divider"></li>
@@ -237,39 +252,40 @@
             </div>
         </div>
 
-        <!-- Page Content -->
         <main class="admin-main">
-            <!-- Alertas de Feedback -->
-            @if (TempData["Sucesso"] != null)
+            @if (TempData["Sucesso"] != null || TempData["Success"] != null)
             {
-                <div class="container-fluid mb-3">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="bi bi-check-circle me-2"></i>
-                        @TempData["Sucesso"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                <div class="alert alert-success alert-dismissible fade show app-alert" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    @(TempData["Sucesso"] ?? TempData["Success"])
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
 
-            @if (TempData["Erro"] != null)
+            @if (TempData["Erro"] != null || TempData["Error"] != null)
             {
-                <div class="container-fluid mb-3">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        @TempData["Erro"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                <div class="alert alert-danger alert-dismissible fade show app-alert" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    @(TempData["Erro"] ?? TempData["Error"])
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
 
             @if (TempData["Info"] != null)
             {
-                <div class="container-fluid mb-3">
-                    <div class="alert alert-info alert-dismissible fade show" role="alert">
-                        <i class="bi bi-info-circle me-2"></i>
-                        @TempData["Info"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                <div class="alert alert-info alert-dismissible fade show app-alert" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    @TempData["Info"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["Warning"] != null || TempData["Aviso"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show app-alert" role="alert">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    @(TempData["Warning"] ?? TempData["Aviso"])
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
 
@@ -277,36 +293,70 @@
         </main>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Admin Scripts -->
     <script>
-        // Auto-hide alerts after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const alerts = document.querySelectorAll('.alert-dismissible');
-            alerts.forEach(function(alert) {
-                setTimeout(function() {
-                    const bsAlert = new bootstrap.Alert(alert);
+            alerts.forEach(function (alert) {
+                setTimeout(function () {
+                    const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
                     bsAlert.close();
-                }, 5000);
+                }, 6000);
             });
-        });
 
-        // Add active states to navigation
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
-
-            navLinks.forEach(function(link) {
-                if (link.getAttribute('href') === currentPath) {
+            const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+            document.querySelectorAll('.sidebar-nav .nav-link').forEach(function (link) {
+                const href = (link.getAttribute('href') || '').replace(/\/$/, '');
+                if (href && href === currentPath) {
                     link.classList.add('active');
                 }
             });
+
+            const sidebar = document.getElementById('adminSidebar');
+            const toggle = document.getElementById('adminSidebarToggle');
+            const backdrop = document.getElementById('adminSidebarBackdrop');
+
+            function setSidebarOpen(open) {
+                if (!sidebar || !toggle) return;
+                sidebar.classList.toggle('show', open);
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                if (backdrop) {
+                    backdrop.hidden = !open;
+                    backdrop.classList.toggle('is-visible', open);
+                }
+                document.body.classList.toggle('sidebar-open', open);
+            }
+
+            if (toggle) {
+                toggle.addEventListener('click', function () {
+                    setSidebarOpen(!sidebar.classList.contains('show'));
+                });
+            }
+            if (backdrop) {
+                backdrop.addEventListener('click', function () { setSidebarOpen(false); });
+            }
+
+            const restart = document.getElementById('restartOnboardingLink');
+            if (restart) {
+                restart.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    if (window.ClinicaPsiOnboarding && typeof window.ClinicaPsiOnboarding.reset === 'function') {
+                        window.ClinicaPsiOnboarding.reset();
+                    } else {
+                        fetch('/api/onboarding/reset', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: '{}'
+                        }).then(function () { window.location.reload(); });
+                    }
+                });
+            }
         });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
     <partial name="_ClienteChamadaNotifier" />
+    <partial name="_OnboardingTour" />
 </body>
 </html>
