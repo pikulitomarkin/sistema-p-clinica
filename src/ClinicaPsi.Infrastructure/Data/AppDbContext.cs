@@ -104,41 +104,12 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Dados iniciais para teste
-        SeedData(modelBuilder);
+        // Sem HasData de psicólogos demo — evita fantasmas (João/Maria) em produção.
+        ConfigureSupportingEntities(modelBuilder);
     }
 
-    private void SeedData(ModelBuilder modelBuilder)
+    private static void ConfigureSupportingEntities(ModelBuilder modelBuilder)
     {
-        var dataAtual = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        
-        modelBuilder.Entity<Psicologo>().HasData(
-            new Psicologo
-            {
-                Id = 1,
-                Nome = "Dr. João Silva",
-                Email = "joao.silva@clinicapsi.com",
-                CRP = "06/123456",
-                Telefone = "(11) 98765-4321",
-                Especialidades = "TCC, Ansiedade, Depressão",
-                ValorConsulta = 150.00m,
-                DataCadastro = dataAtual,
-                Ativo = true
-            },
-            new Psicologo
-            {
-                Id = 2,
-                Nome = "Dra. Maria Santos",
-                Email = "maria.santos@clinicapsi.com",
-                CRP = "06/654321",
-                Telefone = "(11) 98765-1234",
-                Especialidades = "Psicanálise, Terapia de Casal",
-                ValorConsulta = 180.00m,
-                DataCadastro = dataAtual,
-                Ativo = true
-            }
-        );
-
         modelBuilder.Entity<AuditoriaUsuario>(entity =>
         {
             entity.HasKey(e => e.Id);

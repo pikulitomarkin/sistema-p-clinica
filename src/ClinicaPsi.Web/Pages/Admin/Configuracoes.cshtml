@@ -279,14 +279,14 @@
                                     Habilitar videochamada em consultas online
                                 </label>
                             </div>
-                            <div class="form-text">Sala Jitsi embutida em /consulta/{id}/video</div>
+                            <div class="form-text">
+                                WebRTC 1:1 (SignalR) em /consulta/{id}/video — exibe nome da psicóloga e do paciente, sem conta em provedor externo.
+                            </div>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="videoJitsiBaseUrl" class="form-label">URL base do Jitsi</label>
-                            <input type="url" class="form-control" id="videoJitsiBaseUrl"
-                                   asp-for="Configuracoes.VideoJitsiBaseUrl"
-                                   placeholder="https://meet.jit.si">
-                            <div class="form-text">Padrão: https://meet.jit.si</div>
+                            <label class="form-label">Provedor de vídeo</label>
+                            <input type="text" class="form-control" value="WebRTC + SignalR (nativo)" readonly disabled>
+                            <div class="form-text">Opcional: defina DAILY_API_KEY no .env da VPS para Daily.co no futuro.</div>
                         </div>
                     </div>
                 </div>

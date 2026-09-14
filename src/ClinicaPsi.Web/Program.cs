@@ -96,6 +96,7 @@ builder.Services.AddOpenTelemetry()
 
 // Adicionar serviços
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 
 // Health checks
 builder.Services.AddHealthChecks()
@@ -291,6 +292,7 @@ using (var scope = app.Services.CreateScope())
 
         await GarantirSchemaProntuarioEVideoAsync(context, logger);
         await GarantirSchemaEmailAsync(context, logger);
+        await GarantirSchemaPsicologoExcluidoAsync(context, logger);
     }
     catch (Exception ex)
     {
@@ -377,6 +379,12 @@ app.MapGet("/health/culture", () =>
 
 // API Controllers (necessário para WhatsAppWebhookController)
 app.MapControllers();
+
+app.MapHub<ClinicaPsi.Web.Hubs.VideoConsultaHub>("/hubs/video-consulta");
+
+// Aliases amigáveis da sala de consulta
+app.MapGet("/Psicologo/SalaConsulta/{id:int}", (int id) => Results.Redirect($"/consulta/{id}/video"));
+app.MapGet("/Cliente/SalaConsulta/{id:int}", (int id) => Results.Redirect($"/consulta/{id}/video"));
 
 app.MapRazorPages();
 
@@ -551,6 +559,29 @@ static async Task GarantirSchemaEmailAsync(AppDbContext context, ILogger logger)
         catch (Exception ex2)
         {
             logger.LogDebug(ex2, "MustChangePassword já existe ou schema não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+
+static async Task GarantirSchemaPsicologoExcluidoAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""ExcluidoEm"" timestamp without time zone NULL;");
+        logger.LogInformation("Schema Psicologos.ExcluidoEm verificado.");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""ExcluidoEm"" TEXT NULL;");
+            logger.LogInformation("Coluna ExcluidoEm adicionada (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "ExcluidoEm já existe ou schema não aplicável. PG err={Pg}", ex.Message);
         }
     }
 }

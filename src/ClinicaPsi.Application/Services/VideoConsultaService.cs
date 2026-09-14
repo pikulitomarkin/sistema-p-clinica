@@ -5,11 +5,15 @@ using Microsoft.Extensions.Logging;
 
 namespace ClinicaPsi.Application.Services;
 
+/// <summary>
+/// Salas de videochamada 1:1 via WebRTC + SignalR (sem Jitsi / sem conta em provedor).
+/// Opcional futuro: DAILY_API_KEY no ambiente para Prebuilt Daily.co.
+/// </summary>
 public class VideoConsultaService
 {
-    public const string ConfigBaseUrlKey = "Video.JitsiBaseUrl";
     public const string ConfigHabilitadoKey = "Video.ConsultasOnline.Habilitado";
-    public const string DefaultJitsiBaseUrl = "https://meet.jit.si";
+    public const string ConfigProviderKey = "Video.Provider";
+    public const string ProviderWebRtc = "webrtc";
 
     private readonly AppDbContext _context;
     private readonly ConfiguracaoService _configuracaoService;
@@ -28,24 +32,30 @@ public class VideoConsultaService
     public Task<bool> EstaHabilitadoAsync() =>
         _configuracaoService.ObterValorBoolAsync(ConfigHabilitadoKey, true);
 
-    public async Task<string> ObterBaseUrlAsync()
+    public string ObterProvider()
     {
-        var url = await _configuracaoService.ObterValorStringAsync(ConfigBaseUrlKey, DefaultJitsiBaseUrl);
-        return string.IsNullOrWhiteSpace(url) ? DefaultJitsiBaseUrl : url.TrimEnd('/');
+        // Sem chave de provedor externo: WebRTC mesh 1:1 com SignalR.
+        var dailyKey = Environment.GetEnvironmentVariable("DAILY_API_KEY");
+        if (!string.IsNullOrWhiteSpace(dailyKey))
+            return "daily"; // reservado — UI atual usa WebRTC; Daily pode ser ligado depois
+        return ProviderWebRtc;
     }
 
-    public async Task<(string RoomName, string RoomUrl)> GerarSalaAsync(int consultaId)
+    public Task<(string RoomName, string RoomUrl)> GerarSalaAsync(int consultaId)
     {
-        var baseUrl = await ObterBaseUrlAsync();
-        var roomName = $"clinicapsi-{consultaId}-{Guid.NewGuid().ToString("N")[..8]}";
-        return (roomName, $"{baseUrl}/{roomName}");
+        var token = Guid.NewGuid().ToString("N")[..10];
+        var roomName = $"clinicapsi-{consultaId}-{token}";
+        // URL interna da aplicação (não é link de provedor externo)
+        var roomUrl = $"/consulta/{consultaId}/video";
+        return Task.FromResult((roomName, roomUrl));
     }
 
     public async Task GarantirSalaAsync(Consulta consulta)
     {
         if (consulta.Formato != FormatoConsulta.Online)
             return;
-        if (!string.IsNullOrWhiteSpace(consulta.VideoRoomUrl) && !string.IsNullOrWhiteSpace(consulta.VideoRoomName))
+
+        if (SalaInternaValida(consulta))
             return;
 
         var idParaSala = consulta.Id > 0 ? consulta.Id : Random.Shared.Next(100000, 999999);
@@ -60,15 +70,18 @@ public class VideoConsultaService
             await _context.SaveChangesAsync();
         }
 
-        _logger.LogInformation("Sala de vídeo gerada para consulta {ConsultaId}: {Room}", consulta.Id, roomName);
+        _logger.LogInformation(
+            "Sala WebRTC gerada para consulta {ConsultaId}: {Room}",
+            consulta.Id, roomName);
     }
 
     public async Task FinalizarSalaAposCriacaoAsync(Consulta consulta)
     {
         if (consulta.Formato != FormatoConsulta.Online || consulta.Id <= 0)
             return;
-        if (!string.IsNullOrWhiteSpace(consulta.VideoRoomName) &&
-            consulta.VideoRoomName.StartsWith($"clinicapsi-{consulta.Id}-", StringComparison.Ordinal))
+
+        if (SalaInternaValida(consulta) &&
+            consulta.VideoRoomName!.StartsWith($"clinicapsi-{consulta.Id}-", StringComparison.Ordinal))
             return;
 
         var (roomName, roomUrl) = await GerarSalaAsync(consulta.Id);
@@ -76,6 +89,26 @@ public class VideoConsultaService
         consulta.VideoRoomUrl = roomUrl;
         consulta.DataAtualizacao = DateTime.Now;
         await _context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Descarta salas antigas do Jitsi (meet.jit.si) e regenera URL interna.
+    /// </summary>
+    public static bool SalaInternaValida(Consulta consulta)
+    {
+        if (string.IsNullOrWhiteSpace(consulta.VideoRoomName) ||
+            string.IsNullOrWhiteSpace(consulta.VideoRoomUrl))
+            return false;
+
+        var url = consulta.VideoRoomUrl;
+        if (url.Contains("jit.si", StringComparison.OrdinalIgnoreCase) ||
+            url.Contains("jitsi", StringComparison.OrdinalIgnoreCase) ||
+            url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return url.Contains("/video", StringComparison.OrdinalIgnoreCase) ||
+               url.Contains("SalaConsulta", StringComparison.OrdinalIgnoreCase);
     }
 
     public async Task<Consulta?> ObterConsultaComAcessoAsync(int consultaId, ApplicationUser user, bool isAdmin)

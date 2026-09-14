@@ -47,6 +47,10 @@ public static class DbInitializer
             
             // Ligar psicólogos/usuários órfãos existentes (produção)
             await AssociateUsersAsync(context, userManager);
+
+            // One-shot: demos João/Maria nunca devem reaparecer em produção
+            await MarcarDemosExcluidosAsync(context, userManager);
+
             await context.SaveChangesAsync();
 
             Console.WriteLine("SEED COMPLETO - Admin + associação usuários↔psicólogos");
@@ -165,6 +169,47 @@ public static class DbInitializer
         }
     }
 
+    /// <summary>
+    /// Soft-delete definitivo dos psicólogos demo (HasData antigo / seed) em produção.
+    /// </summary>
+    private static async Task MarcarDemosExcluidosAsync(AppDbContext context, UserManager<ApplicationUser> userManager)
+    {
+        string[] emailsDemo =
+        {
+            "joao.silva@clinicapsi.com",
+            "maria.santos@clinicapsi.com",
+            "joao.silva@psii.com",
+            "maria.santos@psii.com"
+        };
+
+        var demos = await context.Psicologos
+            .Where(p => p.ExcluidoEm == null && emailsDemo.Contains(p.Email))
+            .ToListAsync();
+
+        if (demos.Count == 0)
+            return;
+
+        var agora = DateTime.UtcNow;
+        foreach (var demo in demos)
+        {
+            demo.Ativo = false;
+            demo.ExcluidoEm = agora;
+            demo.DataAtualizacao = agora;
+            Console.WriteLine($"Demo psicólogo excluído (soft): {demo.Email}");
+
+            ApplicationUser? user = null;
+            if (!string.IsNullOrEmpty(demo.UserId))
+                user = await userManager.FindByIdAsync(demo.UserId);
+            user ??= await userManager.FindByEmailAsync(demo.Email);
+
+            if (user != null && user.TipoUsuario == TipoUsuario.Psicologo && user.Ativo)
+            {
+                user.Ativo = false;
+                await userManager.UpdateAsync(user);
+            }
+        }
+    }
+
     private static async Task CreateRolesAsync(RoleManager<IdentityRole> roleManager)
     {
         string[] roles = { "Admin", "Psicologo", "Cliente" };
@@ -246,58 +291,59 @@ public static class DbInitializer
 
     private static async Task CreateDefaultPsicologosAsync(AppDbContext context)
     {
-        if (!await context.Psicologos.AnyAsync())
-        {
-            var psicologos = new List<Psicologo>
-            {
-                new Psicologo
-                {
-                    Nome = "Dr. João Silva",
-                    Email = "joao.silva@psii.com",
-                    CRP = "06/123456",
-                    Telefone = "(11) 98765-4321",
-                    Especialidades = "TCC, Ansiedade, Depressão",
-                    ValorConsulta = 150m,
-                    HorarioInicioManha = new TimeSpan(8, 0, 0),
-                    HorarioFimManha = new TimeSpan(12, 0, 0),
-                    HorarioInicioTarde = new TimeSpan(14, 0, 0),
-                    HorarioFimTarde = new TimeSpan(18, 0, 0),
-                    AtendeSegunda = true,
-                    AtendeTerca = true,
-                    AtendeQuarta = true,
-                    AtendeQuinta = true,
-                    AtendeSexta = true,
-                    AtendeSabado = false,
-                    AtendeDomingo = false,
-                    DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-01"), DateTimeKind.Utc),
-                    Ativo = true
-                },
-                new Psicologo
-                {
-                    Nome = "Dra. Ana Santos",
-                    Email = "ana.santos@psii.com",
-                    CRP = "08/45168",
-                    Telefone = "(11) 98765-1234",
-                    Especialidades = "Psicanálise, Terapia de Casal, TCC",
-                    ValorConsulta = 180m,
-                    HorarioInicioManha = new TimeSpan(8, 0, 0),
-                    HorarioFimManha = new TimeSpan(12, 0, 0),
-                    HorarioInicioTarde = new TimeSpan(14, 0, 0),
-                    HorarioFimTarde = new TimeSpan(18, 0, 0),
-                    AtendeSegunda = true,
-                    AtendeTerca = true,
-                    AtendeQuarta = true,
-                    AtendeQuinta = true,
-                    AtendeSexta = true,
-                    AtendeSabado = false,
-                    AtendeDomingo = false,
-                    DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-01"), DateTimeKind.Utc),
-                    Ativo = true
-                }
-            };
+        // Dev local apenas. Se já existir qualquer registro (mesmo excluído), não recria demos.
+        if (await context.Psicologos.AnyAsync())
+            return;
 
-            context.Psicologos.AddRange(psicologos);
-        }
+        var psicologos = new List<Psicologo>
+        {
+            new Psicologo
+            {
+                Nome = "Dr. João Silva",
+                Email = "joao.silva@psii.com",
+                CRP = "06/123456",
+                Telefone = "(11) 98765-4321",
+                Especialidades = "TCC, Ansiedade, Depressão",
+                ValorConsulta = 150m,
+                HorarioInicioManha = new TimeSpan(8, 0, 0),
+                HorarioFimManha = new TimeSpan(12, 0, 0),
+                HorarioInicioTarde = new TimeSpan(14, 0, 0),
+                HorarioFimTarde = new TimeSpan(18, 0, 0),
+                AtendeSegunda = true,
+                AtendeTerca = true,
+                AtendeQuarta = true,
+                AtendeQuinta = true,
+                AtendeSexta = true,
+                AtendeSabado = false,
+                AtendeDomingo = false,
+                DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-01"), DateTimeKind.Utc),
+                Ativo = true
+            },
+            new Psicologo
+            {
+                Nome = "Dra. Ana Santos",
+                Email = "ana.santos@psii.com",
+                CRP = "08/45168",
+                Telefone = "(11) 98765-1234",
+                Especialidades = "Psicanálise, Terapia de Casal, TCC",
+                ValorConsulta = 180m,
+                HorarioInicioManha = new TimeSpan(8, 0, 0),
+                HorarioFimManha = new TimeSpan(12, 0, 0),
+                HorarioInicioTarde = new TimeSpan(14, 0, 0),
+                HorarioFimTarde = new TimeSpan(18, 0, 0),
+                AtendeSegunda = true,
+                AtendeTerca = true,
+                AtendeQuarta = true,
+                AtendeQuinta = true,
+                AtendeSexta = true,
+                AtendeSabado = false,
+                AtendeDomingo = false,
+                DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-01"), DateTimeKind.Utc),
+                Ativo = true
+            }
+        };
+
+        context.Psicologos.AddRange(psicologos);
     }
 
     private static async Task CreateDefaultPacientesAsync(AppDbContext context)
@@ -353,7 +399,9 @@ public static class DbInitializer
         foreach (var user in psicologosUsers)
         {
             var psicologo = await context.Psicologos
-                .FirstOrDefaultAsync(p => p.Email == user.Email || p.CRP == user.CRP);
+                .FirstOrDefaultAsync(p =>
+                    p.ExcluidoEm == null &&
+                    (p.Email == user.Email || p.CRP == user.CRP));
 
             if (psicologo != null)
             {
@@ -365,7 +413,7 @@ public static class DbInitializer
         }
 
         var psicologos = await context.Psicologos
-            .Where(p => p.UserId != null || p.Email != null)
+            .Where(p => p.ExcluidoEm == null && (p.UserId != null || p.Email != null))
             .ToListAsync();
 
         foreach (var psicologo in psicologos)

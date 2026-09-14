@@ -63,11 +63,28 @@ namespace ClinicaPsi.Web.Pages.Admin
             public decimal ValorConsulta { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync(string? searchTerm, string? especialidade, bool? status)
+        public async Task<IActionResult> OnGetAsync(string? searchTerm, string? especialidade, string? status)
         {
             SearchTerm = searchTerm;
             EspecialidadeFiltro = especialidade;
-            StatusFiltro = status;
+
+            // Padrão: só ativos. "false"=inativos, "all"=não excluídos (ativos+inativos).
+            bool? statusFiltro = true;
+            if (string.Equals(status, "all", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(status, "todos", StringComparison.OrdinalIgnoreCase))
+            {
+                statusFiltro = null;
+            }
+            else if (bool.TryParse(status, out var parsed))
+            {
+                statusFiltro = parsed;
+            }
+            else if (!string.IsNullOrEmpty(status))
+            {
+                statusFiltro = true;
+            }
+
+            StatusFiltro = statusFiltro;
 
             try
             {
@@ -96,8 +113,8 @@ namespace ClinicaPsi.Web.Pages.Admin
                         p.Especialidades.Contains(especialidade, StringComparison.OrdinalIgnoreCase));
                 }
 
-                if (status.HasValue)
-                    psicologos = psicologos.Where(p => p.Ativo == status.Value);
+                if (statusFiltro.HasValue)
+                    psicologos = psicologos.Where(p => p.Ativo == statusFiltro.Value);
 
                 Psicologos = psicologos.OrderBy(p => p.Nome).ToList();
 
@@ -123,21 +140,21 @@ namespace ClinicaPsi.Web.Pages.Admin
             {
                 var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
                 TempData["ErrorMessage"] = $"Dados inválidos: {errors}";
-                await OnGetAsync(null, null, null);
+                await OnGetAsync(null, null, "true");
                 return Page();
             }
 
             if (string.IsNullOrEmpty(senha) || senha.Length < 6)
             {
                 TempData["ErrorMessage"] = "A senha deve ter no mínimo 6 caracteres.";
-                await OnGetAsync(null, null, null);
+                await OnGetAsync(null, null, "true");
                 return Page();
             }
 
             if (especialidades == null || especialidades.Length == 0)
             {
                 TempData["ErrorMessage"] = "Selecione pelo menos uma especialidade.";
-                await OnGetAsync(null, null, null);
+                await OnGetAsync(null, null, "true");
                 return Page();
             }
 
@@ -147,7 +164,7 @@ namespace ClinicaPsi.Web.Pages.Admin
                 if (emailExistente != null)
                 {
                     TempData["ErrorMessage"] = "Já existe um usuário com este email.";
-                    await OnGetAsync(null, null, null);
+                    await OnGetAsync(null, null, "true");
                     return Page();
                 }
 
@@ -196,7 +213,7 @@ namespace ClinicaPsi.Web.Pages.Admin
                     await _psicologoService.DeleteAsync(psicologo.Id);
                     var errorMessages = string.Join("; ", result.Errors.Select(e => e.Description));
                     TempData["ErrorMessage"] = $"Erro ao criar usuário: {errorMessages}";
-                    await OnGetAsync(null, null, null);
+                    await OnGetAsync(null, null, "true");
                     return Page();
                 }
 
@@ -229,7 +246,7 @@ namespace ClinicaPsi.Web.Pages.Admin
             {
                 _logger.LogError(ex, "Erro ao criar psicólogo: {Message}", ex.Message);
                 TempData["ErrorMessage"] = $"Erro ao criar psicólogo: {ex.Message}";
-                await OnGetAsync(null, null, null);
+                await OnGetAsync(null, null, "true");
                 return Page();
             }
         }
@@ -238,7 +255,7 @@ namespace ClinicaPsi.Web.Pages.Admin
         {
             try
             {
-                var psicologo = await _psicologoService.GetByIdAsync(id);
+                var psicologo = await _psicologoService.GetByIdNaoExcluidoAsync(id);
                 if (psicologo == null)
                 {
                     TempData["ErrorMessage"] = "Psicólogo não encontrado.";
@@ -262,10 +279,10 @@ namespace ClinicaPsi.Web.Pages.Admin
         {
             try
             {
-                var psicologo = await _psicologoService.GetByIdAsync(id);
+                var psicologo = await _psicologoService.GetByIdNaoExcluidoAsync(id);
                 if (psicologo == null)
                 {
-                    TempData["ErrorMessage"] = "Psicólogo não encontrado.";
+                    TempData["ErrorMessage"] = "Psicólogo não encontrado ou já excluído.";
                     return RedirectToPage();
                 }
 

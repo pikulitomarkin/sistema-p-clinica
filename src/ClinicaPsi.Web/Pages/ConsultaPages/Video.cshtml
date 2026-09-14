@@ -7,6 +7,8 @@
         : "~/Pages/Shared/_AdminLayout.cshtml";
 }
 
+<link rel="stylesheet" href="~/css/video-consulta.css" asp-append-version="true" />
+
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
         <h1 class="h3 mb-1"><i class="bi bi-camera-video me-2"></i>Consulta online</h1>
@@ -14,18 +16,12 @@
         {
             <p class="text-muted mb-0">
                 @Model.Consulta.DataHorario.ToString("dd/MM/yyyy HH:mm") · @Model.Consulta.DuracaoMinutos min
-                @if (User.IsInRole("Cliente")) { <text>· @Model.Consulta.Psicologo?.Nome</text> }
-                else { <text>· @Model.Consulta.Paciente?.Nome</text> }
+                · <strong>@Model.Consulta.Psicologo?.Nome</strong>
+                com <strong>@Model.Consulta.Paciente?.Nome</strong>
             </p>
         }
     </div>
     <div class="d-flex gap-2">
-        @if (!string.IsNullOrWhiteSpace(Model.EmbedUrl))
-        {
-            <a class="btn btn-outline-primary" href="@Model.EmbedUrl" target="_blank" rel="noopener">
-                <i class="bi bi-box-arrow-up-right me-1"></i>Abrir em nova aba
-            </a>
-        }
         <a class="btn btn-secondary" href="@(User.IsInRole("Cliente") ? "/Cliente/MinhasConsultas" : "/psicologo/consultas")">Voltar</a>
     </div>
 </div>
@@ -34,12 +30,132 @@
 {
     <div class="alert alert-danger">@Model.MensagemErro</div>
 }
-else if (Model.Consulta != null)
+else if (Model.Consulta != null && !string.IsNullOrWhiteSpace(Model.RoomName))
 {
-    <div class="alert alert-info mb-3">
-        A videochamada usa Jitsi Meet. Permita câmera e microfone. Se o embed falhar, abra em nova aba.
+    <div id="videoStatus" class="video-status alert alert-info mb-3">
+        Videochamada direta (WebRTC). Permita câmera e microfone. Os nomes exibidos vêm do cadastro — sem criar conta em serviço externo.
     </div>
-    <div class="ratio ratio-16x9 border rounded overflow-hidden bg-dark" style="min-height: 70vh;">
-        <iframe src="@Model.EmbedUrl" allow="camera; microphone; fullscreen; display-capture; autoplay" allowfullscreen title="Sala de videochamada"></iframe>
+
+    <div class="video-room" id="videoRoom">
+        <div class="video-room__stage">
+            <video id="remoteVideo" class="video-room__remote" autoplay playsinline></video>
+            <div id="remotePlaceholder" class="video-room__remote-placeholder">
+                <i class="bi bi-person-video3" style="font-size: 3rem;"></i>
+                <span id="peerStatus">Aguardando…</span>
+            </div>
+            <div class="video-room__label video-room__label--remote" id="remoteNameLabel">@Model.NomeRemoto</div>
+
+            <div class="video-room__local-wrap">
+                <video id="localVideo" class="video-room__local" autoplay playsinline muted></video>
+                <div class="video-room__label" id="localNameLabel">@Model.MeuNome</div>
+            </div>
+        </div>
+
+        <div class="video-room__controls">
+            <button type="button" class="btn btn-success" id="btnIniciar">
+                <i class="bi bi-play-fill me-1"></i>Iniciar
+            </button>
+            @if (Model.SouPsicologoOuAdmin)
+            {
+                <button type="button" class="btn btn-primary" id="btnChamar" disabled>
+                    <i class="bi bi-telephone-outbound me-1"></i>Chamar paciente
+                </button>
+            }
+            <button type="button" class="btn btn-outline-light" id="btnMute" disabled>
+                <i class="bi bi-mic me-1"></i>Mudo
+            </button>
+            <button type="button" class="btn btn-outline-light" id="btnCamera" disabled>
+                <i class="bi bi-camera-video me-1"></i>Câmera
+            </button>
+            <button type="button" class="btn btn-danger" id="btnHangup" disabled>
+                <i class="bi bi-telephone-x me-1"></i>Encerrar
+            </button>
+        </div>
     </div>
+}
+
+@section Scripts {
+    @if (Model.Consulta != null && !string.IsNullOrWhiteSpace(Model.RoomName))
+    {
+        <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+        <script src="~/js/video-consulta.js" asp-append-version="true"></script>
+        <script>
+            (function () {
+                const client = new VideoConsultaClient({
+                    consultaId: @Model.Consulta.Id,
+                    roomName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RoomName)),
+                    displayName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MeuNome)),
+                    role: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MeuPapel)),
+                    remoteNameDefault: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.NomeRemoto)),
+                    localVideo: document.getElementById('localVideo'),
+                    remoteVideo: document.getElementById('remoteVideo'),
+                    statusEl: document.getElementById('videoStatus'),
+                    localNameEl: document.getElementById('localNameLabel'),
+                    remoteNameEl: document.getElementById('remoteNameLabel'),
+                    peerStatusEl: document.getElementById('peerStatus')
+                });
+
+                const btnIniciar = document.getElementById('btnIniciar');
+                const btnChamar = document.getElementById('btnChamar');
+                const btnMute = document.getElementById('btnMute');
+                const btnCamera = document.getElementById('btnCamera');
+                const btnHangup = document.getElementById('btnHangup');
+                const placeholder = document.getElementById('remotePlaceholder');
+                const remoteVideo = document.getElementById('remoteVideo');
+
+                function setControlsActive(active) {
+                    btnIniciar.disabled = active;
+                    if (btnChamar) btnChamar.disabled = !active;
+                    btnMute.disabled = !active;
+                    btnCamera.disabled = !active;
+                    btnHangup.disabled = !active;
+                }
+
+                remoteVideo.addEventListener('playing', function () {
+                    if (placeholder) placeholder.classList.add('hidden');
+                });
+
+                btnIniciar.addEventListener('click', async function () {
+                    btnIniciar.disabled = true;
+                    try {
+                        await client.start();
+                        setControlsActive(true);
+                    } catch (e) {
+                        btnIniciar.disabled = false;
+                    }
+                });
+
+                if (btnChamar) {
+                    btnChamar.addEventListener('click', async function () {
+                        try { await client.callPeer(); } catch (e) { console.error(e); }
+                    });
+                }
+
+                btnMute.addEventListener('click', function () {
+                    const muted = client.toggleMute();
+                    btnMute.innerHTML = muted
+                        ? '<i class="bi bi-mic-mute me-1"></i>Ativar mic'
+                        : '<i class="bi bi-mic me-1"></i>Mudo';
+                });
+
+                btnCamera.addEventListener('click', function () {
+                    const off = client.toggleCamera();
+                    btnCamera.innerHTML = off
+                        ? '<i class="bi bi-camera-video-off me-1"></i>Ligar câmera'
+                        : '<i class="bi bi-camera-video me-1"></i>Câmera';
+                });
+
+                btnHangup.addEventListener('click', async function () {
+                    await client.hangUp();
+                    setControlsActive(false);
+                    btnIniciar.disabled = false;
+                    if (placeholder) placeholder.classList.remove('hidden');
+                });
+
+                window.addEventListener('beforeunload', function () {
+                    try { client.hangUp(); } catch (e) {}
+                });
+            })();
+        </script>
+    }
 }

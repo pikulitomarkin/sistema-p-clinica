@@ -114,6 +114,9 @@ public class Psicologo
     public DateTime? DataAtualizacao { get; set; }
     public bool Ativo { get; set; } = true;
 
+    /// <summary>Soft-delete: quando preenchido, o psicólogo não reaparece na listagem nem no seed/sync.</summary>
+    public DateTime? ExcluidoEm { get; set; }
+
     // Relacionamentos
     public virtual ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
 }

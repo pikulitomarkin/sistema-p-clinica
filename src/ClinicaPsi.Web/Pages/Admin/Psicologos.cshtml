@@ -65,9 +65,9 @@
             <div class="col-md-3">
                 <label for="status" class="form-label">Status</label>
                 <select class="form-select" id="status" name="status">
-                    <option value="">Todos</option>
-                    <option value="true" selected="@(Model.StatusFiltro == true)">Ativo</option>
-                    <option value="false" selected="@(Model.StatusFiltro == false)">Inativo</option>
+                    <option value="true" selected="@(Model.StatusFiltro == true)">Ativos</option>
+                    <option value="false" selected="@(Model.StatusFiltro == false)">Inativos</option>
+                    <option value="all" selected="@(Model.StatusFiltro == null)">Todos</option>
                 </select>
             </div>
             <div class="col-md-2 d-flex align-items-end">
