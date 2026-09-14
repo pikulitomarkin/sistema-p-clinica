@@ -1,13 +1,13 @@
 # Deploy ClinicaPsi na VPS (coexistência com Astra Seduction)
 
-## Mapa de portas
+## Mapa de portas / dominios
 
 | Projeto | Portas host | Dominio / URL |
 |---------|-------------|---------------|
 | Astra Seduction | 80, 443 | https://astrasedution.com |
-| ClinicaPsi | **8080** | http://IP:8080 |
+| ClinicaPsi | 80/443 (via nginx Astra) + **8080** backup | https://psiianasantos.com.br / https://api.psiianasantos.com.br |
 
-O ClinicaPsi usa rede Docker propria (`clinicapsi-net`) e PostgreSQL interno **sem** publicar a porta 5432 no host.
+O ClinicaPsi usa rede Docker propria (`clinicapsi-net`) + entra na rede `astraseduction_astra-net` para o proxy. PostgreSQL interno **sem** publicar 5432.
 
 ## Deploy rapido
 
@@ -19,6 +19,7 @@ chmod +x deploy/vps/deploy.sh
 ./deploy/vps/deploy.sh
 ```
 
-## Dominio futuro (opcional)
+## Nginx / SSL
 
-Veja `deploy/vps/nginx-clinicapsi.snippet.conf` para integrar no nginx do Astra sem trocar as portas 80/443.
+Snippet: `deploy/vps/nginx-clinicapsi.snippet.conf` (ja aplicado em `/opt/astraseduction/deploy/nginx/default.conf`).
+Certificado Let's Encrypt: `psiianasantos.com.br` (+ www + api).

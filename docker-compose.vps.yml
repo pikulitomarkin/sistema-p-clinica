@@ -43,7 +43,7 @@ services:
       WhatsApp__PhoneNumberId: ${WHATSAPP_PHONE_NUMBER_ID:-}
       WhatsApp__AppSecret: ${WHATSAPP_APP_SECRET:-}
       WhatsApp__BotUrl: ${WHATSAPP_BOT_URL:-}
-      WhatsApp__SiteUrl: ${PUBLIC_APP_URL:-http://184.107.160.119:8080}
+      WhatsApp__SiteUrl: ${PUBLIC_APP_URL:-https://psiianasantos.com.br}
       OpenAI__ApiKey: ${OPENAI_API_KEY:-}
     volumes:
       - clinicapsi_data:/app/data
@@ -52,6 +52,8 @@ services:
       - "${CLINICAPSI_HTTP_PORT:-8080}:8080"
     networks:
       - clinicapsi-net
+      # Rede do nginx do Astra — permite proxy por dominio sem disputa de 80/443
+      - astra-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -68,3 +70,6 @@ networks:
   clinicapsi-net:
     driver: bridge
     name: clinicapsi-net
+  astra-net:
+    external: true
+    name: astraseduction_astra-net

@@ -262,6 +262,20 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configurar pipeline HTTP
+// Confiar no proxy (nginx) para esquema/host corretos em HTTPS
+{
+    var forwarded = new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor
+                         | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+                         | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost
+    };
+    // Nginx em rede Docker nao e loopback — limpar listas padrao
+    forwarded.KnownNetworks.Clear();
+    forwarded.KnownProxies.Clear();
+    app.UseForwardedHeaders(forwarded);
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
