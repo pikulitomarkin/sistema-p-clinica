@@ -83,10 +83,12 @@ services:
       start_period: 60s
 
   # TURN/STUN para WebRTC (NAT simétrico / CGNAT) — peers atrás de firewall
+  # network_mode:host evita NAT do bridge Docker nos relays UDP
   clinicapsi-turn:
     image: coturn/coturn:4.6.2-alpine
     container_name: clinicapsi-turn
     restart: unless-stopped
+    network_mode: host
     command:
       - -n
       - --log-file=stdout
@@ -103,12 +105,6 @@ services:
       - --no-dtls
       - --no-multicast-peers
       - --verbose
-    ports:
-      - "3478:3478/tcp"
-      - "3478:3478/udp"
-      - "49160-49200:49160-49200/udp"
-    networks:
-      - clinicapsi-net
 
 volumes:
   clinicapsi_pgdata:
