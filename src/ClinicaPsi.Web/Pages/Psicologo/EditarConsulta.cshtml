@@ -1,0 +1,126 @@
+@page "{id:int}"
+@model ClinicaPsi.Web.Pages.Psicologo.EditarConsultaModel
+@using ClinicaPsi.Shared.Models
+@{
+    ViewData["Title"] = "Editar Consulta";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Psicologo/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Psicologo/Consultas">Consultas</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Psicologo/ConsultaDetalhes" asp-route-id="@Model.Input.Id">Detalhes</a></li>
+            <li class="breadcrumb-item active">Editar</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="gradient-text mb-0">
+        <i class="bi bi-pencil-square me-2"></i>
+        Editar Consulta @($"#{Model.Input.Id}")
+    </h2>
+    <a asp-page="/Psicologo/ConsultaDetalhes" asp-route-id="@Model.Input.Id" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i>
+        Voltar
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        @Model.ErrorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-10">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    Dados da Consulta
+                    @if (!string.IsNullOrEmpty(Model.PacienteNome))
+                    {
+                        <span class="text-muted fw-normal">— @Model.PacienteNome</span>
+                    }
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <input type="hidden" asp-for="Input.Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Input.DataConsulta" class="form-label"></label>
+                            <input asp-for="Input.DataConsulta" type="date" class="form-control" required />
+                            <span asp-validation-for="Input.DataConsulta" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.HoraConsulta" class="form-label"></label>
+                            <input asp-for="Input.HoraConsulta" type="time" class="form-control" required />
+                            <span asp-validation-for="Input.HoraConsulta" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.DuracaoMinutos" class="form-label"></label>
+                            <select asp-for="Input.DuracaoMinutos" class="form-select">
+                                <option value="30">30 minutos</option>
+                                <option value="50">50 minutos</option>
+                                <option value="60">60 minutos</option>
+                                <option value="90">90 minutos</option>
+                            </select>
+                            <span asp-validation-for="Input.DuracaoMinutos" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.Valor" class="form-label"></label>
+                            <input asp-for="Input.Valor" type="number" step="0.01" min="0" class="form-control" />
+                            <span asp-validation-for="Input.Valor" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Input.Status" class="form-label"></label>
+                            <select asp-for="Input.Status" class="form-select" asp-items="Html.GetEnumSelectList<StatusConsulta>()"></select>
+                            <span asp-validation-for="Input.Status" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Input.Tipo" class="form-label"></label>
+                            <select asp-for="Input.Tipo" class="form-select" asp-items="Html.GetEnumSelectList<TipoConsulta>()"></select>
+                            <span asp-validation-for="Input.Tipo" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Input.Formato" class="form-label"></label>
+                            <select asp-for="Input.Formato" class="form-select" asp-items="Html.GetEnumSelectList<FormatoConsulta>()"></select>
+                            <span asp-validation-for="Input.Formato" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Input.Observacoes" class="form-label"></label>
+                            <textarea asp-for="Input.Observacoes" class="form-control" rows="3" maxlength="1000"></textarea>
+                            <span asp-validation-for="Input.Observacoes" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Input.RelatorioSessao" class="form-label"></label>
+                            <textarea asp-for="Input.RelatorioSessao" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Input.RelatorioSessao" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a asp-page="/Psicologo/ConsultaDetalhes" asp-route-id="@Model.Input.Id" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

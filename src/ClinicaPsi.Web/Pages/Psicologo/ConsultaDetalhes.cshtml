@@ -1,0 +1,261 @@
+@page "{id:int}"
+@model ClinicaPsi.Web.Pages.Psicologo.ConsultaDetalhesModel
+@using ClinicaPsi.Shared.Models
+@using ClinicaPsi.Web.Extensions
+@{
+    ViewData["Title"] = "Detalhes da Consulta";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+    var consulta = Model.Consulta;
+    var paciente = consulta.Paciente;
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Psicologo/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Psicologo/Consultas">Consultas</a></li>
+            <li class="breadcrumb-item active">Detalhes</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="gradient-text mb-0">
+        <i class="bi bi-clipboard2-pulse me-2"></i>
+        Consulta @($"#{consulta.Id}")
+    </h2>
+    <div class="d-flex gap-2">
+        @if (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada)
+        {
+            <a asp-page="/Psicologo/EditarConsulta" asp-route-id="@consulta.Id" class="btn btn-outline-success">
+                <i class="bi bi-pencil me-2"></i>
+                Editar
+            </a>
+        }
+        <a asp-page="/Psicologo/Consultas" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>
+            Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card card-modern">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Dados da Consulta
+                </h5>
+                <span class="badge status-@consulta.Status.ToString().ToLower()">
+                    @consulta.Status.GetDisplayName()
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="text-muted small">Data e horário</div>
+                        <div class="fw-semibold">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Duração</div>
+                        <div class="fw-semibold">
+                            <i class="bi bi-hourglass me-1"></i>
+                            @consulta.DuracaoMinutos minutos
+                            <span class="text-muted">
+                                (até @consulta.DataHorario.AddMinutes(consulta.DuracaoMinutos).ToString("HH:mm"))
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Tipo</div>
+                        <div class="fw-semibold">@consulta.Tipo.GetDisplayName()</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Formato</div>
+                        <div class="fw-semibold">
+                            @if (consulta.Formato == FormatoConsulta.Online)
+                            {
+                                <i class="bi bi-camera-video me-1 text-info"></i>
+                                <span>Online</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-building me-1"></i>
+                                <span>Presencial</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Valor</div>
+                        <div class="fw-semibold">@consulta.Valor.ToString("C")</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small">Psicólogo</div>
+                        <div class="fw-semibold">@(consulta.Psicologo?.Nome ?? "—")</div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(consulta.Observacoes))
+                    {
+                        <div class="col-12">
+                            <div class="text-muted small">Observações</div>
+                            <div>@consulta.Observacoes</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(consulta.RelatorioSessao))
+                    {
+                        <div class="col-12">
+                            <div class="text-muted small">Relatório da sessão</div>
+                            <div class="border rounded p-3 bg-light">@consulta.RelatorioSessao</div>
+                        </div>
+                    }
+                    @if (consulta.Status == StatusConsulta.Cancelada && !string.IsNullOrWhiteSpace(consulta.MotivoCancelamento))
+                    {
+                        <div class="col-12">
+                            <div class="text-muted small">Motivo do cancelamento</div>
+                            <div class="text-danger">@consulta.MotivoCancelamento</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-modern mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person me-2"></i>
+                    Paciente
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (paciente != null)
+                {
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="text-muted small">Nome</div>
+                            <div class="fw-semibold">@paciente.Nome</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted small">Email</div>
+                            <div>@paciente.Email</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted small">Telefone</div>
+                            <div>@(string.IsNullOrWhiteSpace(paciente.Telefone) ? "—" : paciente.Telefone)</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted small">CPF</div>
+                            <div>@(string.IsNullOrWhiteSpace(paciente.CPF) ? "—" : paciente.CPF)</div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a asp-page="/Psicologo/EditarPaciente" asp-route-id="@paciente.Id" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil-square me-1"></i>
+                            Ver / editar paciente
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Paciente não encontrado.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning me-2"></i>
+                    Ações rápidas
+                </h5>
+            </div>
+            <div class="card-body d-grid gap-2">
+                @if (consulta.Formato == FormatoConsulta.Online &&
+                     (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                {
+                    <a class="btn btn-info" href="/consulta/@consulta.Id/video">
+                        <i class="bi bi-camera-video me-2"></i>
+                        Entrar na videochamada
+                    </a>
+                    @if (!string.IsNullOrWhiteSpace(consulta.VideoRoomUrl))
+                    {
+                        <a class="btn btn-outline-info btn-sm" href="@consulta.VideoRoomUrl" target="_blank" rel="noopener">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>
+                            Abrir link da sala
+                        </a>
+                    }
+                }
+
+                @if (Model.ProntuarioId.HasValue)
+                {
+                    <a class="btn btn-success" href="/prontuario/detalhe/@Model.ProntuarioId.Value">
+                        <i class="bi bi-journal-medical me-2"></i>
+                        Abrir prontuário
+                    </a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-success"
+                       href="/prontuario/cadastro?pacienteId=@consulta.PacienteId&consultaId=@consulta.Id">
+                        <i class="bi bi-journal-plus me-2"></i>
+                        Criar prontuário
+                    </a>
+                }
+
+                @if (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada)
+                {
+                    <a asp-page="/Psicologo/EditarConsulta" asp-route-id="@consulta.Id" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil me-2"></i>
+                        Editar consulta
+                    </a>
+                }
+            </div>
+        </div>
+
+        <div class="card card-modern mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Registro
+                </h5>
+            </div>
+            <div class="card-body small">
+                <div class="mb-2">
+                    <span class="text-muted">Agendada em:</span>
+                    <div>@consulta.DataAgendamento.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted">Criada em:</span>
+                    <div>@consulta.DataCriacao.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+                @if (consulta.DataAtualizacao.HasValue)
+                {
+                    <div class="mb-2">
+                        <span class="text-muted">Atualizada em:</span>
+                        <div>@consulta.DataAtualizacao.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                }
+                @if (consulta.DataCancelamento.HasValue)
+                {
+                    <div>
+                        <span class="text-muted">Cancelada em:</span>
+                        <div>@consulta.DataCancelamento.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge.status-agendada { background-color: #007bff; }
+    .badge.status-confirmada { background-color: #28a745; }
+    .badge.status-realizada { background-color: #6f42c1; }
+    .badge.status-cancelada { background-color: #dc3545; }
+    .badge.status-noshow { background-color: #fd7e14; }
+    .badge.status-reagendada { background-color: #20c997; }
+</style>
