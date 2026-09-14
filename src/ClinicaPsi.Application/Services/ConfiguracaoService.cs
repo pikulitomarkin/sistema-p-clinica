@@ -200,7 +200,11 @@ public class ConfiguracaoService
 
             { "Prontuario.Habilitado", ("true", "Habilitar prontuário eletrônico online", "Prontuario", "boolean") },
             { "Video.ConsultasOnline.Habilitado", ("true", "Habilitar videochamada embutida em consultas online", "Video", "boolean") },
-            { "Video.JitsiBaseUrl", ("https://meet.jit.si", "URL base do provedor de vídeo (Jitsi Meet)", "Video", "string") }
+            { "Video.JitsiBaseUrl", ("https://meet.jit.si", "URL base do provedor de vídeo (Jitsi Meet)", "Video", "string") },
+
+            // Receita Saúde: sem API RFB; placeholders para PDF interno + CSV Carnê-Leão (nunca gravar senha gov.br)
+            { "ReceitaSaude.CpfProfissionalPadrao", ("", "CPF do profissional (PF) para recibos/CSV Carnê-Leão quando o usuário logado não tiver CPF", "ReceitaSaude", "string") },
+            { "ReceitaSaude.DescricaoPadrao", ("Consulta psicológica", "Descrição padrão do serviço no recibo", "ReceitaSaude", "string") }
         };
 
         foreach (var (chave, (valor, descricao, categoria, tipo)) in configuracoesPadrao)

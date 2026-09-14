@@ -833,6 +833,145 @@ namespace ClinicaPsi.Application.Services
 
         return Task.FromResult(document.GeneratePdf());
     }
+
+        /// <summary>
+        /// Recibo interno de prestação de serviços de saúde (PDF).
+        /// Não substitui o Receita Saúde oficial (App RFB / Carnê-Leão).
+        /// </summary>
+        public Task<byte[]> GerarReciboServicosSaudeAsync(ReciboServicoSaudeDados dados)
+        {
+            var cultura = new System.Globalization.CultureInfo("pt-BR");
+            var cpfPaciente = CarneLeaoEscrituracaoHelper.FormatCpf(dados.Paciente.CPF);
+            var cpfPagador = CarneLeaoEscrituracaoHelper.FormatCpf(
+                string.IsNullOrWhiteSpace(dados.CpfPagador) ? dados.Paciente.CPF : dados.CpfPagador);
+            var cpfProf = string.IsNullOrWhiteSpace(dados.CpfProfissional)
+                ? null
+                : CarneLeaoEscrituracaoHelper.FormatCpf(dados.CpfProfissional);
+            var dataAtend = dados.DataAtendimento ?? dados.DataPagamento;
+            var numero = string.IsNullOrWhiteSpace(dados.NumeroRecibo)
+                ? $"RS-{dados.DataPagamento:yyyyMMdd}-{dados.Paciente.Id:D4}"
+                : dados.NumeroRecibo;
+
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(2, Unit.Centimetre);
+                    page.DefaultTextStyle(x => x.FontSize(11));
+
+                    page.Header()
+                        .Column(col =>
+                        {
+                            col.Item().Background(Colors.Teal.Lighten4).Padding(15).Column(headerCol =>
+                            {
+                                headerCol.Item().AlignCenter().Text("RECIBO DE PRESTAÇÃO DE SERVIÇOS DE SAÚDE")
+                                    .FontSize(16).Bold().FontColor(Colors.Teal.Darken2);
+                                headerCol.Item().PaddingTop(4).AlignCenter().Text(dados.Clinica.Nome)
+                                    .FontSize(12).FontColor(Colors.Grey.Darken2);
+                                headerCol.Item().PaddingTop(2).AlignCenter().Text($"Nº {numero}")
+                                    .FontSize(10).FontColor(Colors.Grey.Darken1);
+                            });
+                            col.Item().PaddingTop(5).LineHorizontal(3).LineColor(Colors.Teal.Medium);
+                        });
+
+                    page.Content()
+                        .PaddingTop(20)
+                        .Column(col =>
+                        {
+                            col.Spacing(12);
+
+                            if (!string.IsNullOrWhiteSpace(dados.Clinica.Endereco) ||
+                                !string.IsNullOrWhiteSpace(dados.Clinica.Telefone) ||
+                                !string.IsNullOrWhiteSpace(dados.Clinica.Email))
+                            {
+                                col.Item().Text(text =>
+                                {
+                                    if (!string.IsNullOrWhiteSpace(dados.Clinica.Endereco))
+                                        text.Span(dados.Clinica.Endereco).FontSize(9).FontColor(Colors.Grey.Darken1);
+                                    if (!string.IsNullOrWhiteSpace(dados.Clinica.Telefone))
+                                        text.Span($"  |  Tel: {dados.Clinica.Telefone}").FontSize(9).FontColor(Colors.Grey.Darken1);
+                                    if (!string.IsNullOrWhiteSpace(dados.Clinica.Email))
+                                        text.Span($"  |  {dados.Clinica.Email}").FontSize(9).FontColor(Colors.Grey.Darken1);
+                                });
+                            }
+
+                            col.Item().Background(Colors.Grey.Lighten5).Padding(16).Column(box =>
+                            {
+                                box.Item().Text("Recebi de:").FontSize(10).FontColor(Colors.Grey.Darken1);
+                                box.Item().PaddingTop(4).Text(dados.Paciente.Nome).Bold().FontSize(13);
+                                box.Item().Text($"CPF do paciente/beneficiário: {cpfPaciente}").FontSize(11);
+                                if (!string.Equals(
+                                        CarneLeaoEscrituracaoHelper.SomenteDigitos(cpfPagador),
+                                        CarneLeaoEscrituracaoHelper.SomenteDigitos(dados.Paciente.CPF),
+                                        StringComparison.Ordinal))
+                                {
+                                    box.Item().Text($"CPF do pagador: {cpfPagador}").FontSize(11);
+                                }
+
+                                box.Item().PaddingTop(12).Text("A importância de:").FontSize(10).FontColor(Colors.Grey.Darken1);
+                                box.Item().PaddingTop(4).Text(dados.Valor.ToString("C", cultura))
+                                    .Bold().FontSize(18).FontColor(Colors.Teal.Darken2);
+
+                                box.Item().PaddingTop(12).Text("Referente a:").FontSize(10).FontColor(Colors.Grey.Darken1);
+                                box.Item().PaddingTop(4).Text(dados.Descricao).FontSize(12);
+                                box.Item().PaddingTop(6).Text(
+                                    $"Data do atendimento: {dataAtend:dd/MM/yyyy}  |  Data do pagamento: {dados.DataPagamento:dd/MM/yyyy}")
+                                    .FontSize(11);
+                            });
+
+                            col.Item().PaddingTop(8).Text("Prestador do serviço").Bold().FontSize(11);
+                            col.Item().Text($"{dados.Psicologo.Nome}  —  CRP {dados.Psicologo.CRP}").FontSize(12);
+                            if (cpfProf != null)
+                                col.Item().Text($"CPF do profissional: {cpfProf}").FontSize(11);
+                            if (!string.IsNullOrWhiteSpace(dados.Psicologo.Email))
+                                col.Item().Text(dados.Psicologo.Email).FontSize(10).FontColor(Colors.Grey.Darken1);
+
+                            col.Item().PaddingTop(30).AlignCenter().Text(text =>
+                            {
+                                text.Span("Londrina - PR, ").FontSize(11);
+                                text.Span(DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", cultura)).FontSize(11);
+                            });
+
+                            col.Item().PaddingTop(40).AlignCenter().Column(signCol =>
+                            {
+                                var assinaturaBytes = ObterAssinaturaPsicologo(dados.Psicologo.CRP);
+                                if (assinaturaBytes != null)
+                                    signCol.Item().Width(150).Image(assinaturaBytes);
+
+                                signCol.Item().Width(220).LineHorizontal(2).LineColor(Colors.Teal.Medium);
+                                signCol.Item().PaddingTop(8).Text(dados.Psicologo.Nome).Bold().FontSize(12)
+                                    .FontColor(Colors.Teal.Darken2);
+                                signCol.Item().Text($"CRP: {dados.Psicologo.CRP}").FontSize(10);
+                            });
+
+                            col.Item().PaddingTop(24).Background(Colors.Amber.Lighten4).Padding(10).Column(aviso =>
+                            {
+                                aviso.Item().Text("Aviso importante").Bold().FontSize(9).FontColor(Colors.Amber.Darken3);
+                                aviso.Item().PaddingTop(3).Text(
+                                    "Este PDF é um comprovante interno gerado pelo ClinicaPsi. " +
+                                    "Para fins de Imposto de Renda (dedução de despesas médicas e Carnê-Leão), " +
+                                    "o recibo oficial Receita Saúde deve ser emitido no App Receita Federal ou no Carnê-Leão Web " +
+                                    "(profissional pessoa física). Este documento não substitui a emissão oficial.")
+                                    .FontSize(8).FontColor(Colors.Grey.Darken2).LineHeight(1.3f);
+                            });
+                        });
+
+                    page.Footer()
+                        .Padding(8)
+                        .AlignCenter()
+                        .Column(footerCol =>
+                        {
+                            footerCol.Item().LineHorizontal(1).LineColor(Colors.Teal.Lighten2);
+                            footerCol.Item().PaddingTop(4).Text(
+                                    $"Documento gerado em {DateTime.Now:dd/MM/yyyy HH:mm} — ClinicaPsi")
+                                .FontSize(8).FontColor(Colors.Grey.Medium);
+                        });
+                });
+            });
+
+            return Task.FromResult(document.GeneratePdf());
+        }
     }
 
     public class ReceitaPorPsicologoDto

@@ -207,6 +207,7 @@ builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<NotificacaoService>();
 builder.Services.AddScoped<PdfService>();
 builder.Services.AddScoped<ConfiguracaoService>();
+builder.Services.AddSingleton<IReceitaSaudeClient, NullReceitaSaudeClient>();
 builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<OpenAIService>();
 builder.Services.AddScoped<WhatsAppBotService>();
