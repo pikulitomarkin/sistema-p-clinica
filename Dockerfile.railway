@@ -40,6 +40,9 @@ RUN mkdir -p /app/data
 
 # Set environment
 ENV ASPNETCORE_ENVIRONMENT=Production
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+ENV LANG=pt_BR.UTF-8
+ENV LC_ALL=pt_BR.UTF-8
 
 # Railway provides PORT at runtime - don't hardcode
 # ASPNETCORE_URLS will be set in CMD using Railway's PORT variable
