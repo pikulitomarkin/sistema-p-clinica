@@ -102,7 +102,7 @@ services:
       - --no-tls
       - --no-dtls
       - --no-multicast-peers
-      - --no-stdout-timestamps
+      - --verbose
     ports:
       - "3478:3478/tcp"
       - "3478:3478/udp"
