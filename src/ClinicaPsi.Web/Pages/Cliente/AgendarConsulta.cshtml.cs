@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 using ClinicaPsi.Application.Services;
-using ClinicaPsi.Web.Extensions;
+using System.Globalization;
 using System.Security.Claims;
 
 namespace ClinicaPsi.Web.Pages.Cliente
@@ -13,6 +13,13 @@ namespace ClinicaPsi.Web.Pages.Cliente
     [Authorize]
     public class AgendarConsultaModel : PageModel
     {
+        private static readonly StatusConsulta[] StatusOcupados =
+        {
+            StatusConsulta.Agendada,
+            StatusConsulta.Confirmada,
+            StatusConsulta.Reagendada
+        };
+
         private readonly AppDbContext _context;
         private readonly ConfiguracaoService _configuracaoService;
         private readonly VideoConsultaService _videoConsultaService;
@@ -31,6 +38,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
         public List<Consulta> ConsultasExistentes { get; set; } = new();
         public Paciente? PacienteAtual { get; set; }
         public DateTime DataSelecionada { get; set; } = DateTime.Today;
+        public string DataPadrao { get; set; } = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         [BindProperty]
         public InputModel Input { get; set; } = new();
@@ -38,34 +46,58 @@ namespace ClinicaPsi.Web.Pages.Cliente
         public class InputModel
         {
             public int PsicologoId { get; set; }
-            public DateTime DataHorario { get; set; }
+
+            /// <summary>Data escolhida no input type=date (yyyy-MM-dd).</summary>
+            public string Data { get; set; } = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            /// <summary>Data/hora do slot (ISO yyyy-MM-ddTHH:mm) — string evita falha do binder pt-BR.</summary>
+            public string? DataHorario { get; set; }
+
             public int DuracaoMinutos { get; set; } = 50;
             public TipoConsulta Tipo { get; set; } = TipoConsulta.Normal;
             public FormatoConsulta Formato { get; set; } = FormatoConsulta.Presencial;
             public string? Observacoes { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync(DateTime? data)
+        public async Task<IActionResult> OnGetAsync(DateTime? data, int? psicologoId)
         {
             try
             {
-                if (data.HasValue)
-                    DataSelecionada = data.Value;
+                if (data.HasValue && data.Value.Year > 1)
+                    DataSelecionada = data.Value.Date;
+                else
+                    DataSelecionada = DateTime.Today;
+
+                DataPadrao = DataSelecionada.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                Input.Data = DataPadrao;
+
+                if (psicologoId.HasValue && psicologoId.Value > 0)
+                    Input.PsicologoId = psicologoId.Value;
 
                 await CarregarDadosAsync();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Erro ao carregar AgendarConsulta: {ex.Message}");
-                // Define valores padrão para a página funcionar
                 Psicologos = new List<ClinicaPsi.Shared.Models.Psicologo>();
                 ConsultasExistentes = new List<Consulta>();
+                DataPadrao = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                Input.Data = DataPadrao;
             }
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (!TryResolverDataHorario(out var dataHorario, out var erroData))
+            {
+                ModelState.AddModelError("", erroData);
+                await CarregarDadosAsync();
+                return Page();
+            }
+
+            Input.DataHorario = dataHorario.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+
             if (!ModelState.IsValid)
             {
                 await CarregarDadosAsync();
@@ -85,20 +117,6 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     return Page();
                 }
 
-                // Verificar se já existe consulta no mesmo horário
-                var consultaExistente = await _context.Consultas
-                    .Where(c => c.PsicologoId == Input.PsicologoId &&
-                               c.DataHorario == Input.DataHorario &&
-                               c.Status != StatusConsulta.Cancelada)
-                    .FirstOrDefaultAsync();
-
-                if (consultaExistente != null)
-                {
-                    ModelState.AddModelError("", "Este horário já está ocupado. Selecione outro horário.");
-                    await CarregarDadosAsync();
-                    return Page();
-                }
-
                 var paciente = await _context.Pacientes.FindAsync(user.PacienteId.Value);
                 if (paciente == null)
                 {
@@ -108,14 +126,25 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 }
 
                 var psicologo = await _context.Psicologos.FindAsync(Input.PsicologoId);
-                if (psicologo == null)
+                if (psicologo == null || !psicologo.Ativo || psicologo.ExcluidoEm != null)
                 {
                     ModelState.AddModelError("", "Psicólogo não encontrado.");
                     await CarregarDadosAsync();
                     return Page();
                 }
 
-                // Sem programa de pontos/brindes: sempre consulta padrão paga
+                var configConsultas = await _configuracaoService.ObterConfigConsultasAsync();
+                var duracao = Input.DuracaoMinutos > 0
+                    ? Input.DuracaoMinutos
+                    : (configConsultas.DuracaoPadrao > 0 ? configConsultas.DuracaoPadrao : 50);
+
+                if (!await HorarioEstaDisponivelAsync(psicologo, dataHorario, duracao))
+                {
+                    ModelState.AddModelError("", "Este horário não está mais disponível. Selecione outro horário.");
+                    await CarregarDadosAsync();
+                    return Page();
+                }
+
                 var tipoConsulta = TipoConsulta.Normal;
                 var valorConsulta = psicologo.ValorConsulta;
 
@@ -123,8 +152,8 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 {
                     PacienteId = user.PacienteId.Value,
                     PsicologoId = Input.PsicologoId,
-                    DataHorario = Input.DataHorario,
-                    DuracaoMinutos = Input.DuracaoMinutos,
+                    DataHorario = dataHorario,
+                    DuracaoMinutos = duracao,
                     Valor = valorConsulta,
                     Status = StatusConsulta.Agendada,
                     Tipo = tipoConsulta,
@@ -155,24 +184,35 @@ namespace ClinicaPsi.Web.Pages.Cliente
             }
         }
 
-        public async Task<IActionResult> OnGetHorariosDisponiveisAsync(int psicologoId, DateTime data)
+        /// <summary>
+        /// Retorna slots livres para o psicólogo na data (ISO yyyy-MM-dd).
+        /// Parse explícito evita falha do model binder com cultura pt-BR.
+        /// </summary>
+        public async Task<IActionResult> OnGetHorariosDisponiveisAsync(int psicologoId, string? data)
         {
-            var psicologo = await _context.Psicologos.FindAsync(psicologoId);
+            if (psicologoId <= 0)
+                return new JsonResult(Array.Empty<object>());
+
+            if (!TryParseDataIso(data, out var dataConsulta))
+                return new JsonResult(Array.Empty<object>());
+
+            var psicologo = await _context.Psicologos
+                .FirstOrDefaultAsync(p => p.Id == psicologoId && p.Ativo && p.ExcluidoEm == null);
             if (psicologo == null)
                 return NotFound();
 
-            var consultasOcupadas = await _context.Consultas
-                .Where(c => c.PsicologoId == psicologoId &&
-                           c.DataHorario.Date == data.Date &&
-                           c.Status != StatusConsulta.Cancelada)
-                .Select(c => c.DataHorario)
-                .ToListAsync();
+            var configConsultas = await _configuracaoService.ObterConfigConsultasAsync();
+            var duracao = configConsultas.DuracaoPadrao > 0 ? configConsultas.DuracaoPadrao : 50;
+            var intervalo = Math.Max(0, configConsultas.IntervaloMinimo);
 
-            var horariosDisponiveis = await GerarHorariosDisponiveisAsync(psicologo, data, consultasOcupadas);
+            var consultasOcupadas = await ObterConsultasOcupadasAsync(psicologoId, dataConsulta);
+            var horariosDisponiveis = GerarHorariosDisponiveis(
+                psicologo, dataConsulta, consultasOcupadas, configConsultas, duracao, intervalo);
 
-            return new JsonResult(horariosDisponiveis.Select(h => new {
-                valor = h.ToString("yyyy-MM-ddTHH:mm"),
-                texto = h.ToString("HH:mm")
+            return new JsonResult(horariosDisponiveis.Select(h => new
+            {
+                valor = h.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture),
+                texto = h.ToString("HH:mm", CultureInfo.InvariantCulture)
             }));
         }
 
@@ -189,23 +229,119 @@ namespace ClinicaPsi.Web.Pages.Cliente
             }
 
             Psicologos = await _context.Psicologos
-                .Where(p => p.Ativo)
+                .Where(p => p.Ativo && p.ExcluidoEm == null)
                 .OrderBy(p => p.Nome)
                 .ToListAsync();
+
+            if (TryParseDataIso(Input.Data, out var dataInput))
+                DataSelecionada = dataInput;
+            else if (DataSelecionada.Year <= 1)
+                DataSelecionada = DateTime.Today;
+
+            DataPadrao = DataSelecionada.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            if (string.IsNullOrWhiteSpace(Input.Data) || Input.Data.StartsWith("0001", StringComparison.Ordinal))
+                Input.Data = DataPadrao;
 
             ConsultasExistentes = await _context.Consultas
                 .Include(c => c.Psicologo)
                 .Where(c => c.DataHorario.Date == DataSelecionada.Date &&
-                           c.Status != StatusConsulta.Cancelada)
+                           StatusOcupados.Contains(c.Status))
                 .OrderBy(c => c.DataHorario)
                 .ToListAsync();
         }
 
-        private async Task<List<DateTime>> GerarHorariosDisponiveisAsync(ClinicaPsi.Shared.Models.Psicologo psicologo, DateTime data, List<DateTime> horariosOcupados)
+        private bool TryResolverDataHorario(out DateTime dataHorario, out string erro)
+        {
+            dataHorario = default;
+            erro = string.Empty;
+
+            var raw = Input.DataHorario;
+            if (string.IsNullOrWhiteSpace(raw) &&
+                Request.Form.TryGetValue("Input.DataHorario", out var formValue))
+            {
+                raw = formValue.ToString();
+            }
+
+            if (TryParseDataHoraIso(raw, out dataHorario))
+                return true;
+
+            erro = "Selecione uma data e um horário disponíveis.";
+            return false;
+        }
+
+        private static bool TryParseDataHoraIso(string? valor, out DateTime result)
+        {
+            result = default;
+            if (string.IsNullOrWhiteSpace(valor))
+                return false;
+
+            if (DateTime.TryParseExact(
+                    valor.Trim(),
+                    new[]
+                    {
+                        "yyyy-MM-ddTHH:mm",
+                        "yyyy-MM-ddTHH:mm:ss",
+                        "yyyy-MM-dd HH:mm",
+                        "yyyy-MM-dd HH:mm:ss",
+                        "dd/MM/yyyy HH:mm"
+                    },
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out result))
+            {
+                return result.Year > 1;
+            }
+
+            return DateTime.TryParse(valor, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out result)
+                   && result.Year > 1;
+        }
+
+        private async Task<bool> HorarioEstaDisponivelAsync(
+            ClinicaPsi.Shared.Models.Psicologo psicologo,
+            DateTime dataHorario,
+            int duracao)
+        {
+            if (dataHorario <= DateTime.Now)
+                return false;
+
+            var configConsultas = await _configuracaoService.ObterConfigConsultasAsync();
+            var intervalo = Math.Max(0, configConsultas.IntervaloMinimo);
+            var consultasOcupadas = await ObterConsultasOcupadasAsync(psicologo.Id, dataHorario.Date);
+            var disponiveis = GerarHorariosDisponiveis(
+                psicologo, dataHorario.Date, consultasOcupadas, configConsultas, duracao, intervalo);
+
+            return disponiveis.Any(h => h == dataHorario);
+        }
+
+        private async Task<List<(DateTime Inicio, int Duracao)>> ObterConsultasOcupadasAsync(int psicologoId, DateTime data)
+        {
+            var inicioDia = data.Date;
+            var fimDia = inicioDia.AddDays(1);
+
+            var ocupadas = await _context.Consultas
+                .AsNoTracking()
+                .Where(c => c.PsicologoId == psicologoId &&
+                            c.DataHorario >= inicioDia &&
+                            c.DataHorario < fimDia &&
+                            StatusOcupados.Contains(c.Status))
+                .Select(c => new { c.DataHorario, c.DuracaoMinutos })
+                .ToListAsync();
+
+            return ocupadas
+                .Select(c => (c.DataHorario, c.DuracaoMinutos))
+                .ToList();
+        }
+
+        private static List<DateTime> GerarHorariosDisponiveis(
+            ClinicaPsi.Shared.Models.Psicologo psicologo,
+            DateTime data,
+            List<(DateTime Inicio, int Duracao)> consultasOcupadas,
+            ConsultasConfig configConsultas,
+            int duracao,
+            int intervalo)
         {
             var horarios = new List<DateTime>();
             var diaSemana = data.DayOfWeek;
-            var configConsultas = await _configuracaoService.ObterConfigConsultasAsync();
 
             if (diaSemana == DayOfWeek.Saturday && !configConsultas.PermitirSabado)
                 return horarios;
@@ -213,7 +349,38 @@ namespace ClinicaPsi.Web.Pages.Cliente
             if (diaSemana == DayOfWeek.Sunday && !configConsultas.PermitirDomingo)
                 return horarios;
 
-            bool atendeNoDia = diaSemana switch
+            if (!PsicologoAtendeNoDia(psicologo, diaSemana, out var usarFallbackClinica) && !usarFallbackClinica)
+                return horarios;
+
+            var passo = Math.Max(1, duracao + intervalo);
+            var agora = DateTime.Now;
+            var periodos = ObterPeriodosAtendimento(psicologo, data, configConsultas, usarFallbackClinica);
+
+            foreach (var (inicio, fim) in periodos)
+            {
+                for (var slotInicio = inicio; slotInicio.AddMinutes(duracao) <= fim; slotInicio = slotInicio.AddMinutes(passo))
+                {
+                    if (slotInicio <= agora)
+                        continue;
+
+                    if (SlotConflita(slotInicio, duracao, intervalo, consultasOcupadas))
+                        continue;
+
+                    horarios.Add(slotInicio);
+                }
+            }
+
+            return horarios.Distinct().OrderBy(h => h).ToList();
+        }
+
+        private static bool PsicologoAtendeNoDia(
+            ClinicaPsi.Shared.Models.Psicologo psicologo,
+            DayOfWeek diaSemana,
+            out bool usarFallbackClinica)
+        {
+            usarFallbackClinica = false;
+
+            var atendeNoDia = diaSemana switch
             {
                 DayOfWeek.Monday => psicologo.AtendeSegunda,
                 DayOfWeek.Tuesday => psicologo.AtendeTerca,
@@ -225,41 +392,129 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 _ => false
             };
 
-            if (!atendeNoDia) return horarios;
+            // Se nenhum dia/período está marcado (cadastro incompleto), usa configs da clínica
+            var nenhumDiaConfigurado =
+                !psicologo.AtendeSegunda && !psicologo.AtendeTerca && !psicologo.AtendeQuarta &&
+                !psicologo.AtendeQuinta && !psicologo.AtendeSexta && !psicologo.AtendeSabado &&
+                !psicologo.AtendeDomingo;
 
-            var duracao = configConsultas.DuracaoPadrao > 0 ? configConsultas.DuracaoPadrao : 50;
-            var intervalo = Math.Max(0, configConsultas.IntervaloMinimo);
-            var passo = duracao + intervalo;
+            var nenhumPeriodo = !psicologo.AtendeManha && !psicologo.AtendeTarde;
 
-            if (psicologo.AtendeManha)
+            if (nenhumDiaConfigurado || nenhumPeriodo)
             {
-                var inicioManha = data.Date.Add(psicologo.HorarioInicioManha);
-                var fimManha = data.Date.Add(psicologo.HorarioFimManha);
+                usarFallbackClinica = true;
+                return true;
+            }
 
-                for (var hora = inicioManha; hora < fimManha; hora = hora.AddMinutes(passo))
+            return atendeNoDia;
+        }
+
+        private static List<(DateTime Inicio, DateTime Fim)> ObterPeriodosAtendimento(
+            ClinicaPsi.Shared.Models.Psicologo psicologo,
+            DateTime data,
+            ConsultasConfig config,
+            bool forcarFallbackClinica)
+        {
+            var periodos = new List<(DateTime Inicio, DateTime Fim)>();
+
+            if (!forcarFallbackClinica && (psicologo.AtendeManha || psicologo.AtendeTarde))
+            {
+                if (psicologo.AtendeManha && psicologo.HorarioInicioManha < psicologo.HorarioFimManha)
                 {
-                    if (!horariosOcupados.Contains(hora) && hora > DateTime.Now)
-                    {
-                        horarios.Add(hora);
-                    }
+                    periodos.Add((
+                        data.Date.Add(psicologo.HorarioInicioManha),
+                        data.Date.Add(psicologo.HorarioFimManha)));
+                }
+
+                if (psicologo.AtendeTarde && psicologo.HorarioInicioTarde < psicologo.HorarioFimTarde)
+                {
+                    periodos.Add((
+                        data.Date.Add(psicologo.HorarioInicioTarde),
+                        data.Date.Add(psicologo.HorarioFimTarde)));
                 }
             }
 
-            if (psicologo.AtendeTarde)
+            if (periodos.Count == 0)
             {
-                var inicioTarde = data.Date.Add(psicologo.HorarioInicioTarde);
-                var fimTarde = data.Date.Add(psicologo.HorarioFimTarde);
+                // Fallback: horário único da clínica (Consultas.HorarioInicio / HorarioFim)
+                if (!TryParseHora(config.HorarioInicio, out var inicioClinica))
+                    inicioClinica = new TimeSpan(9, 0, 0);
+                if (!TryParseHora(config.HorarioFim, out var fimClinica))
+                    fimClinica = new TimeSpan(17, 0, 0);
 
-                for (var hora = inicioTarde; hora < fimTarde; hora = hora.AddMinutes(passo))
-                {
-                    if (!horariosOcupados.Contains(hora) && hora > DateTime.Now)
-                    {
-                        horarios.Add(hora);
-                    }
-                }
+                if (inicioClinica < fimClinica)
+                    periodos.Add((data.Date.Add(inicioClinica), data.Date.Add(fimClinica)));
             }
 
-            return horarios;
+            return periodos;
+        }
+
+        private static bool SlotConflita(
+            DateTime slotInicio,
+            int duracaoSlot,
+            int intervalo,
+            List<(DateTime Inicio, int Duracao)> ocupadas)
+        {
+            var slotFimComIntervalo = slotInicio.AddMinutes(duracaoSlot + intervalo);
+
+            foreach (var (inicio, duracaoExistente) in ocupadas)
+            {
+                var duracao = duracaoExistente > 0 ? duracaoExistente : duracaoSlot;
+                var ocupadoInicio = inicio;
+                var ocupadoFimComIntervalo = inicio.AddMinutes(duracao + intervalo);
+
+                // Cruza se o novo slot invade o bloco ocupado (incluindo intervalo mínimo)
+                if (slotInicio < ocupadoFimComIntervalo && slotFimComIntervalo > ocupadoInicio)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryParseDataIso(string? data, out DateTime result)
+        {
+            result = default;
+            if (string.IsNullOrWhiteSpace(data))
+                return false;
+
+            if (DateTime.TryParseExact(
+                    data.Trim(),
+                    new[] { "yyyy-MM-dd", "yyyy-MM-ddTHH:mm", "yyyy-MM-ddTHH:mm:ss", "dd/MM/yyyy" },
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out result))
+            {
+                result = result.Date;
+                return result.Year > 1;
+            }
+
+            // Último recurso: parse genérico (pode falhar em pt-BR com ISO)
+            if (DateTime.TryParse(data, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out result))
+            {
+                result = result.Date;
+                return result.Year > 1;
+            }
+
+            return false;
+        }
+
+        private static bool TryParseHora(string? valor, out TimeSpan hora)
+        {
+            hora = default;
+            if (string.IsNullOrWhiteSpace(valor))
+                return false;
+
+            if (TimeSpan.TryParseExact(valor.Trim(), new[] { @"hh\:mm", @"h\:mm", @"hh\:mm\:ss" },
+                    CultureInfo.InvariantCulture, out hora))
+                return true;
+
+            if (TimeOnly.TryParse(valor, CultureInfo.InvariantCulture, out var timeOnly))
+            {
+                hora = timeOnly.ToTimeSpan();
+                return true;
+            }
+
+            return false;
         }
     }
 }

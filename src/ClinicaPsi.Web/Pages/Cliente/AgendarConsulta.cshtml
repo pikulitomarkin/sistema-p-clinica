@@ -55,9 +55,12 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Data da Consulta *</label>
-                                    <input asp-for="Input.DataHorario" type="date" class="form-control"
-                                           id="dataConsulta" min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
-                                    <span asp-validation-for="Input.DataHorario" class="text-danger"></span>
+                                    <input asp-for="Input.Data" type="date" class="form-control"
+                                           id="dataConsulta"
+                                           value="@Model.DataPadrao"
+                                           min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                           required>
+                                    <span asp-validation-for="Input.Data" class="text-danger"></span>
                                 </div>
                             </div>
                         </div>
@@ -66,7 +69,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Horário Disponível *</label>
-                                    <select asp-for="Input.DataHorario" class="form-select" id="horarioSelect" required>
+                                    <select name="Input.DataHorario" class="form-select" id="horarioSelect" required>
                                         <option value="">Primeiro selecione o psicólogo e a data</option>
                                     </select>
                                     <span asp-validation-for="Input.DataHorario" class="text-danger"></span>
@@ -203,57 +206,69 @@
         const horarioSelect = document.getElementById('horarioSelect');
         const valorConsulta = document.getElementById('valorConsulta');
 
-        // Atualizar valor quando selecionar psicólogo
+        // Garante data válida (nunca 0001-01-01 / MinValue)
+        if (!dataConsulta.value || dataConsulta.value.startsWith('0001')) {
+            const hoje = new Date();
+            const yyyy = hoje.getFullYear();
+            const mm = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dd = String(hoje.getDate()).padStart(2, '0');
+            dataConsulta.value = `${yyyy}-${mm}-${dd}`;
+        }
+
         psicologoSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const valor = selectedOption.getAttribute('data-valor');
-
-            if (valor) {
-                valorConsulta.value = valor;
-            } else {
-                valorConsulta.value = '';
-            }
-
+            valorConsulta.value = valor || '';
             carregarHorarios();
         });
 
-        // Carregar horários quando mudar a data
         dataConsulta.addEventListener('change', carregarHorarios);
-
-        // Atualizar valor quando mudar tipo de consulta
+        dataConsulta.addEventListener('input', carregarHorarios);
 
         function carregarHorarios() {
             const psicologoId = psicologoSelect.value;
             const data = dataConsulta.value;
 
-            if (!psicologoId || !data) {
+            if (!psicologoId || !data || data.startsWith('0001')) {
                 horarioSelect.innerHTML = '<option value="">Primeiro selecione o psicólogo e a data</option>';
                 return;
             }
 
             horarioSelect.innerHTML = '<option value="">Carregando horários...</option>';
 
-            fetch(`/Cliente/AgendarConsulta?handler=HorariosDisponiveis&psicologoId=${psicologoId}&data=${data}`)
-                .then(response => response.json())
-                .then(horarios => {
-                    horarioSelect.innerHTML = '';
+            const url = `/cliente/agendarconsulta?handler=HorariosDisponiveis&psicologoId=${encodeURIComponent(psicologoId)}&data=${encodeURIComponent(data)}`;
 
-                    if (horarios.length === 0) {
+            fetch(url, { headers: { 'Accept': 'application/json' } })
+                .then(response => {
+                    if (!response.ok) throw new Error('Falha ao buscar horários');
+                    return response.json();
+                })
+                .then(horarios => {
+                    if (!Array.isArray(horarios) || horarios.length === 0) {
                         horarioSelect.innerHTML = '<option value="">Nenhum horário disponível</option>';
-                    } else {
-                        horarioSelect.innerHTML = '<option value="">Selecione um horário</option>';
-                        horarios.forEach(horario => {
-                            const option = document.createElement('option');
-                            option.value = horario.valor;
-                            option.textContent = horario.texto;
-                            horarioSelect.appendChild(option);
-                        });
+                        return;
                     }
+
+                    horarioSelect.innerHTML = '<option value="">Selecione um horário</option>';
+                    horarios.forEach(horario => {
+                        const option = document.createElement('option');
+                        option.value = horario.valor;
+                        option.textContent = horario.texto;
+                        horarioSelect.appendChild(option);
+                    });
                 })
                 .catch(error => {
                     console.error('Erro ao carregar horários:', error);
                     horarioSelect.innerHTML = '<option value="">Erro ao carregar horários</option>';
                 });
+        }
+
+        // Pré-carrega se psicólogo e data já estiverem preenchidos (ex.: query string)
+        if (psicologoSelect.value && dataConsulta.value) {
+            const selectedOption = psicologoSelect.options[psicologoSelect.selectedIndex];
+            const valor = selectedOption?.getAttribute('data-valor');
+            if (valor) valorConsulta.value = valor;
+            carregarHorarios();
         }
     });
 </script>
