@@ -45,6 +45,10 @@ services:
       WhatsApp__BotUrl: ${WHATSAPP_BOT_URL:-}
       WhatsApp__SiteUrl: ${PUBLIC_APP_URL:-https://psiianasantos.com.br}
       OpenAI__ApiKey: ${OPENAI_API_KEY:-}
+      # Admin opcional (seed no boot; nao versionar senha real)
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-}
     volumes:
       - clinicapsi_data:/app/data
       - clinicapsi_keys:/app/keys
