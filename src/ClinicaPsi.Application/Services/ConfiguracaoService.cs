@@ -205,8 +205,9 @@ public class ConfiguracaoService
             // Sistema
             { "Sistema.Nome", ("PsiiAnaSantos", "Nome do sistema", "Sistema", "string") },
             { "Sistema.Email", ("psiianasantos@psiianasantos.com.br", "Email principal do sistema", "Sistema", "string") },
-            { "Sistema.Telefone", ("(42) 99936-9724", "Telefone de contato", "Sistema", "string") },
-            { "Sistema.Endereco", ("Rua Orlando Ferreira Neto, 39 - Jd Itapoã, Londrina - PR, 86043-470", "Endereço da clínica", "Sistema", "string") },
+            { "Sistema.Telefone", ("(42) 98859-3775", "Telefone de contato", "Sistema", "string") },
+            { "Sistema.Endereco", ("Rua Emma Marcelino Peralta - 168 - 86030-540 - Londrina, PR", "Endereço da clínica", "Sistema", "string") },
+            { "Sistema.HorarioFuncionamento", ("Segunda a Sexta: 9h às 17h", "Horário de funcionamento exibido no site", "Sistema", "string") },
             
             // Consultas
             { "Consultas.DuracaoPadrao", ("50", "Duração padrão das consultas em minutos", "Consultas", "number") },
@@ -260,10 +261,11 @@ public class ConfiguracaoService
     {
         return new SistemaConfig
         {
-            Nome = await ObterValorStringAsync("Sistema.Nome", "ClinicaPsi"),
-            Email = await ObterValorStringAsync("Sistema.Email", "contato@clinicapsi.com"),
-            Telefone = await ObterValorStringAsync("Sistema.Telefone", "(00) 00000-0000"),
-            Endereco = await ObterValorStringAsync("Sistema.Endereco", "")
+            Nome = await ObterValorStringAsync("Sistema.Nome", "ClinicaPsi") ?? "ClinicaPsi",
+            Email = await ObterValorStringAsync("Sistema.Email", "contato@clinicapsi.com") ?? string.Empty,
+            Telefone = await ObterValorStringAsync("Sistema.Telefone", "(00) 00000-0000") ?? string.Empty,
+            Endereco = await ObterValorStringAsync("Sistema.Endereco", "") ?? string.Empty,
+            HorarioFuncionamento = await ObterValorStringAsync("Sistema.HorarioFuncionamento", "Segunda a Sexta: 9h às 17h") ?? string.Empty
         };
     }
 
@@ -286,6 +288,7 @@ public class SistemaConfig
     public string Email { get; set; } = string.Empty;
     public string Telefone { get; set; } = string.Empty;
     public string Endereco { get; set; } = string.Empty;
+    public string HorarioFuncionamento { get; set; } = string.Empty;
 }
 
 #endregion

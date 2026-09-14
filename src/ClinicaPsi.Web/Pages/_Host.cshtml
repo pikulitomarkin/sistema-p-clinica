@@ -1,6 +1,9 @@
 @page "/"
+@using ClinicaPsi.Application.Services
+@inject ConfiguracaoService ConfiguracaoService
 @{
     ViewData["Title"] = "Psicóloga Ana Santos - Clínica de Psicologia em Londrina";
+    var clinica = await ConfiguracaoService.ObterConfigSistemaAsync();
 }
 
 <!-- Hero Section Moderna -->
@@ -189,17 +192,14 @@
                                 <i class="bi bi-building text-success me-2"></i>
                                 <strong>Endereço:</strong>
                             </div>
-                            <small class="text-muted">
-                                Rua Orlando Ferreira Neto, 39 - Jd Itapoã<br>
-                                Londrina - PR, 86043-470
-                            </small>
+                            <small class="text-muted" style="white-space: pre-line;">@clinica.Endereco</small>
                         </div>
                         <div class="mb-3">
                             <div class="d-flex align-items-center mb-2">
                                 <i class="bi bi-telephone-fill text-success me-2"></i>
                                 <strong>Telefone:</strong>
                             </div>
-                            <small class="text-muted">(42) 99936-9724</small>
+                            <small class="text-muted">@clinica.Telefone</small>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -208,14 +208,14 @@
                                 <i class="bi bi-envelope-fill text-success me-2"></i>
                                 <strong>E-mail:</strong>
                             </div>
-                            <small class="text-muted">psiianasantos@psiianasantos.com.br</small>
+                            <small class="text-muted">@clinica.Email</small>
                         </div>
                         <div class="mb-3">
                             <div class="d-flex align-items-center mb-2">
                                 <i class="bi bi-clock-fill text-success me-2"></i>
                                 <strong>Horários:</strong>
                             </div>
-                            <small class="text-muted">Segunda a Sexta: 9h às 17h</small>
+                            <small class="text-muted">@clinica.HorarioFuncionamento</small>
                         </div>
                     </div>
                 </div>
