@@ -1,3 +1,4 @@
+using System.Globalization;
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 using Microsoft.EntityFrameworkCore;
@@ -22,18 +23,12 @@ public class ConfiguracaoService
 
     #region Métodos Principais
 
-    /// <summary>
-    /// Obtém uma configuração por chave
-    /// </summary>
     public async Task<ConfiguracaoSistema?> ObterPorChaveAsync(string chave)
     {
         return await _context.ConfiguracoesSistema
             .FirstOrDefaultAsync(c => c.Chave == chave);
     }
 
-    /// <summary>
-    /// Obtém todas as configurações
-    /// </summary>
     public async Task<List<ConfiguracaoSistema>> ObterTodasAsync()
     {
         return await _context.ConfiguracoesSistema
@@ -42,9 +37,6 @@ public class ConfiguracaoService
             .ToListAsync();
     }
 
-    /// <summary>
-    /// Obtém configurações por categoria
-    /// </summary>
     public async Task<List<ConfiguracaoSistema>> ObterPorCategoriaAsync(string categoria)
     {
         return await _context.ConfiguracoesSistema
@@ -53,9 +45,6 @@ public class ConfiguracaoService
             .ToListAsync();
     }
 
-    /// <summary>
-    /// Salva ou atualiza uma configuração
-    /// </summary>
     public async Task<ConfiguracaoSistema> SalvarAsync(string chave, string? valor, string? descricao = null, 
         string? categoria = null, string tipoValor = "string", string? usuarioAtualizacao = null)
     {
@@ -63,7 +52,6 @@ public class ConfiguracaoService
 
         if (config == null)
         {
-            // Criar nova configuração
             config = new ConfiguracaoSistema
             {
                 Chave = chave,
@@ -77,11 +65,10 @@ public class ConfiguracaoService
             };
 
             _context.ConfiguracoesSistema.Add(config);
-            _logger.LogInformation($"Nova configuração criada: {chave}");
+            _logger.LogInformation("Nova configuração criada: {Chave}", chave);
         }
         else
         {
-            // Atualizar configuração existente
             config.Valor = valor;
             config.DataAtualizacao = DateTime.Now;
             config.UsuarioAtualizacao = usuarioAtualizacao;
@@ -90,16 +77,13 @@ public class ConfiguracaoService
             if (categoria != null) config.Categoria = categoria;
             if (tipoValor != null) config.TipoValor = tipoValor;
 
-            _logger.LogInformation($"Configuração atualizada: {chave}");
+            _logger.LogInformation("Configuração atualizada: {Chave}", chave);
         }
 
         await _context.SaveChangesAsync();
         return config;
     }
 
-    /// <summary>
-    /// Exclui uma configuração
-    /// </summary>
     public async Task<bool> ExcluirAsync(string chave)
     {
         var config = await ObterPorChaveAsync(chave);
@@ -108,13 +92,10 @@ public class ConfiguracaoService
         _context.ConfiguracoesSistema.Remove(config);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation($"Configuração excluída: {chave}");
+        _logger.LogInformation("Configuração excluída: {Chave}", chave);
         return true;
     }
 
-    /// <summary>
-    /// Remove uma configuração (alias para ExcluirAsync)
-    /// </summary>
     public async Task<bool> RemoverAsync(string chave)
     {
         return await ExcluirAsync(chave);
@@ -124,18 +105,12 @@ public class ConfiguracaoService
 
     #region Métodos de Acesso Tipado
 
-    /// <summary>
-    /// Obtém valor como string
-    /// </summary>
     public async Task<string?> ObterValorStringAsync(string chave, string? valorPadrao = null)
     {
         var config = await ObterPorChaveAsync(chave);
         return config?.Valor ?? valorPadrao;
     }
 
-    /// <summary>
-    /// Obtém valor como boolean
-    /// </summary>
     public async Task<bool> ObterValorBoolAsync(string chave, bool valorPadrao = false)
     {
         var config = await ObterPorChaveAsync(chave);
@@ -144,31 +119,30 @@ public class ConfiguracaoService
         return bool.TryParse(config.Valor, out var result) ? result : valorPadrao;
     }
 
-    /// <summary>
-    /// Obtém valor como int
-    /// </summary>
     public async Task<int> ObterValorIntAsync(string chave, int valorPadrao = 0)
     {
         var config = await ObterPorChaveAsync(chave);
         if (config?.Valor == null) return valorPadrao;
 
-        return int.TryParse(config.Valor, out var result) ? result : valorPadrao;
+        return int.TryParse(config.Valor, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : valorPadrao;
     }
 
-    /// <summary>
-    /// Obtém valor como decimal
-    /// </summary>
     public async Task<decimal> ObterValorDecimalAsync(string chave, decimal valorPadrao = 0)
     {
         var config = await ObterPorChaveAsync(chave);
         if (config?.Valor == null) return valorPadrao;
 
-        return decimal.TryParse(config.Valor, out var result) ? result : valorPadrao;
+        if (decimal.TryParse(config.Valor, NumberStyles.Number, CultureInfo.InvariantCulture, out var invariant))
+            return invariant;
+
+        if (decimal.TryParse(config.Valor, NumberStyles.Number, CultureInfo.GetCultureInfo("pt-BR"), out var ptBr))
+            return ptBr;
+
+        return valorPadrao;
     }
 
-    /// <summary>
-    /// Obtém valor como objeto JSON
-    /// </summary>
     public async Task<T?> ObterValorJsonAsync<T>(string chave) where T : class
     {
         var config = await ObterPorChaveAsync(chave);
@@ -180,7 +154,7 @@ public class ConfiguracaoService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Erro ao deserializar configuração {chave}");
+            _logger.LogError(ex, "Erro ao deserializar configuração {Chave}", chave);
             return null;
         }
     }
@@ -189,41 +163,38 @@ public class ConfiguracaoService
 
     #region Configurações Específicas do Sistema
 
-    /// <summary>
-    /// Inicializa configurações padrão do sistema
-    /// </summary>
     public async Task InicializarConfiguracoesAsync()
     {
         var configuracoesPadrao = new Dictionary<string, (string valor, string descricao, string categoria, string tipo)>
         {
-            // Notificações
             { "Notificacoes.WhatsApp.Habilitado", ("false", "Habilitar envio de notificações por WhatsApp", "Notificacoes", "boolean") },
             { "Notificacoes.Email.Habilitado", ("false", "Habilitar envio de notificações por Email", "Notificacoes", "boolean") },
             { "Notificacoes.SMS.Habilitado", ("false", "Habilitar envio de notificações por SMS", "Notificacoes", "boolean") },
             { "Notificacoes.Lembrete.AntecedenciaHoras", ("24", "Antecedência em horas para envio de lembretes", "Notificacoes", "number") },
             
-            // Sistema
             { "Sistema.Nome", ("PsiiAnaSantos", "Nome do sistema", "Sistema", "string") },
             { "Sistema.Email", ("psiianasantos@psiianasantos.com.br", "Email principal do sistema", "Sistema", "string") },
             { "Sistema.Telefone", ("(42) 98859-3775", "Telefone de contato", "Sistema", "string") },
             { "Sistema.Endereco", ("Rua Emma Marcelino Peralta - 168 - 86030-540 - Londrina, PR", "Endereço da clínica", "Sistema", "string") },
             { "Sistema.HorarioFuncionamento", ("Segunda a Sexta: 9h às 17h", "Horário de funcionamento exibido no site", "Sistema", "string") },
+            { "Sistema.ManterHistoricoCompleto", ("true", "Manter histórico completo de consultas e pontos", "Sistema", "boolean") },
             
-            // Consultas
             { "Consultas.DuracaoPadrao", ("50", "Duração padrão das consultas em minutos", "Consultas", "number") },
             { "Consultas.IntervaloMinimo", ("15", "Intervalo mínimo entre consultas em minutos", "Consultas", "number") },
             { "Consultas.ValorPadrao", ("150.00", "Valor padrão da consulta", "Consultas", "number") },
+            { "Consultas.HorarioInicio", ("09:00", "Horário de início do atendimento", "Consultas", "string") },
+            { "Consultas.HorarioFim", ("17:00", "Horário de fim do atendimento", "Consultas", "string") },
+            { "Consultas.PermitirSabado", ("true", "Permitir agendamento aos sábados", "Consultas", "boolean") },
+            { "Consultas.PermitirDomingo", ("false", "Permitir agendamento aos domingos", "Consultas", "boolean") },
             
-            // PsicoPontos
             { "PsicoPontos.PontosParaConsultaGratuita", ("10", "Quantidade de pontos necessários para consulta gratuita", "PsicoPontos", "number") },
             { "PsicoPontos.PontosPorConsulta", ("1", "Pontos ganhos por consulta realizada", "PsicoPontos", "number") },
             
-            // Backup
             { "Backup.Automatico.Habilitado", ("false", "Habilitar backup automático", "Backup", "boolean") },
             { "Backup.Automatico.Horario", ("02:00", "Horário do backup automático (HH:mm)", "Backup", "string") },
+            { "Backup.Automatico.Frequencia", ("Diário", "Frequência do backup automático", "Backup", "string") },
             { "Backup.Automatico.DiasRetencao", ("30", "Dias de retenção dos backups", "Backup", "number") },
             
-            // Segurança
             { "Seguranca.SessaoTimeout", ("30", "Tempo de expiração da sessão em minutos", "Seguranca", "number") },
             { "Seguranca.TentativasLoginMax", ("5", "Número máximo de tentativas de login", "Seguranca", "number") }
         };
@@ -240,9 +211,6 @@ public class ConfiguracaoService
         _logger.LogInformation("Configurações padrão inicializadas");
     }
 
-    /// <summary>
-    /// Obtém configurações de notificações
-    /// </summary>
     public async Task<NotificacoesConfig> ObterConfigNotificacoesAsync()
     {
         return new NotificacoesConfig
@@ -254,18 +222,29 @@ public class ConfiguracaoService
         };
     }
 
-    /// <summary>
-    /// Obtém configurações do sistema
-    /// </summary>
     public async Task<SistemaConfig> ObterConfigSistemaAsync()
     {
         return new SistemaConfig
         {
-            Nome = await ObterValorStringAsync("Sistema.Nome", "ClinicaPsi") ?? "ClinicaPsi",
-            Email = await ObterValorStringAsync("Sistema.Email", "contato@clinicapsi.com") ?? string.Empty,
-            Telefone = await ObterValorStringAsync("Sistema.Telefone", "(00) 00000-0000") ?? string.Empty,
+            Nome = await ObterValorStringAsync("Sistema.Nome", "PsiiAnaSantos") ?? "PsiiAnaSantos",
+            Email = await ObterValorStringAsync("Sistema.Email", "psiianasantos@psiianasantos.com.br") ?? string.Empty,
+            Telefone = await ObterValorStringAsync("Sistema.Telefone", "(42) 98859-3775") ?? string.Empty,
             Endereco = await ObterValorStringAsync("Sistema.Endereco", "") ?? string.Empty,
             HorarioFuncionamento = await ObterValorStringAsync("Sistema.HorarioFuncionamento", "Segunda a Sexta: 9h às 17h") ?? string.Empty
+        };
+    }
+
+    public async Task<ConsultasConfig> ObterConfigConsultasAsync()
+    {
+        return new ConsultasConfig
+        {
+            ValorPadrao = await ObterValorDecimalAsync("Consultas.ValorPadrao", 150.00m),
+            DuracaoPadrao = await ObterValorIntAsync("Consultas.DuracaoPadrao", 50),
+            IntervaloMinimo = await ObterValorIntAsync("Consultas.IntervaloMinimo", 15),
+            HorarioInicio = await ObterValorStringAsync("Consultas.HorarioInicio", "09:00") ?? "09:00",
+            HorarioFim = await ObterValorStringAsync("Consultas.HorarioFim", "17:00") ?? "17:00",
+            PermitirSabado = await ObterValorBoolAsync("Consultas.PermitirSabado", true),
+            PermitirDomingo = await ObterValorBoolAsync("Consultas.PermitirDomingo", false)
         };
     }
 
@@ -289,6 +268,17 @@ public class SistemaConfig
     public string Telefone { get; set; } = string.Empty;
     public string Endereco { get; set; } = string.Empty;
     public string HorarioFuncionamento { get; set; } = string.Empty;
+}
+
+public class ConsultasConfig
+{
+    public decimal ValorPadrao { get; set; } = 150.00m;
+    public int DuracaoPadrao { get; set; } = 50;
+    public int IntervaloMinimo { get; set; } = 15;
+    public string HorarioInicio { get; set; } = "09:00";
+    public string HorarioFim { get; set; } = "17:00";
+    public bool PermitirSabado { get; set; } = true;
+    public bool PermitirDomingo { get; set; }
 }
 
 #endregion
