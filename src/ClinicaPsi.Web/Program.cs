@@ -14,21 +14,29 @@ AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar Data Protection para usar EFS (armazenamento compartilhado)
-// Isso garante que múltiplas instâncias possam compartilhar as chaves de criptografia
+// Configurar Data Protection com armazenamento persistente quando disponivel
+// Prioridade: EFS (AWS) -> /app/keys (Docker VPS) -> padrao em memoria/temp
 try
 {
-    var dataProtectionPath = Path.Combine("/mnt/efs", "DataProtection-Keys");
+    string? keysPath = null;
     if (Directory.Exists("/mnt/efs"))
     {
-        Directory.CreateDirectory(dataProtectionPath);
+        keysPath = Path.Combine("/mnt/efs", "DataProtection-Keys");
+    }
+    else if (Directory.Exists("/app/keys"))
+    {
+        keysPath = "/app/keys";
+    }
+
+    if (keysPath is not null)
+    {
+        Directory.CreateDirectory(keysPath);
         builder.Services.AddDataProtection()
-            .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionPath))
+            .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
             .SetApplicationName("ClinicaPsi");
     }
     else
     {
-        // Fallback para diretório local se EFS não estiver montado
         builder.Services.AddDataProtection()
             .SetApplicationName("ClinicaPsi");
     }
