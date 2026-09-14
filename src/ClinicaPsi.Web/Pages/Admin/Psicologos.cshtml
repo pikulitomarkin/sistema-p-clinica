@@ -135,6 +135,13 @@
                                                 <i class="bi bi-@(psicologo.Ativo ? "pause" : "play")"></i>
                                             </button>
                                         </form>
+                                        <form method="post" asp-page-handler="Delete" asp-route-id="@psicologo.Id" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    title="Excluir"
+                                                    onclick="return confirm('Excluir este psicólogo? Os dados serão mantidos, mas ele deixará de aparecer na lista e não poderá mais atender.')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

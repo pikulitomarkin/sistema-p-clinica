@@ -233,5 +233,41 @@ namespace ClinicaPsi.Web.Pages.Admin
 
             return RedirectToPage();
         }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        {
+            try
+            {
+                var psicologo = await _psicologoService.GetByIdAsync(id);
+                if (psicologo == null)
+                {
+                    TempData["ErrorMessage"] = "Psicólogo não encontrado.";
+                    return RedirectToPage();
+                }
+
+                var nome = psicologo.Nome;
+
+                // Soft-delete: Ativo = false (mantém histórico e evita quebra de FKs)
+                await _psicologoService.DeleteAsync(id);
+
+                // Desativar usuário vinculado, se existir
+                var usuario = _userManager.Users.FirstOrDefault(u => u.PsicologoId == id);
+                if (usuario != null)
+                {
+                    usuario.Ativo = false;
+                    await _userManager.UpdateAsync(usuario);
+                }
+
+                _logger.LogInformation("Psicólogo excluído (soft-delete). ID: {Id}, Nome: {Nome}", id, nome);
+                TempData["SuccessMessage"] = $"Psicólogo {nome} excluído com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao excluir psicólogo {PsicologoId}", id);
+                TempData["ErrorMessage"] = "Erro ao excluir psicólogo. Verifique se há vínculos que impedem a exclusão.";
+            }
+
+            return RedirectToPage();
+        }
     }
 }
