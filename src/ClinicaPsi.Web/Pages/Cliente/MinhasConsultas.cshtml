@@ -193,8 +193,8 @@
                                         @if (consulta.Formato == FormatoConsulta.Online &&
                                              (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
                                         {
-                                            <a href="/consulta/@consulta.Id/video" class="btn btn-info btn-sm">
-                                                <i class="bi bi-camera-video me-1"></i>Entrar na videochamada
+                                            <a href="/Cliente/SalaConsulta/@consulta.Id" class="btn btn-info btn-sm">
+                                                <i class="bi bi-camera-video me-1"></i>Entrar na sala
                                             </a>
                                         }
                                         @if (Model.PrecisaConfirmacao(consulta))
@@ -322,8 +322,8 @@
                                         @if (consulta.Formato == FormatoConsulta.Online &&
                                              (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
                                         {
-                                            <a href="/consulta/@consulta.Id/video" class="btn btn-info">
-                                                <i class="bi bi-camera-video me-1"></i>Entrar na videochamada
+                                            <a href="/Cliente/SalaConsulta/@consulta.Id" class="btn btn-info">
+                                                <i class="bi bi-camera-video me-1"></i>Entrar na sala
                                             </a>
                                         }
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">

@@ -1,0 +1,59 @@
+@page "{id:int}"
+@model ClinicaPsi.Web.Pages.Cliente.SalaConsultaModel
+@{
+    ViewData["Title"] = "Sala da consulta";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1"><i class="bi bi-camera-video me-2"></i>Sala da consulta</h1>
+            @if (Model.Consulta != null)
+            {
+                <p class="text-muted mb-0">
+                    @Model.Consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
+                    · @(Model.Consulta.Psicologo?.Nome ?? "Psicólogo(a)")
+                </p>
+            }
+        </div>
+        <a class="btn btn-secondary" href="/Cliente/MinhasConsultas">Voltar</a>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.MensagemErro))
+    {
+        <div class="alert alert-danger">@Model.MensagemErro</div>
+    }
+    else if (!string.IsNullOrEmpty(Model.MensagemInfo))
+    {
+        <div class="alert alert-info">@Model.MensagemInfo</div>
+    }
+
+    @if (Model.AguardandoChamada)
+    {
+        <div class="text-center py-5 border rounded bg-light">
+            <div class="spinner-border text-success mb-3" role="status"></div>
+            <p class="mb-0">Aguardando o psicólogo chamar você para a videochamada…</p>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Model.EmbedUrl))
+    {
+        <div class="alert alert-success mb-3">
+            Permita câmera e microfone para entrar na videochamada.
+            <a class="alert-link ms-2" href="@Model.EmbedUrl" target="_blank" rel="noopener">Abrir em nova aba</a>
+        </div>
+        <div class="ratio ratio-16x9 border rounded overflow-hidden bg-dark" style="min-height: 70vh;">
+            <iframe src="@Model.EmbedUrl"
+                    allow="camera; microphone; fullscreen; display-capture; autoplay"
+                    allowfullscreen
+                    title="Sala de videochamada"></iframe>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @if (Model.AguardandoChamada)
+    {
+        <script>setTimeout(function () { location.reload(); }, 8000);</script>
+    }
+}

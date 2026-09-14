@@ -493,7 +493,9 @@ static async Task GarantirSchemaProntuarioEVideoAsync(AppDbContext context, ILog
     {
         await context.Database.ExecuteSqlRawAsync(
             @"ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomName"" character varying(100) NULL;
-              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomUrl"" character varying(500) NULL;");
+              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomUrl"" character varying(500) NULL;
+              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""PacienteChamado"" boolean NOT NULL DEFAULT FALSE;
+              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""PacienteChamadoEm"" timestamp without time zone NULL;");
 
         await context.Database.ExecuteSqlRawAsync(
             @"CREATE TABLE IF NOT EXISTS ""ProntuariosEletronicos"" (

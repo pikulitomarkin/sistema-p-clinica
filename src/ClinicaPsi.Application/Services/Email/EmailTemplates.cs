@@ -76,6 +76,22 @@ public static class EmailTemplates
         return Wrap("Bem-vindo(a) — acesso ao portal", body);
     }
 
+    public static string ChamadaConsulta(string nomePaciente, string nomePsicologo, DateTime dataHorario, string salaUrl)
+    {
+        var body = $@"
+<p>Olá, <strong>{Html(nomePaciente)}</strong>,</p>
+<p>Seu(sua) psicólogo(a) <strong>{Html(nomePsicologo)}</strong> está chamando você para a consulta online.</p>
+<p><strong>Data/hora:</strong> {dataHorario:dd/MM/yyyy HH:mm}</p>
+<p style=""margin:24px 0"">
+  <a href=""{Attr(salaUrl)}"" style=""background:{Accent};color:#fff;padding:12px 22px;border-radius:6px;text-decoration:none;display:inline-block"">
+    Entrar na sala da consulta
+  </a>
+</p>
+<p style=""word-break:break-all;font-size:13px;color:#555"">{Html(salaUrl)}</p>
+<p>Se o botão não funcionar, copie e cole o link no navegador (é necessário estar logado na área do cliente).</p>";
+        return Wrap("Você está sendo chamado para a consulta", body);
+    }
+
     private static string Wrap(string titulo, string bodyHtml)
     {
         return $@"<!DOCTYPE html>

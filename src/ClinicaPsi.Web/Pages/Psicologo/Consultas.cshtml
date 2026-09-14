@@ -159,7 +159,7 @@
                                             @if (consulta.Formato == FormatoConsulta.Online &&
                                                  (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
                                             {
-                                                <a class="btn btn-info" href="/consulta/@consulta.Id/video"
+                                                <a class="btn btn-info" href="/Psicologo/SalaConsulta/@consulta.Id"
                                                    title="Entrar na videochamada">
                                                     <i class="bi bi-camera-video"></i>
                                                 </a>
@@ -249,7 +249,7 @@
                                             @if (consulta.Formato == FormatoConsulta.Online &&
                                                  (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
                                             {
-                                                <a class="btn btn-info btn-sm" href="/consulta/@consulta.Id/video">
+                                                <a class="btn btn-info btn-sm" href="/Psicologo/SalaConsulta/@consulta.Id">
                                                     <i class="bi bi-camera-video"></i>
                                                 </a>
                                             }
@@ -412,11 +412,11 @@
         }
 
         function viewConsulta(id) {
-            window.location.href = `/Psicologo/ConsultaDetalhes/${id}`;
+            window.location.href = `/Psicologo/SalaConsulta/${id}`;
         }
 
         function editConsulta(id) {
-            window.location.href = `/Psicologo/EditarConsulta/${id}`;
+            window.location.href = `/Psicologo/SalaConsulta/${id}`;
         }
 
         function cancelConsulta(id) {

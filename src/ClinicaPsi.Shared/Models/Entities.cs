@@ -149,6 +149,12 @@ public class Consulta
     [StringLength(500)]
     public string? VideoRoomUrl { get; set; }
 
+    /// <summary>Psicólogo chamou o paciente para a sala de vídeo.</summary>
+    public bool PacienteChamado { get; set; }
+
+    /// <summary>Momento da chamada do paciente.</summary>
+    public DateTime? PacienteChamadoEm { get; set; }
+
     [StringLength(1000, ErrorMessage = "Observações deve ter no máximo 1000 caracteres")]
     public string? Observacoes { get; set; }
 
