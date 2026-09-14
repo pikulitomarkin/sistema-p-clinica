@@ -468,9 +468,11 @@ static async Task GarantirSchemaProntuarioEVideoAsync(AppDbContext context, ILog
 {
     try
     {
+        // Statements separados: Npgsql/EF podem rejeitar batch multi-comando
         await context.Database.ExecuteSqlRawAsync(
-            @"ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomName"" character varying(100) NULL;
-              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomUrl"" character varying(500) NULL;");
+            @"ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomName"" character varying(100) NULL;");
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""VideoRoomUrl"" character varying(500) NULL;");
 
         await context.Database.ExecuteSqlRawAsync(
             @"CREATE TABLE IF NOT EXISTS ""ProntuariosEletronicos"" (
@@ -496,10 +498,13 @@ static async Task GarantirSchemaProntuarioEVideoAsync(AppDbContext context, ILog
               );");
 
         await context.Database.ExecuteSqlRawAsync(
-            @"CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_PacienteId"" ON ""ProntuariosEletronicos"" (""PacienteId"");
-              CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_PsicologoId"" ON ""ProntuariosEletronicos"" (""PsicologoId"");
-              CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_ConsultaId"" ON ""ProntuariosEletronicos"" (""ConsultaId"");
-              CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_DataSessao"" ON ""ProntuariosEletronicos"" (""DataSessao"");");
+            @"CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_PacienteId"" ON ""ProntuariosEletronicos"" (""PacienteId"");");
+        await context.Database.ExecuteSqlRawAsync(
+            @"CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_PsicologoId"" ON ""ProntuariosEletronicos"" (""PsicologoId"");");
+        await context.Database.ExecuteSqlRawAsync(
+            @"CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_ConsultaId"" ON ""ProntuariosEletronicos"" (""ConsultaId"");");
+        await context.Database.ExecuteSqlRawAsync(
+            @"CREATE INDEX IF NOT EXISTS ""IX_ProntuariosEletronicos_DataSessao"" ON ""ProntuariosEletronicos"" (""DataSessao"");");
 
         logger.LogInformation("Schema de prontuário/vídeo verificado (colunas e tabela).");
     }

@@ -137,8 +137,26 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 return Forbid();
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user?.PsicologoId == null)
+
+            int psicologoId;
+            if (User.IsInRole("Admin") && user?.PsicologoId == null)
+            {
+                var primeiroPsicologo = await _context.Psicologos.FirstOrDefaultAsync();
+                if (primeiroPsicologo == null)
+                {
+                    ModelState.AddModelError("", "Nenhum psicólogo encontrado no sistema");
+                    return await OnGetAsync();
+                }
+                psicologoId = primeiroPsicologo.Id;
+            }
+            else if (user?.PsicologoId == null)
+            {
                 return Forbid();
+            }
+            else
+            {
+                psicologoId = user.PsicologoId.Value;
+            }
 
             try
             {
@@ -146,14 +164,14 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 if (!TimeSpan.TryParse(horaConsulta, out var hora))
                 {
                     ModelState.AddModelError("", "Horário inválido");
-                    return Page();
+                    return await OnGetAsync();
                 }
 
                 var dataHorario = dataConsulta.Date.Add(hora);
 
                 // Verificar se já existe consulta no horário
                 var consultaExistente = await _context.Consultas
-                    .AnyAsync(c => c.PsicologoId == user.PsicologoId &&
+                    .AnyAsync(c => c.PsicologoId == psicologoId &&
                                   c.DataHorario == dataHorario &&
                                   c.Status != StatusConsulta.Cancelada);
 
@@ -171,7 +189,7 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 var novaConsulta = new Consulta
                 {
                     PacienteId = pacienteId,
-                    PsicologoId = user.PsicologoId.Value,
+                    PsicologoId = psicologoId,
                     DataHorario = dataHorario,
                     DuracaoMinutos = duracao,
                     Valor = valor,
@@ -183,10 +201,27 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     DataAgendamento = DateTime.Now
                 };
 
-                await _videoConsultaService.GarantirSalaAsync(novaConsulta);
+                // Sala de video nao deve impedir o agendamento
+                try
+                {
+                    await _videoConsultaService.GarantirSalaAsync(novaConsulta);
+                }
+                catch
+                {
+                    // segue sem sala; pode regenerar depois
+                }
+
                 _context.Consultas.Add(novaConsulta);
                 await _context.SaveChangesAsync();
-                await _videoConsultaService.FinalizarSalaAposCriacaoAsync(novaConsulta);
+
+                try
+                {
+                    await _videoConsultaService.FinalizarSalaAposCriacaoAsync(novaConsulta);
+                }
+                catch
+                {
+                    // consulta ja salva
+                }
 
                 TempData["Success"] = "Consulta agendada com sucesso!";
                 return RedirectToPage();
