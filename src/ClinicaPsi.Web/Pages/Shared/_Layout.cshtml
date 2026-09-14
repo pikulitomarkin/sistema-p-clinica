@@ -188,14 +188,14 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <h6><i class="bi bi-heart-fill text-success me-2"></i>PsiiAnaSantos</h6>
+                    <h6><i class="bi bi-heart-fill text-success me-2"></i>@clinicaConfig.Nome</h6>
                     <p class="small mb-0">Psi. Ana Santos - CRP 08/45168</p>
                     <p class="small mb-0">Psicologia Clínica e Terapia</p>
                 </div>
                 <div class="col-md-4">
                     <h6 class="small"><i class="bi bi-geo-alt me-2"></i>Endereço</h6>
                     <p class="small mb-0" style="white-space: pre-line;">@clinicaConfig.Endereco</p>
-                    <p class="small mb-0">Atendimento presencial e online</p>
+                    <p class="small mb-0">@(string.IsNullOrWhiteSpace(clinicaConfig.HorarioFuncionamento) ? "Atendimento presencial e online" : clinicaConfig.HorarioFuncionamento)</p>
                 </div>
                 <div class="col-md-4 text-md-end">
                     <h6 class="small"><i class="bi bi-chat-dots me-2"></i>Contato</h6>
@@ -209,7 +209,7 @@
             <div class="row">
                 <div class="col-12 text-center">
                     <p class="small mb-0 text-muted">
-                        &copy; 2025 PsiiAnaSantos - Todos os direitos reservados
+                        &copy; @DateTime.Now.Year @clinicaConfig.Nome - Todos os direitos reservados
                     </p>
                 </div>
             </div>
