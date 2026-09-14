@@ -32,12 +32,16 @@ namespace ClinicaPsi.Web.Pages.Psicologo
         public DateTime? FiltroDataInicio { get; set; }
         public DateTime? FiltroDataFim { get; set; }
         public string Visualizacao { get; set; } = "lista";
+        /// <summary>todas | proximas | historico</summary>
+        public string FiltroPeriodo { get; set; } = "todas";
         
         // Paginação
         public int PaginaAtual { get; set; } = 1;
         public int TotalConsultas { get; set; }
         public int TotalPaginas { get; set; }
         public int ItensPorPagina { get; set; } = 20;
+        public int TotalHistorico { get; set; }
+        public int TotalProximas { get; set; }
 
         public async Task<IActionResult> OnGetAsync(
             string? paciente = null,
@@ -46,6 +50,7 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             DateTime? dataInicio = null,
             DateTime? dataFim = null,
             string visualizacao = "lista",
+            string periodo = "todas",
             int pagina = 1)
         {
             try
@@ -83,7 +88,10 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             FiltroDataInicio = dataInicio;
             FiltroDataFim = dataFim;
             Visualizacao = visualizacao;
+            FiltroPeriodo = string.IsNullOrWhiteSpace(periodo) ? "todas" : periodo.ToLowerInvariant();
             PaginaAtual = pagina;
+
+            var agora = DateTime.Now;
 
             // Construir query base
             var query = _context.Consultas
@@ -116,16 +124,52 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 query = query.Where(c => c.DataHorario.Date <= FiltroDataFim.Value.Date);
             }
 
-            // Calcular totais
-            TotalConsultas = await query.CountAsync();
-            TotalPaginas = (int)Math.Ceiling((double)TotalConsultas / ItensPorPagina);
+            // Contagens de período (antes do filtro de período)
+            var baseList = await query.ToListAsync();
+            TotalProximas = baseList.Count(c =>
+                c.Status != StatusConsulta.Cancelada &&
+                c.Status != StatusConsulta.Realizada &&
+                c.Status != StatusConsulta.NoShow &&
+                c.DataHorario.AddMinutes(c.DuracaoMinutos) >= agora);
+            TotalHistorico = baseList.Count(c =>
+                c.Status == StatusConsulta.Realizada ||
+                c.Status == StatusConsulta.Cancelada ||
+                c.Status == StatusConsulta.NoShow ||
+                c.DataHorario.AddMinutes(c.DuracaoMinutos) < agora);
 
-            // Aplicar paginação e ordenação
-            Consultas = await query
-                .OrderByDescending(c => c.DataHorario)
+            IEnumerable<Consulta> filtradas = baseList;
+            if (FiltroPeriodo == "proximas")
+            {
+                filtradas = baseList.Where(c =>
+                    c.Status != StatusConsulta.Cancelada &&
+                    c.Status != StatusConsulta.Realizada &&
+                    c.Status != StatusConsulta.NoShow &&
+                    c.DataHorario.AddMinutes(c.DuracaoMinutos) >= agora);
+            }
+            else if (FiltroPeriodo == "historico")
+            {
+                filtradas = baseList.Where(c =>
+                    c.Status == StatusConsulta.Realizada ||
+                    c.Status == StatusConsulta.Cancelada ||
+                    c.Status == StatusConsulta.NoShow ||
+                    c.DataHorario.AddMinutes(c.DuracaoMinutos) < agora);
+            }
+
+            var ordenadas = (FiltroPeriodo == "proximas"
+                    ? filtradas.OrderBy(c => c.DataHorario)
+                    : filtradas.OrderByDescending(c => c.DataHorario))
+                .ToList();
+
+            // Calcular totais
+            TotalConsultas = ordenadas.Count;
+            TotalPaginas = Math.Max(1, (int)Math.Ceiling((double)TotalConsultas / ItensPorPagina));
+            if (PaginaAtual > TotalPaginas) PaginaAtual = TotalPaginas;
+            if (PaginaAtual < 1) PaginaAtual = 1;
+
+            Consultas = ordenadas
                 .Skip((PaginaAtual - 1) * ItensPorPagina)
                 .Take(ItensPorPagina)
-                .ToListAsync();
+                .ToList();
 
                 // Buscar pacientes disponíveis
                 PacientesDisponiveis = await _context.Pacientes
