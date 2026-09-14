@@ -16,8 +16,11 @@
         <div class="sidebar-header">
             <a href="/" class="text-decoration-none">
                 <div class="d-flex align-items-center p-3">
+                    <span class="brand-logo-p brand-logo-p--lg me-3" aria-hidden="true">P</span>
                     <div class="text-white">
-                        <h5 class="mb-0">Psicóloga Ana Santos</h5>
+                        <h5 class="mb-0 brand-admin-title">
+                            <span class="visually-hidden">P</span>sicóloga Ana Santos
+                        </h5>
                         <small class="opacity-75">Sistema Administrativo</small>
                     </div>
                 </div>
@@ -107,10 +110,6 @@
                     <a href="/psicologo/pacientes" class="nav-link">
                         <i class="bi bi-person-lines-fill me-2"></i>
                         Meus Pacientes
-                    </a>
-                    <a href="/prontuario" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Prontuario") == true ? "active" : "")">
-                        <i class="bi bi-journal-medical me-2"></i>
-                        Prontuário
                     </a>
                     <a href="/psicologo/relatorios" class="nav-link">
                         <i class="bi bi-file-text me-2"></i>
