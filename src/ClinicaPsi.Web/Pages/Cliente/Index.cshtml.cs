@@ -25,6 +25,7 @@ public class IndexModel : PageModel
     }
 
     public int ConsultasRealizadas { get; set; }
+    public int ConsultasAgendadas { get; set; }
     public List<Consulta> ProximasConsultas { get; set; } = new();
     public List<Consulta> HistoricoConsultas { get; set; } = new();
     public ClinicaPsi.Shared.Models.Paciente? PacienteInfo { get; set; }
@@ -56,37 +57,38 @@ public class IndexModel : PageModel
             if (usuario.PacienteId == null)
             {
                 ConsultasRealizadas = 0;
+                ConsultasAgendadas = 0;
                 PacienteInfo = null;
             }
             else
             {
-                // Obter dados do paciente
                 PacienteInfo = await _pacienteService.GetByIdAsync(usuario.PacienteId.Value);
-                if (PacienteInfo != null)
-                {
-                    ConsultasRealizadas = PacienteInfo.ConsultasRealizadas;
-                }
             }
 
-            // Carregar próximas consultas
             var todasConsultas = await _consultaService.GetAllAsync();
-            ProximasConsultas = usuario.PacienteId.HasValue ? 
-                todasConsultas
-                    .Where(c => c.PacienteId == usuario.PacienteId && 
-                               c.DataHorario > DateTime.Now &&
-                               c.Status == StatusConsulta.Agendada)
-                    .OrderBy(c => c.DataHorario)
-                    .Take(5)
-                    .ToList() : new List<Consulta>();
+            var minhas = usuario.PacienteId.HasValue
+                ? todasConsultas.Where(c => c.PacienteId == usuario.PacienteId.Value).ToList()
+                : new List<Consulta>();
 
-            // Carregar histórico de consultas
-            HistoricoConsultas = usuario.PacienteId.HasValue ? 
-                todasConsultas
-                    .Where(c => c.PacienteId == usuario.PacienteId && 
-                               c.Status == StatusConsulta.Realizada)
-                    .OrderByDescending(c => c.DataHorario)
-                    .Take(10)
-                    .ToList() : new List<Consulta>();
+            // Contadores a partir das consultas reais (não do campo desatualizado do paciente)
+            ConsultasRealizadas = minhas.Count(c => c.Status == StatusConsulta.Realizada);
+            ConsultasAgendadas = minhas.Count(c =>
+                (c.Status == StatusConsulta.Agendada || c.Status == StatusConsulta.Confirmada) &&
+                c.DataHorario.Date >= DateTime.Today);
+
+            // Próximas: agendadas/confirmadas de hoje em diante
+            ProximasConsultas = minhas
+                .Where(c => (c.Status == StatusConsulta.Agendada || c.Status == StatusConsulta.Confirmada) &&
+                            c.DataHorario.Date >= DateTime.Today)
+                .OrderBy(c => c.DataHorario)
+                .Take(5)
+                .ToList();
+
+            HistoricoConsultas = minhas
+                .Where(c => c.Status == StatusConsulta.Realizada)
+                .OrderByDescending(c => c.DataHorario)
+                .Take(10)
+                .ToList();
 
             return Page();
         }

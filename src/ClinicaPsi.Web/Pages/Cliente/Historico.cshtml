@@ -3,6 +3,7 @@
 @model ClinicaPsi.Web.Pages.Cliente.HistoricoModel
 @{
     ViewData["Title"] = "Histórico";
+    Layout = "_AdminLayout";
 }
 
 <div class="container-fluid">
@@ -144,96 +145,98 @@
                                             </td>
                                             <td class="fw-bold">@consulta.Valor.ToString("C")</td>
                                             <td>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
                                                         data-bs-toggle="modal" data-bs-target="#detalhesModal@(consulta.Id)">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                             </td>
                                         </tr>
-
-                                        <!-- Modal Detalhes -->
-                                        <div class="modal fade" id="detalhesModal@(consulta.Id)" tabindex="-1">
-                                            <div class="modal-dialog modal-lg">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Detalhes da Consulta</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="row g-3">
-                                                            <div class="col-md-6">
-                                                                <strong>Data/Horário:</strong><br>
-                                                                @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <strong>Duração:</strong><br>
-                                                                @consulta.DuracaoMinutos minutos
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <strong>Psicólogo:</strong><br>
-                                                                @consulta.Psicologo.Nome
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <strong>Especialidades:</strong><br>
-                                                                @consulta.Psicologo.Especialidades
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <strong>Tipo:</strong><br>
-                                                                @consulta.Tipo.GetDisplayName()
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <strong>Valor:</strong><br>
-                                                                @consulta.Valor.ToString("C")
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <strong>Status:</strong><br>
-                                                                <span class="badge @Model.GetStatusBadgeClass(consulta.Status)">
-                                                                    @consulta.Status.GetDisplayName()
-                                                                </span>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <strong>Agendado em:</strong><br>
-                                                                @consulta.DataAgendamento.ToString("dd/MM/yyyy HH:mm")
-                                                            </div>
-                                                            @if (!string.IsNullOrWhiteSpace(consulta.Observacoes))
-                                                            {
-                                                                <div class="col-12">
-                                                                    <strong>Observações:</strong><br>
-                                                                    @consulta.Observacoes
-                                                                </div>
-                                                            }
-                                                            @if (!string.IsNullOrWhiteSpace(consulta.RelatorioSessao))
-                                                            {
-                                                                <div class="col-12">
-                                                                    <strong>Relatório da Sessão:</strong><br>
-                                                                    <div class="alert alert-light">
-                                                                        @consulta.RelatorioSessao
-                                                                    </div>
-                                                                </div>
-                                                            }
-                                                            @if (consulta.Status == StatusConsulta.Cancelada && !string.IsNullOrWhiteSpace(consulta.MotivoCancelamento))
-                                                            {
-                                                                <div class="col-12">
-                                                                    <strong>Motivo do Cancelamento:</strong><br>
-                                                                    <div class="alert alert-warning">
-                                                                        @consulta.MotivoCancelamento
-                                                                    </div>
-                                                                </div>
-                                                            }
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                            Fechar
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     }
                                 </tbody>
                             </table>
                         </div>
+
+                        @foreach (var consulta in Model.ConsultasHistorico)
+                        {
+                            <div class="modal fade" id="detalhesModal@(consulta.Id)" tabindex="-1" aria-labelledby="detalhesModalLabel@(consulta.Id)" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content" style="background:#fff;">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="detalhesModalLabel@(consulta.Id)">Detalhes da Consulta</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <strong>Data/Horário:</strong><br>
+                                                    @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Duração:</strong><br>
+                                                    @consulta.DuracaoMinutos minutos
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Psicólogo:</strong><br>
+                                                    @consulta.Psicologo.Nome
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Especialidades:</strong><br>
+                                                    @consulta.Psicologo.Especialidades
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Tipo:</strong><br>
+                                                    @consulta.Tipo.GetDisplayName()
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Valor:</strong><br>
+                                                    @consulta.Valor.ToString("C")
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Status:</strong><br>
+                                                    <span class="badge @Model.GetStatusBadgeClass(consulta.Status)">
+                                                        @consulta.Status.GetDisplayName()
+                                                    </span>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong>Agendado em:</strong><br>
+                                                    @consulta.DataAgendamento.ToString("dd/MM/yyyy HH:mm")
+                                                </div>
+                                                @if (!string.IsNullOrWhiteSpace(consulta.Observacoes))
+                                                {
+                                                    <div class="col-12">
+                                                        <strong>Observações:</strong><br>
+                                                        @consulta.Observacoes
+                                                    </div>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(consulta.RelatorioSessao))
+                                                {
+                                                    <div class="col-12">
+                                                        <strong>Relatório da Sessão:</strong><br>
+                                                        <div class="alert alert-light mb-0">
+                                                            @consulta.RelatorioSessao
+                                                        </div>
+                                                    </div>
+                                                }
+                                                @if (consulta.Status == StatusConsulta.Cancelada && !string.IsNullOrWhiteSpace(consulta.MotivoCancelamento))
+                                                {
+                                                    <div class="col-12">
+                                                        <strong>Motivo do Cancelamento:</strong><br>
+                                                        <div class="alert alert-warning mb-0">
+                                                            @consulta.MotivoCancelamento
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                Fechar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
 
                         <!-- Paginação -->
                         @if (Model.TotalPaginas > 1)

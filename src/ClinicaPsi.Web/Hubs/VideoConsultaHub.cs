@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using ClinicaPsi.Application.Services;
+using ClinicaPsi.Application.Services.Email;
 using ClinicaPsi.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -9,6 +10,7 @@ namespace ClinicaPsi.Web.Hubs;
 
 /// <summary>
 /// Sinalização WebRTC 1:1 (oferta/answer/ICE) por consulta — sem conta em provedor externo.
+/// Também notifica o paciente fora da sala quando o psicólogo chama.
 /// </summary>
 [Authorize(Roles = "Admin,Psicologo,Cliente")]
 public class VideoConsultaHub : Hub
@@ -17,16 +19,34 @@ public class VideoConsultaHub : Hub
 
     private readonly VideoConsultaService _videoConsultaService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IEmailService _emailService;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<VideoConsultaHub> _logger;
 
     public VideoConsultaHub(
         VideoConsultaService videoConsultaService,
         UserManager<ApplicationUser> userManager,
+        IEmailService emailService,
+        IConfiguration configuration,
         ILogger<VideoConsultaHub> logger)
     {
         _videoConsultaService = videoConsultaService;
         _userManager = userManager;
+        _emailService = emailService;
+        _configuration = configuration;
         _logger = logger;
+    }
+
+    /// <summary>Cliente (paciente) entra no grupo de notificações globais da área logada.</summary>
+    public async Task SubscribePacienteNotificacoes()
+    {
+        var user = await _userManager.GetUserAsync(Context.User!);
+        if (user?.PacienteId == null)
+            return;
+
+        var group = PacienteGroup(user.PacienteId.Value);
+        await Groups.AddToGroupAsync(Context.ConnectionId, group);
+        _logger.LogDebug("Paciente {PacienteId} inscrito em notificações ({Conn})", user.PacienteId, Context.ConnectionId);
     }
 
     public async Task JoinRoom(int consultaId, string roomName, string displayName, string role)
@@ -55,12 +75,15 @@ public class VideoConsultaHub : Hub
             _ => Context.User.IsInRole("Psicologo") ? "Psicologo" : "Cliente"
         };
 
-        // Remove participação anterior deste connection
         if (Participants.TryRemove(Context.ConnectionId, out var previous))
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, previous.RoomName);
 
         Participants[Context.ConnectionId] = new ParticipantInfo(consultaId, roomName, safeName, safeRole);
         await Groups.AddToGroupAsync(Context.ConnectionId, roomName);
+
+        // Paciente entrou na sala: encerra flag de notificação in-app
+        if (safeRole == "Cliente")
+            await _videoConsultaService.EncerrarChamadaPacienteAsync(consultaId);
 
         var peers = Participants
             .Where(p => p.Key != Context.ConnectionId && p.Value.RoomName == roomName)
@@ -92,12 +115,44 @@ public class VideoConsultaHub : Hub
         if (!Participants.TryGetValue(Context.ConnectionId, out var me))
             return;
 
+        // Notifica quem já está na sala
         await Clients.OthersInGroup(me.RoomName).SendAsync("IncomingCall", new
         {
             connectionId = Context.ConnectionId,
             displayName = me.DisplayName,
             role = me.Role
         });
+
+        // Persiste flag + notifica paciente em qualquer página da área Cliente
+        try
+        {
+            var (consulta, novaChamada) = await _videoConsultaService.RegistrarChamadaPacienteAsync(me.ConsultaId);
+            var videoUrl = string.IsNullOrWhiteSpace(consulta.VideoRoomUrl)
+                ? $"/consulta/{consulta.Id}/video"
+                : consulta.VideoRoomUrl!;
+
+            var payload = new
+            {
+                consultaId = consulta.Id,
+                psicologoNome = consulta.Psicologo?.Nome ?? me.DisplayName,
+                videoUrl,
+                chamadaEm = consulta.VideoChamadaAtivaEm,
+                dataHorario = consulta.DataHorario
+            };
+
+            await Clients.Group(PacienteGroup(consulta.PacienteId)).SendAsync("ChamadaRecebida", payload);
+
+            if (novaChamada)
+                await TentarEnviarEmailChamadaAsync(consulta, videoUrl);
+
+            _logger.LogInformation(
+                "Chamada registrada consulta={ConsultaId} paciente={PacienteId} nova={Nova}",
+                consulta.Id, consulta.PacienteId, novaChamada);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Falha ao registrar/notificar chamada da consulta {ConsultaId}", me.ConsultaId);
+        }
     }
 
     public async Task SendOffer(string targetConnectionId, string sdp)
@@ -150,6 +205,42 @@ public class VideoConsultaHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
+    private async Task TentarEnviarEmailChamadaAsync(Consulta consulta, string videoUrl)
+    {
+        if (!_emailService.IsConfigured)
+            return;
+
+        var email = consulta.Paciente?.Email;
+        if (string.IsNullOrWhiteSpace(email))
+            return;
+
+        try
+        {
+            var baseUrl = (_configuration["PUBLIC_APP_URL"]
+                           ?? _configuration["WhatsApp:SiteUrl"]
+                           ?? "").TrimEnd('/');
+            var link = videoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                ? videoUrl
+                : $"{baseUrl}{videoUrl}";
+
+            var psicologo = consulta.Psicologo?.Nome ?? "seu(sua) psicólogo(a)";
+            var html = $@"
+<p>Olá{(string.IsNullOrWhiteSpace(consulta.Paciente?.Nome) ? "" : $", {consulta.Paciente.Nome}")}!</p>
+<p><strong>{psicologo}</strong> está chamando você para a consulta online.</p>
+<p><a href=""{link}"" style=""display:inline-block;padding:12px 20px;background:#28a745;color:#fff;text-decoration:none;border-radius:6px;"">Entrar na chamada</a></p>
+<p>Ou acesse: {link}</p>";
+
+            await _emailService.SendAsync(
+                email,
+                "Você está sendo chamado(a) para a videochamada",
+                html);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Falha ao enviar e-mail de chamada consulta {Id}", consulta.Id);
+        }
+    }
+
     private bool CanSignal(string targetConnectionId, out ParticipantInfo? me)
     {
         me = null;
@@ -165,6 +256,13 @@ public class VideoConsultaHub : Hub
         if (!Participants.TryRemove(Context.ConnectionId, out var me))
             return;
 
+        // Se psicólogo sai, encerra notificação pendente
+        if (me.Role is "Psicologo" or "Admin")
+        {
+            try { await _videoConsultaService.EncerrarChamadaPacienteAsync(me.ConsultaId); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Erro ao encerrar flag de chamada {Id}", me.ConsultaId); }
+        }
+
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, me.RoomName);
         await Clients.OthersInGroup(me.RoomName).SendAsync("PeerLeft", new
         {
@@ -172,6 +270,8 @@ public class VideoConsultaHub : Hub
             displayName = me.DisplayName
         });
     }
+
+    private static string PacienteGroup(int pacienteId) => $"paciente-{pacienteId}";
 
     private sealed record ParticipantInfo(int ConsultaId, string RoomName, string DisplayName, string Role);
 }

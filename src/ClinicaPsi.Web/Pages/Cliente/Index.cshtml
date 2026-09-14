@@ -55,10 +55,9 @@
             <div class="stats-icon" style="background: linear-gradient(135deg, #17a2b8, #138496);">
                 <i class="bi bi-calendar-week"></i>
             </div>
-            <div class="stats-number">@Model.ProximasConsultas.Count</div>
+            <div class="stats-number">@Model.ConsultasAgendadas</div>
             <div class="stats-label">Consultas Agendadas</div>
         </div>
-    </div>
     </div>
 </div>
 
@@ -113,6 +112,12 @@
                                             <span class="badge bg-success">@consulta.Status</span>
                                         </td>
                                         <td>
+                                            @if (consulta.Formato == FormatoConsulta.Online)
+                                            {
+                                                <a href="/consulta/@consulta.Id/video" class="btn btn-sm btn-info me-1" title="Videochamada">
+                                                    <i class="bi bi-camera-video"></i>
+                                                </a>
+                                            }
                                             <a href="/Cliente/MinhasConsultas" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-eye"></i>
                                             </a>
@@ -196,7 +201,6 @@
 
     <!-- Right Sidebar - Patient Info -->
     <div class="col-lg-4">
-        <!-- Informações do Paciente -->
         <div class="admin-card mb-4">
             <div class="admin-card-header">
                 <h5 class="mb-0">
@@ -219,7 +223,7 @@
 
                     <div class="row text-center">
                         <div class="col-12">
-                            <strong class="text-success">@Model.PacienteInfo.ConsultasRealizadas</strong>
+                            <strong class="text-success">@Model.ConsultasRealizadas</strong>
                             <div class="small text-muted">Consultas Realizadas</div>
                         </div>
                     </div>
@@ -240,11 +244,5 @@
                 }
             </div>
         </div>
-
     </div>
 </div>
-, 500);
-            }
-        });
-    </script>
-}

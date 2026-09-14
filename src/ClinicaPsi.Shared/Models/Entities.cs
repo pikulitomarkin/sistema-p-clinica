@@ -152,6 +152,9 @@ public class Consulta
     [StringLength(500)]
     public string? VideoRoomUrl { get; set; }
 
+    /// <summary>Quando o psicólogo inicia "Chamar paciente"; usado para notificação in-app / polling.</summary>
+    public DateTime? VideoChamadaAtivaEm { get; set; }
+
     [StringLength(1000, ErrorMessage = "Observações deve ter no máximo 1000 caracteres")]
     public string? Observacoes { get; set; }
 

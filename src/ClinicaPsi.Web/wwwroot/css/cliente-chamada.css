@@ -1,0 +1,82 @@
+/* Banner global de chamada — área do Cliente */
+.cliente-chamada-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3000;
+  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 45%, #00897b 100%);
+  color: #fff;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  padding: 0.85rem 1rem;
+}
+
+.cliente-chamada-banner__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cliente-chamada-banner__text {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  font-size: 1rem;
+}
+
+.cliente-chamada-banner__title {
+  letter-spacing: 0.02em;
+}
+
+.cliente-chamada-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cliente-chamada-banner__enter {
+  animation: cliente-chamada-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes cliente-chamada-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.45); }
+  50% { transform: scale(1.03); box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
+}
+
+/* Modais Bootstrap — fundo sólido e acima do sidebar admin */
+.modal {
+  z-index: 2100 !important;
+}
+
+.modal-backdrop {
+  z-index: 2050 !important;
+  background-color: rgba(0, 0, 0, 0.55) !important;
+}
+
+.modal-content {
+  background-color: #ffffff !important;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.25);
+  color: #212529;
+}
+
+.modal-header,
+.modal-footer {
+  background-color: #ffffff;
+}
+
+.modal-body {
+  background-color: #ffffff;
+}
+
+/* Evita que hover de card afete empilhamento do modal */
+.modal.show .modal-dialog {
+  transform: none;
+}

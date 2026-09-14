@@ -1,0 +1,18 @@
+@* Notificação global de videochamada (Cliente) *@
+@using Microsoft.AspNetCore.Identity
+@using ClinicaPsi.Shared.Models
+@inject SignInManager<ApplicationUser> SignInManager
+
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Cliente"))
+{
+    <link rel="stylesheet" href="~/css/cliente-chamada.css" asp-append-version="true" />
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+    <script src="~/js/cliente-chamada-notifier.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof initClienteChamadaNotifier === 'function') {
+                initClienteChamadaNotifier({ pollIntervalMs: 4000 });
+            }
+        });
+    </script>
+}

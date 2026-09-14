@@ -126,4 +126,74 @@ public class VideoConsultaService
             return consulta;
         return null;
     }
+
+    /// <summary>Janela em que a chamada permanece "ativa" para polling/notificação in-app.</summary>
+    public static readonly TimeSpan ChamadaAtivaTtl = TimeSpan.FromMinutes(15);
+
+    public async Task<(Consulta Consulta, bool NovaChamada)> RegistrarChamadaPacienteAsync(int consultaId)
+    {
+        var consulta = await _context.Consultas
+            .Include(c => c.Paciente)
+            .Include(c => c.Psicologo)
+            .FirstOrDefaultAsync(c => c.Id == consultaId)
+            ?? throw new InvalidOperationException("Consulta não encontrada.");
+
+        await GarantirSalaAsync(consulta);
+
+        var agora = DateTime.Now;
+        var jaAtiva = consulta.VideoChamadaAtivaEm.HasValue &&
+                      agora - consulta.VideoChamadaAtivaEm.Value < ChamadaAtivaTtl;
+
+        consulta.VideoChamadaAtivaEm = agora;
+        consulta.DataAtualizacao = agora;
+        await _context.SaveChangesAsync();
+
+        return (consulta, !jaAtiva);
+    }
+
+    public async Task EncerrarChamadaPacienteAsync(int consultaId)
+    {
+        var consulta = await _context.Consultas.FirstOrDefaultAsync(c => c.Id == consultaId);
+        if (consulta == null || !consulta.VideoChamadaAtivaEm.HasValue)
+            return;
+
+        consulta.VideoChamadaAtivaEm = null;
+        consulta.DataAtualizacao = DateTime.Now;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<ChamadaAtivaDto>> ObterChamadasAtivasDoPacienteAsync(int pacienteId)
+    {
+        var limite = DateTime.Now - ChamadaAtivaTtl;
+        var consultas = await _context.Consultas
+            .AsNoTracking()
+            .Include(c => c.Psicologo)
+            .Where(c => c.PacienteId == pacienteId &&
+                        c.Formato == FormatoConsulta.Online &&
+                        c.VideoChamadaAtivaEm != null &&
+                        c.VideoChamadaAtivaEm >= limite &&
+                        c.Status != StatusConsulta.Cancelada)
+            .OrderByDescending(c => c.VideoChamadaAtivaEm)
+            .ToListAsync();
+
+        return consultas.Select(c => new ChamadaAtivaDto
+        {
+            ConsultaId = c.Id,
+            PsicologoNome = c.Psicologo?.Nome ?? "Psicólogo(a)",
+            VideoUrl = string.IsNullOrWhiteSpace(c.VideoRoomUrl)
+                ? $"/consulta/{c.Id}/video"
+                : c.VideoRoomUrl!,
+            ChamadaEm = c.VideoChamadaAtivaEm!.Value,
+            DataHorario = c.DataHorario
+        }).ToList();
+    }
+}
+
+public class ChamadaAtivaDto
+{
+    public int ConsultaId { get; set; }
+    public string PsicologoNome { get; set; } = "";
+    public string VideoUrl { get; set; } = "";
+    public DateTime ChamadaEm { get; set; }
+    public DateTime DataHorario { get; set; }
 }
