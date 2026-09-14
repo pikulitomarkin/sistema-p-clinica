@@ -15,11 +15,16 @@ namespace ClinicaPsi.Web.Pages.Cliente
     {
         private readonly AppDbContext _context;
         private readonly ConfiguracaoService _configuracaoService;
+        private readonly VideoConsultaService _videoConsultaService;
 
-        public AgendarConsultaModel(AppDbContext context, ConfiguracaoService configuracaoService)
+        public AgendarConsultaModel(
+            AppDbContext context,
+            ConfiguracaoService configuracaoService,
+            VideoConsultaService videoConsultaService)
         {
             _context = context;
             _configuracaoService = configuracaoService;
+            _videoConsultaService = videoConsultaService;
         }
 
         public List<ClinicaPsi.Shared.Models.Psicologo> Psicologos { get; set; } = new();
