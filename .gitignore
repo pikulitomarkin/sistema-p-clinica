@@ -262,5 +262,6 @@ yarn-error.log*
 # Visual Studio Code
 .vscode/
 
-# EF Core Migrations
-Migrations/
+# EF Core Migrations — versionar migrations de producao
+# Migrations/
+

@@ -8,24 +8,11 @@ public static class DbInitializer
 {
     public static async Task SeedAsync(AppDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
-        // Aplicar migrações pendentes se necessário
+        await EnsureSchemaAsync(context);
+
         var connectionString = context.Database.GetConnectionString();
         if (connectionString?.Contains("Host=") == true) // PostgreSQL
         {
-            // APENAS criar se não existir (NÃO deletar em produção!)
-            var canConnect = await context.Database.CanConnectAsync();
-            if (!canConnect)
-            {
-                await context.Database.EnsureCreatedAsync();
-                Console.WriteLine("Database PostgreSQL criado com sucesso!");
-            }
-            else
-            {
-                // Aplicar migrações pendentes
-                await context.Database.MigrateAsync();
-                Console.WriteLine("Migrações aplicadas com sucesso!");
-            }
-            
             // Criar roles via Identity (não usa DateTime problemático)
             await CreateRolesAsync(roleManager);
             
@@ -40,26 +27,26 @@ public static class DbInitializer
                 Ativo = true
             };
 
-            var result = await userManager.CreateAsync(marcosUser, "marcos123");
-            if (result.Succeeded)
+            var existing = await userManager.FindByEmailAsync(marcosUser.Email);
+            if (existing is null)
             {
-                await userManager.AddToRoleAsync(marcosUser, "Admin");
-                Console.WriteLine("Usuario admin marcos criado com sucesso!");
-            }
-            else
-            {
-                Console.WriteLine($"Erro ao criar usuario marcos: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                var result = await userManager.CreateAsync(marcosUser, "marcos123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(marcosUser, "Admin");
+                    Console.WriteLine("Usuario admin marcos criado com sucesso!");
+                }
+                else
+                {
+                    Console.WriteLine($"Erro ao criar usuario marcos: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
             }
             
             Console.WriteLine("SEED COMPLETO - Somente usuario admin criado");
             return;
         }
-        else
-        {
-            // SQLite - aplicar migrations normalmente
-            await context.Database.MigrateAsync();
-        }
 
+        // SQLite / demais provedores
         // Criar roles se não existirem
         await CreateRolesAsync(roleManager);
 
@@ -76,6 +63,29 @@ public static class DbInitializer
         await AssociateUsersAsync(context, userManager);
 
         await context.SaveChangesAsync();
+    }
+
+    private static async Task EnsureSchemaAsync(AppDbContext context)
+    {
+        var pending = (await context.Database.GetPendingMigrationsAsync()).ToList();
+        var applied = (await context.Database.GetAppliedMigrationsAsync()).ToList();
+
+        if (pending.Count > 0)
+        {
+            Console.WriteLine($"Aplicando {pending.Count} migration(s)...");
+            await context.Database.MigrateAsync();
+            return;
+        }
+
+        if (applied.Count > 0)
+        {
+            Console.WriteLine("Schema ja migrado.");
+            return;
+        }
+
+        // Sem migrations no assembly (ex.: pasta ignorada no git) — criar schema
+        Console.WriteLine("Nenhuma migration encontrada. Criando schema com EnsureCreated...");
+        await context.Database.EnsureCreatedAsync();
     }
 
     private static async Task CreateRolesAsync(RoleManager<IdentityRole> roleManager)

@@ -226,14 +226,23 @@ using (var scope = app.Services.CreateScope())
     
     try
     {
-        // Aplicar migrations pendentes automaticamente
-        logger.LogInformation("Verificando migrations pendentes...");
-        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-        if (pendingMigrations.Any())
+        // Aplicar migrations pendentes automaticamente; se nao houver, EnsureCreated
+        logger.LogInformation("Verificando schema do banco...");
+        var pendingMigrations = (await context.Database.GetPendingMigrationsAsync()).ToList();
+        var appliedMigrations = (await context.Database.GetAppliedMigrationsAsync()).ToList();
+
+        if (pendingMigrations.Count > 0)
         {
-            logger.LogInformation($"Aplicando {pendingMigrations.Count()} migration(s) pendente(s): {string.Join(", ", pendingMigrations)}");
+            logger.LogInformation("Aplicando {Count} migration(s) pendente(s): {List}",
+                pendingMigrations.Count, string.Join(", ", pendingMigrations));
             await context.Database.MigrateAsync();
-            logger.LogInformation("✅ Migrations aplicadas com sucesso!");
+            logger.LogInformation("Migrations aplicadas com sucesso!");
+        }
+        else if (appliedMigrations.Count == 0)
+        {
+            logger.LogWarning("Nenhuma migration no assembly. Criando schema com EnsureCreated...");
+            await context.Database.EnsureCreatedAsync();
+            logger.LogInformation("Schema criado com EnsureCreated.");
         }
         else
         {
@@ -242,7 +251,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "❌ Erro ao aplicar migrations: {Message}", ex.Message);
+        logger.LogError(ex, "Erro ao preparar schema: {Message}", ex.Message);
         throw;
     }
     
