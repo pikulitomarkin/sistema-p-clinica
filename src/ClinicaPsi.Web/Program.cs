@@ -184,6 +184,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<PacienteService>();
 builder.Services.AddScoped<ConsultaService>();
 builder.Services.AddScoped<PsicologoService>();
+builder.Services.AddScoped<UsuarioPsicologoSyncService>();
 builder.Services.AddScoped<ProntuarioService>();
 builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<NotificacaoService>();
@@ -259,6 +260,22 @@ using (var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     
     await DbInitializer.SeedAsync(context, userManager, roleManager);
+
+    try
+    {
+        var sync = scope.ServiceProvider.GetRequiredService<UsuarioPsicologoSyncService>();
+        var syncResult = await sync.SincronizarTodosAsync();
+        if (syncResult.TeveAlteracoes)
+        {
+            logger.LogInformation(
+                "Backfill usuários↔psicólogos no boot: users={U}, psicólogos={P}, vínculos={V}",
+                syncResult.UsuariosCriados, syncResult.PsicologosCriados, syncResult.VinculosAtualizados);
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Falha no backfill usuários↔psicólogos (não bloqueia o boot)");
+    }
 }
 
 // Configurar pipeline HTTP

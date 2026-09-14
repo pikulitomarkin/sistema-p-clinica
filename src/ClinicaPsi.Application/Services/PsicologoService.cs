@@ -21,6 +21,14 @@ public class PsicologoService
             .ToListAsync();
     }
 
+    /// <summary>Lista todos os psicólogos (ativos e inativos) — uso admin.</summary>
+    public async Task<List<Psicologo>> GetAllIncludingInactiveAsync()
+    {
+        return await _context.Psicologos
+            .OrderBy(p => p.Nome)
+            .ToListAsync();
+    }
+
     public async Task<Psicologo?> GetByIdAsync(int id)
     {
         return await _context.Psicologos.FindAsync(id);
