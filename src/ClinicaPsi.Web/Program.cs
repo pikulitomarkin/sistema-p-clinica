@@ -221,7 +221,7 @@ builder.Services.Configure<ClinicaPsi.Application.Services.Email.EmailOptions>(o
     options.ApiKey ??= builder.Configuration["RESEND_API_KEY"]
         ?? builder.Configuration["Email:ApiKey"];
     if (string.IsNullOrWhiteSpace(options.From))
-        options.From = builder.Configuration["Email:From"] ?? "onboarding@resend.dev";
+        options.From = builder.Configuration["Email:From"] ?? "noreply@psiianasantos.com.br";
     if (string.IsNullOrWhiteSpace(options.FromName))
         options.FromName = builder.Configuration["Email:FromName"] ?? "Psicóloga Ana Santos";
     options.PublicAppUrl ??= builder.Configuration["PUBLIC_APP_URL"]

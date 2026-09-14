@@ -201,7 +201,7 @@ public class ConfiguracaoService
             { "Prontuario.Habilitado", ("true", "Habilitar prontuário eletrônico online", "Prontuario", "boolean") },
             { "Video.ConsultasOnline.Habilitado", ("true", "Habilitar videochamada embutida em consultas online", "Video", "boolean") },
             { "Video.JitsiBaseUrl", ("https://meet.jit.si", "URL base do provedor de vídeo (Jitsi Meet)", "Video", "string") },
-            { "Email.From", ("onboarding@resend.dev", "Endereço From dos e-mails (use domínio verificado no Resend quando disponível)", "Email", "string") },
+            { "Email.From", ("noreply@psiianasantos.com.br", "Endereço From dos e-mails (use domínio verificado no Resend quando disponível)", "Email", "string") },
             { "Email.FromName", ("Psicóloga Ana Santos", "Nome exibido no From dos e-mails", "Email", "string") }
         };
 

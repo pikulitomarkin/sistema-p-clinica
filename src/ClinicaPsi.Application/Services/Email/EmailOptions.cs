@@ -11,7 +11,7 @@ public class EmailOptions
     public string? ApiKey { get; set; }
 
     /// <summary>Endereço From, ex.: noreply@psiianasantos.com.br</summary>
-    public string From { get; set; } = "onboarding@resend.dev";
+    public string From { get; set; } = "noreply@psiianasantos.com.br";
 
     /// <summary>Nome exibido no From</summary>
     public string FromName { get; set; } = "Psicóloga Ana Santos";

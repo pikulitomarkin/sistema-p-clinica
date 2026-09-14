@@ -202,7 +202,7 @@ namespace ClinicaPsi.Web.Pages.Admin
                 EmailNotificacoes = await _configuracaoService.ObterValorBoolAsync("Notificacoes.Email.Habilitado"),
                 WhatsappNotificacoes = await _configuracaoService.ObterValorBoolAsync("Notificacoes.WhatsApp.Habilitado"),
                 SmsNotificacoes = await _configuracaoService.ObterValorBoolAsync("Notificacoes.SMS.Habilitado"),
-                EmailFrom = await _configuracaoService.ObterValorStringAsync("Email.From", "onboarding@resend.dev") ?? "onboarding@resend.dev",
+                EmailFrom = await _configuracaoService.ObterValorStringAsync("Email.From", "noreply@psiianasantos.com.br") ?? "noreply@psiianasantos.com.br",
                 EmailFromName = await _configuracaoService.ObterValorStringAsync("Email.FromName", "Psicóloga Ana Santos") ?? "Psicóloga Ana Santos",
                 ManterHistoricoCompleto = await _configuracaoService.ObterValorBoolAsync("Sistema.ManterHistoricoCompleto", true),
                 BackupAutomatico = await _configuracaoService.ObterValorBoolAsync("Backup.Automatico.Habilitado"),
@@ -231,7 +231,7 @@ namespace ClinicaPsi.Web.Pages.Admin
         public bool WhatsappNotificacoes { get; set; }
         public bool SmsNotificacoes { get; set; }
 
-        public string EmailFrom { get; set; } = "onboarding@resend.dev";
+        public string EmailFrom { get; set; } = "noreply@psiianasantos.com.br";
         public string EmailFromName { get; set; } = "Psicóloga Ana Santos";
 
         public bool PermitirAgendamentoSabado { get; set; }

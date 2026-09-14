@@ -115,7 +115,7 @@ public class ResendEmailService : IEmailService
     }
 
     private string ResolveFromAddress(EmailOptions opts) =>
-        FirstNonEmpty(opts.From, _configuration["Email:From"], _configuration["Email__From"], "onboarding@resend.dev")!;
+        FirstNonEmpty(opts.From, _configuration["Email:From"], _configuration["Email__From"], "noreply@psiianasantos.com.br")!;
 
     private string ResolveFromName(EmailOptions opts) =>
         FirstNonEmpty(opts.FromName, _configuration["Email:FromName"], _configuration["Email__FromName"], "Psicóloga Ana Santos")!;

@@ -47,7 +47,7 @@ services:
       OpenAI__ApiKey: ${OPENAI_API_KEY:-}
       # E-mail Resend (chave só no .env da VPS)
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      Email__From: ${Email__From:-onboarding@resend.dev}
+      Email__From: ${Email__From:-noreply@psiianasantos.com.br}
       Email__FromName: ${Email__FromName:-Psicóloga Ana Santos}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://psiianasantos.com.br}
       # Admin opcional (seed no boot; nao versionar senha real)
