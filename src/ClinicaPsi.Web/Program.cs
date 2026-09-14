@@ -4,6 +4,8 @@ using ClinicaPsi.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 using System.Text.Json;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -12,7 +14,21 @@ using OpenTelemetry.Trace;
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 
+// Cultura padrão pt-BR (moeda R$, datas e números brasileiros)
+var culturaPtBr = new CultureInfo("pt-BR");
+CultureInfo.DefaultThreadCurrentCulture = culturaPtBr;
+CultureInfo.DefaultThreadCurrentUICulture = culturaPtBr;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture(culturaPtBr);
+    options.SupportedCultures = new[] { culturaPtBr };
+    options.SupportedUICultures = new[] { culturaPtBr };
+    // App 100% BR: não deixar Accept-Language do browser sobrescrever (evita ¤ / $)
+    options.RequestCultureProviders.Clear();
+});
 
 // Configurar Data Protection com armazenamento persistente quando disponivel
 // Prioridade: EFS (AWS) -> /app/keys (Docker VPS) -> padrao em memoria/temp
@@ -285,6 +301,7 @@ if (!app.Environment.IsDevelopment())
 // COMENTADO: WhatsApp webhook precisa aceitar HTTP  
 // app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseRequestLocalization();
 app.UseRouting();
 
 app.UseAuthentication();
