@@ -22,7 +22,7 @@ else
                 <strong>Status:</strong> @(Model.Prontuario.Finalizado ? "Finalizado" : "Em andamento")
                 @if (Model.Prontuario.ConsultaId.HasValue)
                 {
-                    <br /><strong>Consulta vinculada:</strong> <span>@Model.Prontuario.ConsultaId</span>
+                    <br /><strong>Consulta:</strong> #@(Model.Prontuario.ConsultaId)
                 }
             </div>
             <div class="d-flex gap-2 flex-wrap">
