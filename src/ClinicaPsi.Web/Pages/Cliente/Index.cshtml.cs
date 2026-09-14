@@ -24,9 +24,7 @@ public class IndexModel : PageModel
         _pacienteService = pacienteService;
     }
 
-    public int PsicoPontos { get; set; }
     public int ConsultasRealizadas { get; set; }
-    public int ConsultasGratuitas { get; set; }
     public List<Consulta> ProximasConsultas { get; set; } = new();
     public List<Consulta> HistoricoConsultas { get; set; } = new();
     public ClinicaPsi.Shared.Models.Paciente? PacienteInfo { get; set; }
@@ -57,9 +55,7 @@ public class IndexModel : PageModel
             // Se ainda não tem PacienteId, criar valores padrão
             if (usuario.PacienteId == null)
             {
-                PsicoPontos = 0;
                 ConsultasRealizadas = 0;
-                ConsultasGratuitas = 0;
                 PacienteInfo = null;
             }
             else
@@ -68,9 +64,7 @@ public class IndexModel : PageModel
                 PacienteInfo = await _pacienteService.GetByIdAsync(usuario.PacienteId.Value);
                 if (PacienteInfo != null)
                 {
-                    PsicoPontos = PacienteInfo.PsicoPontos;
                     ConsultasRealizadas = PacienteInfo.ConsultasRealizadas;
-                    ConsultasGratuitas = PacienteInfo.ConsultasGratuitas;
                 }
             }
 

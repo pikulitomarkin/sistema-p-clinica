@@ -241,13 +241,11 @@ public static class PdfExemploGenerator
                     });
                     col.Item().Text(text =>
                     {
-                        text.Span("PsicoPontos: ").Bold().FontColor(Colors.Green.Medium);
-                        text.Span($"{paciente.PsicoPontos} pontos").FontColor(Colors.Green.Medium);
+                        text.Span($"Consultas realizadas: {paciente.ConsultasRealizadas}");
                     });
                     col.Item().Text(text =>
                     {
-                        text.Span("Consultas Gratuitas: ").Bold().FontColor(Colors.Green.Medium);
-                        text.Span($"{paciente.ConsultasGratuitas}").FontColor(Colors.Green.Medium);
+                        
                     });
                 });
             });
@@ -324,22 +322,10 @@ public static class PdfExemploGenerator
                 }
             });
 
-            // Box PsicoPontos
             column.Item().PaddingTop(20).Background(Colors.Green.Lighten5).Padding(10).Column(col =>
             {
-                col.Item().Text("💡 SISTEMA PSICOPONTOS").FontSize(12).Bold().FontColor(Colors.Green.Medium);
-                col.Item().Text("A cada consulta realizada você ganha 1 ponto.").FontSize(10);
-                col.Item().Text("Acumule 10 pontos e ganhe 1 consulta gratuita!").FontSize(10);
-                col.Item().PaddingTop(5).Text(text =>
-                {
-                    text.Span("Pontos acumulados: ").Bold();
-                    text.Span($"{paciente.PsicoPontos} pontos");
-                });
-                col.Item().Text(text =>
-                {
-                    text.Span("Consultas gratuitas disponíveis: ").Bold();
-                    text.Span($"{paciente.ConsultasGratuitas}");
-                });
+                col.Item().Text("Resumo do paciente").FontSize(12).Bold().FontColor(Colors.Green.Medium);
+                col.Item().PaddingTop(5).Text($"Consultas realizadas: {paciente.ConsultasRealizadas}").FontSize(10);
             });
 
             // Nota

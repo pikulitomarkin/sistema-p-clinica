@@ -13,13 +13,6 @@
                     <h2><i class="bi bi-calendar-plus me-2"></i>Agendar Consulta</h2>
                     <p class="text-muted mb-0">Selecione o psicólogo, data e horário para sua consulta</p>
                 </div>
-                @if (Model.PacienteAtual?.ConsultasGratuitas > 0)
-                {
-                    <div class="alert alert-success border-0 shadow-sm">
-                        <i class="bi bi-gift me-2"></i>
-                        <strong>@Model.PacienteAtual.ConsultasGratuitas</strong> consulta(s) gratuita(s) disponível(is)!
-                    </div>
-                }
             </div>
         </div>
     </div>
@@ -101,13 +94,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Tipo de Consulta</label>
-                                    <select asp-for="Input.Tipo" class="form-select" id="tipoConsulta">
-                                        <option value="@TipoConsulta.Normal">Normal</option>
-                                        @if (Model.PacienteAtual?.ConsultasGratuitas > 0)
-                                        {
-                                            <option value="@TipoConsulta.Gratuita">Gratuita (Disponível)</option>
-                                        }
-                                    </select>
+                                    <input type="text" class="form-control" value="Consulta padrão" readonly>
+                                    <input type="hidden" asp-for="Input.Tipo" value="@TipoConsulta.Normal" />
                                 </div>
                             </div>
                         </div>
@@ -147,34 +135,6 @@
 
         <!-- Sidebar com Informações -->
         <div class="col-lg-4">
-            <!-- Meus PsicoPontos -->
-            @if (Model.PacienteAtual != null)
-            {
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-success text-white">
-                        <h6 class="mb-0"><i class="bi bi-star-fill me-2"></i>Meus PsicoPontos</h6>
-                    </div>
-                    <div class="card-body text-center">
-                        <div class="display-4 text-success fw-bold">@Model.PacienteAtual.PsicoPontos</div>
-                        <p class="text-muted mb-2">pontos acumulados</p>
-                        @{
-                            var pontosParaGratuita = 10 - (Model.PacienteAtual.PsicoPontos % 10);
-                        }
-                        @if (pontosParaGratuita < 10)
-                        {
-                            <small class="text-success">
-                                <i class="bi bi-gift me-1"></i>
-                                Faltam @pontosParaGratuita pontos para uma consulta gratuita!
-                            </small>
-                        }
-                        else
-                        {
-                            <small class="text-muted">A cada 10 pontos, você ganha uma consulta gratuita!</small>
-                        }
-                    </div>
-                </div>
-            }
-
             <!-- Consultas do Dia -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-info text-white">
@@ -224,13 +184,9 @@
                             <i class="bi bi-check-circle text-success me-2"></i>
                             <small>Você pode cancelar até 24h antes</small>
                         </li>
-                        <li class="mb-2">
-                            <i class="bi bi-check-circle text-success me-2"></i>
-                            <small>Cada consulta realizada = 1 PsicoPonto</small>
-                        </li>
                         <li class="mb-0">
                             <i class="bi bi-check-circle text-success me-2"></i>
-                            <small>10 PsicoPontos = 1 consulta gratuita</small>
+                            <small>Traga documento com foto no dia da consulta</small>
                         </li>
                     </ul>
                 </div>
@@ -245,7 +201,6 @@
         const dataConsulta = document.getElementById('dataConsulta');
         const horarioSelect = document.getElementById('horarioSelect');
         const valorConsulta = document.getElementById('valorConsulta');
-        const tipoConsulta = document.getElementById('tipoConsulta');
 
         // Atualizar valor quando selecionar psicólogo
         psicologoSelect.addEventListener('change', function() {
@@ -265,15 +220,6 @@
         dataConsulta.addEventListener('change', carregarHorarios);
 
         // Atualizar valor quando mudar tipo de consulta
-        tipoConsulta.addEventListener('change', function() {
-            if (this.value === '@TipoConsulta.Gratuita') {
-                valorConsulta.value = 'GRATUITA';
-            } else if (psicologoSelect.value) {
-                const selectedOption = psicologoSelect.options[psicologoSelect.selectedIndex];
-                const valor = selectedOption.getAttribute('data-valor');
-                valorConsulta.value = valor || '';
-            }
-        });
 
         function carregarHorarios() {
             const psicologoId = psicologoSelect.value;

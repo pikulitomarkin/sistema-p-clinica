@@ -47,7 +47,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
         // Estatísticas
         public int PacientesAtivos30Dias { get; set; }
         public int PacientesInativos90Dias { get; set; }
-        public double MediaPsicoPontos { get; set; }
 
         public async Task<IActionResult> OnGetAsync(
             string? busca = null,
@@ -108,7 +107,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 "totalConsultas" => pacientesQuery.OrderByDescending(p => 
                     _context.Consultas
                         .Count(c => c.PacienteId == p.Id && c.PsicologoId == psicologoId)),
-                "pontos" => pacientesQuery.OrderByDescending(p => p.PsicoPontos),
                 _ => pacientesQuery.OrderBy(p => p.Nome)
             };
 
@@ -342,15 +340,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 .CountAsync();
 
             PacientesInativos90Dias = pacientesComConsulta;
-
-            // Média de PsicoPontos
-            var pacientesComPontos = await _context.Pacientes
-                .Where(p => _context.Consultas
-                    .Any(c => c.PacienteId == p.Id && c.PsicologoId == psicologoId))
-                .Select(p => p.PsicoPontos)
-                .ToListAsync();
-
-            MediaPsicoPontos = pacientesComPontos.Any() ? pacientesComPontos.Average() : 0;
         }
     }
 }
