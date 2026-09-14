@@ -1,3 +1,14 @@
+@using ClinicaPsi.Application.Services
+@inject ConfiguracaoService ConfiguracaoService
+@{
+    var clinicaConfig = await ConfiguracaoService.ObterConfigSistemaAsync();
+    var telefoneSchema = System.Text.RegularExpressions.Regex.Replace(clinicaConfig.Telefone ?? "", @"[^\d+]", "");
+    if (!string.IsNullOrEmpty(telefoneSchema) && !telefoneSchema.StartsWith("+"))
+    {
+        telefoneSchema = telefoneSchema.StartsWith("55") ? $"+{telefoneSchema}" : $"+55{telefoneSchema}";
+    }
+    var telefoneWhatsapp = telefoneSchema.TrimStart('+');
+}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -45,25 +56,25 @@
     {
       "@@context": "https://schema.org",
       "@@type": "LocalBusiness",
-      "name": "Psicóloga Ana Santos",
+      "name": "@clinicaConfig.Nome",
       "image": "https://www.psiianasantos.com.br/images/ana-santos.jpg",
       "description": "Clínica de Psicologia especializada em Terapia Cognitivo-Comportamental em Londrina",
       "address": {
         "@@type": "PostalAddress",
-        "streetAddress": "Rua Orlando Ferreina Neto, 39",
+        "streetAddress": "@clinicaConfig.Endereco",
         "addressLocality": "Londrina",
         "addressRegion": "PR",
-        "postalCode": "86015-140",
         "addressCountry": "BR"
       },
-      "telephone": "+55 42 99936-9724",
+      "telephone": "@telefoneSchema",
+      "email": "@clinicaConfig.Email",
       "url": "https://www.psiianasantos.com.br",
       "priceRange": "R$ 100 - R$ 200",
       "areaServed": ["Londrina", "Paraná", "Brasil"],
       "sameAs": [
         "https://www.facebook.com/psicologaanasantos",
         "https://www.instagram.com/psicologaanasantos",
-        "https://www.whatsapp.com/message/?phone=5542999369724"
+        "https://www.whatsapp.com/message/?phone=@telefoneWhatsapp"
       ],
       "openingHoursSpecification": [
         {
@@ -177,20 +188,20 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <h6><i class="bi bi-heart-fill text-success me-2"></i>PsiiAnaSantos</h6>
+                    <h6><i class="bi bi-heart-fill text-success me-2"></i>@clinicaConfig.Nome</h6>
                     <p class="small mb-0">Psi. Ana Santos - CRP 08/45168</p>
                     <p class="small mb-0">Psicologia Clínica e Terapia</p>
                 </div>
                 <div class="col-md-4">
                     <h6 class="small"><i class="bi bi-geo-alt me-2"></i>Endereço</h6>
-                    <p class="small mb-0">Londrina - PR</p>
-                    <p class="small mb-0">Atendimento presencial e online</p>
+                    <p class="small mb-0" style="white-space: pre-line;">@clinicaConfig.Endereco</p>
+                    <p class="small mb-0">@(string.IsNullOrWhiteSpace(clinicaConfig.HorarioFuncionamento) ? "Atendimento presencial e online" : clinicaConfig.HorarioFuncionamento)</p>
                 </div>
                 <div class="col-md-4 text-md-end">
                     <h6 class="small"><i class="bi bi-chat-dots me-2"></i>Contato</h6>
                     <p class="small mb-0">
-                        <i class="bi bi-whatsapp me-1"></i>(42) 98859-3775<br>
-                        <i class="bi bi-envelope me-1"></i>psiianasantos@psiianasantos.com.br
+                        <i class="bi bi-whatsapp me-1"></i>@clinicaConfig.Telefone<br>
+                        <i class="bi bi-envelope me-1"></i>@clinicaConfig.Email
                     </p>
                 </div>
             </div>
@@ -198,7 +209,7 @@
             <div class="row">
                 <div class="col-12 text-center">
                     <p class="small mb-0 text-muted">
-                        &copy; 2025 PsiiAnaSantos - Todos os direitos reservados
+                        &copy; @DateTime.Now.Year @clinicaConfig.Nome - Todos os direitos reservados
                     </p>
                 </div>
             </div>

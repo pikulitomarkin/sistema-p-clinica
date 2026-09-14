@@ -15,17 +15,20 @@ namespace ClinicaPsi.Web.Pages.Admin
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly PsicologoService _psicologoService;
         private readonly UsuarioPsicologoSyncService _syncService;
+        private readonly ConfiguracaoService _configuracaoService;
         private readonly ILogger<PsicologosModel> _logger;
 
         public PsicologosModel(
             UserManager<ApplicationUser> userManager,
             PsicologoService psicologoService,
             UsuarioPsicologoSyncService syncService,
+            ConfiguracaoService configuracaoService,
             ILogger<PsicologosModel> logger)
         {
             _userManager = userManager;
             _psicologoService = psicologoService;
             _syncService = syncService;
+            _configuracaoService = configuracaoService;
             _logger = logger;
         }
 
@@ -94,6 +97,11 @@ namespace ClinicaPsi.Web.Pages.Admin
                     psicologos = psicologos.Where(p => p.Ativo == status.Value);
 
                 Psicologos = psicologos.OrderBy(p => p.Nome).ToList();
+
+                if (NovoPsicologo.ValorConsulta <= 0)
+                {
+                    NovoPsicologo.ValorConsulta = await _configuracaoService.ObterValorDecimalAsync("Consultas.ValorPadrao", 150.00m);
+                }
             }
             catch (Exception ex)
             {
