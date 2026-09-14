@@ -59,6 +59,7 @@ public class ResendEmailService : IEmailService
             _logger.LogWarning("E-mail não enviado para {To}: RESEND_API_KEY não configurada", toEmail);
             return EmailSendResult.Fail("RESEND_API_KEY não configurada.");
         }
+        var apiKeyHint = apiKey.Length <= 4 ? "****" : "***" + apiKey[^4..];
 
         var opts = _options.CurrentValue;
         var fromAddress = await ResolveFromAddressAsync(opts);
@@ -83,8 +84,8 @@ public class ResendEmailService : IEmailService
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("Resend falhou ({Status}) ao enviar para {To}: {Body}. From={From}",
-                    (int)response.StatusCode, toEmail, body, fromHeader);
+                _logger.LogError("Resend falhou ({Status}) ao enviar para {To}: {Body}. From={From} ApiKey={ApiKeyHint}",
+                    (int)response.StatusCode, toEmail, body, fromHeader, apiKeyHint);
                 return EmailSendResult.Fail($"Resend {(int)response.StatusCode}: {TrimForUi(body)}");
             }
 

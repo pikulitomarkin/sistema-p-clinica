@@ -15,6 +15,16 @@ public class PacienteService
 
     public async Task<Paciente?> GetByIdAsync(int id) => await _context.Pacientes.FindAsync(id);
 
+    public async Task<Paciente?> GetByEmailAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return null;
+        var normalized = email.Trim().ToLowerInvariant();
+        return await _context.Pacientes
+            .Where(p => p.Ativo && p.Email != null && p.Email.ToLower() == normalized)
+            .OrderBy(p => p.Id)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<int> GetTotalPacientesAsync() => 
         await _context.Pacientes.CountAsync(p => p.Ativo);
 

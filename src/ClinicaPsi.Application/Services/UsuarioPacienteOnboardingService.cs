@@ -143,6 +143,59 @@ public class UsuarioPacienteOnboardingService
         return await _emailService.SendAsync(user.Email, "Bem-vindo(a) à equipe | Psicóloga Ana Santos", html, cancellationToken);
     }
 
+    /// <summary>
+    /// Garante AspNetUser Cliente vinculado ao paciente (sem e-mail de boas-vindas).
+    /// Usado no ForgotPassword quando há Paciente sem conta de login.
+    /// </summary>
+    public async Task<(ApplicationUser? User, string? Error)> GarantirUsuarioClienteSemEmailAsync(
+        Paciente paciente, CancellationToken cancellationToken = default)
+    {
+        if (paciente.Id <= 0)
+            return (null, "Paciente inválido.");
+        if (string.IsNullOrWhiteSpace(paciente.Email))
+            return (null, "Paciente sem e-mail.");
+
+        var emailLogin = paciente.Email.Trim().ToLowerInvariant();
+        var user = await _userManager.FindByEmailAsync(emailLogin);
+        if (user != null)
+        {
+            if (user.TipoUsuario != TipoUsuario.Cliente && user.TipoUsuario != TipoUsuario.Admin)
+                return (null, $"E-mail em uso por {user.TipoUsuario}.");
+            if (!user.PacienteId.HasValue && user.TipoUsuario == TipoUsuario.Cliente)
+            {
+                user.PacienteId = paciente.Id;
+                await _userManager.UpdateAsync(user);
+            }
+            return (user, null);
+        }
+
+        var senha = GerarSenhaTemporaria();
+        user = new ApplicationUser
+        {
+            UserName = emailLogin,
+            Email = emailLogin,
+            NomeCompleto = paciente.Nome,
+            TipoUsuario = TipoUsuario.Cliente,
+            CPF = paciente.CPF,
+            PacienteId = paciente.Id,
+            EmailConfirmed = true,
+            Ativo = paciente.Ativo,
+            MustChangePassword = false,
+            DataCadastro = DateTime.UtcNow,
+            PhoneNumber = string.IsNullOrWhiteSpace(paciente.Telefone) ? null : paciente.Telefone
+        };
+        var create = await _userManager.CreateAsync(user, senha);
+        if (!create.Succeeded)
+        {
+            var errs = string.Join("; ", create.Errors.Select(e => e.Description));
+            _logger.LogError("ForgotPassword: falha ao criar Cliente para paciente {Id}: {Errors}", paciente.Id, errs);
+            return (null, errs);
+        }
+        await GarantirRoleClienteAsync(user);
+        _logger.LogInformation("ForgotPassword: conta Cliente criada para paciente {Id} ({Email})", paciente.Id, emailLogin);
+        return (user, null);
+    }
+
     public async Task<EmailSendResult> EnviarResetSenhaAsync(ApplicationUser user, string resetUrl, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(user.Email)) return EmailSendResult.Fail("Usuário sem e-mail.");
