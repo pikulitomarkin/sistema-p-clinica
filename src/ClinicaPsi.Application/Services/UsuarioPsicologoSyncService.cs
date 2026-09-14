@@ -39,10 +39,24 @@ public class UsuarioPsicologoSyncService
             VinculosAtualizados > 0 || UsuariosCriados > 0 || PsicologosCriados > 0 || StatusSincronizados > 0;
     }
 
+    /// <summary>Emails de seed/demo que nunca devem ser recriados pelo sync.</summary>
+    private static readonly HashSet<string> EmailsDemoBloqueados = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "joao.silva@clinicapsi.com",
+        "maria.santos@clinicapsi.com",
+        "joao.silva@psii.com",
+        "maria.santos@psii.com"
+    };
+
     public async Task<SyncResult> SincronizarTodosAsync(CancellationToken ct = default)
     {
         var result = new SyncResult();
-        var psicologos = await _context.Psicologos.ToListAsync(ct);
+        var todosPsicologos = await _context.Psicologos.ToListAsync(ct);
+        var psicologos = todosPsicologos.Where(p => p.ExcluidoEm == null).ToList();
+        var emailsExcluidos = todosPsicologos
+            .Where(p => p.ExcluidoEm != null && !string.IsNullOrWhiteSpace(p.Email))
+            .Select(p => p.Email)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var usuarios = await _userManager.Users.ToListAsync(ct);
 
         foreach (var psicologo in psicologos)
@@ -74,27 +88,49 @@ public class UsuarioPsicologoSyncService
         {
             Psicologo? psicologo = null;
             if (usuario.PsicologoId.HasValue)
-                psicologo = psicologos.FirstOrDefault(p => p.Id == usuario.PsicologoId.Value);
+                psicologo = todosPsicologos.FirstOrDefault(p => p.Id == usuario.PsicologoId.Value);
 
-            psicologo ??= psicologos.FirstOrDefault(p =>
+            psicologo ??= todosPsicologos.FirstOrDefault(p =>
                 !string.IsNullOrEmpty(p.UserId) &&
                 string.Equals(p.UserId, usuario.Id, StringComparison.OrdinalIgnoreCase));
 
-            psicologo ??= psicologos.FirstOrDefault(p =>
+            psicologo ??= todosPsicologos.FirstOrDefault(p =>
                 !string.IsNullOrEmpty(usuario.Email) &&
                 string.Equals(p.Email, usuario.Email, StringComparison.OrdinalIgnoreCase));
 
             if (psicologo == null && !string.IsNullOrEmpty(usuario.CRP))
             {
-                psicologo = psicologos.FirstOrDefault(p =>
+                psicologo = todosPsicologos.FirstOrDefault(p =>
                     string.Equals(p.CRP, usuario.CRP, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Soft-deleted ou email demo: não recriar registro "fantasma"
+            if (psicologo != null && psicologo.ExcluidoEm != null)
+            {
+                if (usuario.Ativo)
+                {
+                    usuario.Ativo = false;
+                    await _userManager.UpdateAsync(usuario);
+                    result.StatusSincronizados++;
+                }
+                continue;
             }
 
             if (psicologo == null)
             {
+                var emailCanonico = ExtrairEmailCanonico(usuario.Email);
+                if (EmailsDemoBloqueados.Contains(emailCanonico) || emailsExcluidos.Contains(emailCanonico))
+                {
+                    _logger.LogInformation(
+                        "Sync: não recria psicólogo para {Email} (demo ou já excluído)",
+                        emailCanonico);
+                    continue;
+                }
+
                 psicologo = await CriarPsicologoParaUsuarioAsync(usuario);
                 if (psicologo != null)
                 {
+                    todosPsicologos.Add(psicologo);
                     psicologos.Add(psicologo);
                     result.PsicologosCriados++;
                 }
@@ -130,6 +166,10 @@ public class UsuarioPsicologoSyncService
         var psicologo = await _context.Psicologos.FindAsync(psicologoId);
         if (psicologo == null) return;
 
+        // Excluídos permanecem inativos e fora da listagem
+        if (psicologo.ExcluidoEm != null)
+            ativo = false;
+
         psicologo.Ativo = ativo;
         psicologo.DataAtualizacao = DateTime.UtcNow;
         await _context.SaveChangesAsync();
@@ -140,6 +180,21 @@ public class UsuarioPsicologoSyncService
             usuario.Ativo = ativo;
             await _userManager.UpdateAsync(usuario);
         }
+    }
+
+    private static string ExtrairEmailCanonico(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return string.Empty;
+
+        if (email.StartsWith("psicologo.", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = email.Split('.', 3);
+            if (parts.Length == 3)
+                return parts[2];
+        }
+
+        return email;
     }
 
     public async Task SincronizarStatusPorUsuarioAsync(ApplicationUser usuario, bool ativo)
