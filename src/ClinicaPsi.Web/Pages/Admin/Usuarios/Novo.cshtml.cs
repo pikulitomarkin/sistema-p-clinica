@@ -18,20 +18,17 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly AuditoriaService _auditoriaService;
-        private readonly ILogger<NovoModel> _logger;
 
         public NovoModel(
-            AppDbContext context,
-            UserManager<ApplicationUser> userManager,
+            AppDbContext context, 
+            UserManager<ApplicationUser> userManager, 
             RoleManager<IdentityRole> roleManager,
-            AuditoriaService auditoriaService,
-            ILogger<NovoModel> logger)
+            AuditoriaService auditoriaService)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
             _auditoriaService = auditoriaService;
-            _logger = logger;
         }
 
         [BindProperty]
@@ -61,49 +58,21 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
 
             await CarregarPsicologosDisponiveisAsync();
 
-            // CPF/Telefone opcionais: limpar vazios para não falhar validação de formato
-            if (string.IsNullOrWhiteSpace(Input.CPF))
-            {
-                Input.CPF = null;
-                ModelState.Remove("Input.CPF");
-            }
-
-            if (string.IsNullOrWhiteSpace(Input.Telefone))
-            {
-                Input.Telefone = null;
-                ModelState.Remove("Input.Telefone");
-            }
-
-            if (!Input.TipoUsuario.HasValue)
-            {
-                ModelState.AddModelError("Input.TipoUsuario", "Tipo de usuário é obrigatório");
-            }
-
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
-            var tipoUsuario = Input.TipoUsuario!.Value;
-
             // Validações específicas
-            if (tipoUsuario == TipoUsuario.Psicologo)
+            if (Input.TipoUsuario == TipoUsuario.Psicologo && !Input.PsicologoId.HasValue)
             {
-                if (!Input.PsicologoId.HasValue)
-                {
-                    ModelState.AddModelError("Input.PsicologoId", "Selecione um psicólogo para associar ao usuário.");
-                    return Page();
-                }
-
-                if (!PsicologosDisponiveis.Any(p => p.Id == Input.PsicologoId.Value))
-                {
-                    ModelState.AddModelError("Input.PsicologoId", "O psicólogo selecionado não está disponível.");
-                    return Page();
-                }
+                ModelState.AddModelError("Input.PsicologoId", "Selecione um psicólogo para associar ao usuário.");
+                return Page();
             }
 
-            if (tipoUsuario == TipoUsuario.Cliente && !string.IsNullOrWhiteSpace(Input.CPF))
+            if (Input.TipoUsuario == TipoUsuario.Cliente && !string.IsNullOrWhiteSpace(Input.CPF))
             {
+                // Verificar se já existe paciente com este CPF
                 var pacienteExistente = await _context.Pacientes.FirstOrDefaultAsync(p => p.CPF == Input.CPF);
                 if (pacienteExistente != null)
                 {
@@ -112,6 +81,7 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
                 }
             }
 
+            // Verificar se já existe usuário com este email
             var usuarioExistente = await _userManager.FindByEmailAsync(Input.Email);
             if (usuarioExistente != null)
             {
@@ -119,143 +89,128 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
                 return Page();
             }
 
-            try
+            // Criar novo usuário
+            var novoUsuario = new ApplicationUser
             {
-                var novoUsuario = new ApplicationUser
-                {
-                    UserName = Input.Email,
-                    Email = Input.Email,
-                    NomeCompleto = Input.NomeCompleto.Trim(),
-                    TipoUsuario = tipoUsuario,
-                    Ativo = true,
-                    DataCadastro = DateTime.UtcNow,
-                    EmailConfirmed = true
-                };
+                UserName = Input.Email,
+                Email = Input.Email,
+                NomeCompleto = Input.NomeCompleto,
+                TipoUsuario = Input.TipoUsuario,
+                Ativo = true,
+                DataCadastro = DateTime.Now,
+                EmailConfirmed = true // Admin pode criar usuários já confirmados
+            };
 
-                if (tipoUsuario == TipoUsuario.Psicologo && Input.PsicologoId.HasValue)
-                {
-                    var psicologo = await _context.Psicologos.FindAsync(Input.PsicologoId.Value);
-                    if (psicologo == null)
-                    {
-                        ModelState.AddModelError("Input.PsicologoId", "Psicólogo não encontrado.");
-                        return Page();
-                    }
-
-                    novoUsuario.PsicologoId = psicologo.Id;
-                    novoUsuario.CRP = string.IsNullOrWhiteSpace(Input.CRP) ? psicologo.CRP : Input.CRP;
-                }
-
-                var resultado = await _userManager.CreateAsync(novoUsuario, Input.Senha);
-                if (!resultado.Succeeded)
-                {
-                    foreach (var erro in resultado.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, erro.Description);
-                    }
-                    return Page();
-                }
-
-                string role = tipoUsuario switch
-                {
-                    TipoUsuario.Admin => "Admin",
-                    TipoUsuario.Psicologo => "Psicologo",
-                    TipoUsuario.Cliente => "Cliente",
-                    _ => "Cliente"
-                };
-
-                if (!await _roleManager.RoleExistsAsync(role))
-                {
-                    await _roleManager.CreateAsync(new IdentityRole(role));
-                }
-
-                await _userManager.AddToRoleAsync(novoUsuario, role);
-
-                // Vincular psicólogo ↔ usuário (sincronização bidirecional)
-                if (tipoUsuario == TipoUsuario.Psicologo && Input.PsicologoId.HasValue)
-                {
-                    var psicologo = await _context.Psicologos.FindAsync(Input.PsicologoId.Value);
-                    if (psicologo != null)
-                    {
-                        psicologo.UserId = novoUsuario.Id;
-                        psicologo.DataAtualizacao = DateTime.UtcNow;
-                        await _context.SaveChangesAsync();
-                    }
-                }
-
-                if (tipoUsuario == TipoUsuario.Cliente)
-                {
-                    var novoPaciente = new Paciente
-                    {
-                        Nome = Input.NomeCompleto.Trim(),
-                        Email = Input.Email,
-                        CPF = Input.CPF ?? string.Empty,
-                        Telefone = Input.Telefone ?? string.Empty,
-                        Ativo = true,
-                        DataCadastro = DateTime.UtcNow,
-                        DataCriacao = DateTime.UtcNow,
-                        PsicoPontos = 0,
-                        ConsultasRealizadas = 0,
-                        ConsultasGratuitas = 0
-                    };
-
-                    _context.Pacientes.Add(novoPaciente);
-                    await _context.SaveChangesAsync();
-
-                    novoUsuario.PacienteId = novoPaciente.Id;
-                    await _userManager.UpdateAsync(novoUsuario);
-                }
-
-                var adminAtual = await _userManager.GetUserAsync(User);
-                if (adminAtual != null)
-                {
-                    var detalhes = JsonSerializer.Serialize(new
-                    {
-                        TipoUsuario = tipoUsuario.ToString(),
-                        Role = role,
-                        CriadoPor = adminAtual.NomeCompleto,
-                        PsicologoId = tipoUsuario == TipoUsuario.Psicologo ? Input.PsicologoId : null,
-                        PacienteId = tipoUsuario == TipoUsuario.Cliente ? novoUsuario.PacienteId : null
-                    });
-
-                    await _auditoriaService.RegistrarAcaoAsync(
-                        adminId: adminAtual.Id,
-                        adminNome: adminAtual.NomeCompleto ?? adminAtual.Email ?? "Sistema",
-                        usuarioAfetadoId: novoUsuario.Id,
-                        usuarioAfetadoNome: novoUsuario.NomeCompleto,
-                        usuarioAfetadoEmail: novoUsuario.Email ?? string.Empty,
-                        acao: TipoAcaoAuditoria.CriacaoUsuario,
-                        detalhes: detalhes,
-                        ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString()
-                    );
-                }
-
-                TempData["SuccessMessage"] = $"Usuário {Input.NomeCompleto} criado com sucesso!";
-                return RedirectToPage("/Admin/Usuarios");
+            // Se for psicólogo, associar
+            if (Input.TipoUsuario == TipoUsuario.Psicologo && Input.PsicologoId.HasValue)
+            {
+                novoUsuario.PsicologoId = Input.PsicologoId.Value;
+                novoUsuario.CRP = Input.CRP;
             }
-            catch (Exception ex)
+
+            // Criar usuário
+            var resultado = await _userManager.CreateAsync(novoUsuario, Input.Senha);
+            if (!resultado.Succeeded)
             {
-                _logger.LogError(ex, "Erro ao criar usuário {Email}", Input.Email);
-                ModelState.AddModelError(string.Empty, $"Erro ao criar usuário: {ex.Message}");
+                foreach (var erro in resultado.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, erro.Description);
+                }
                 return Page();
             }
+
+            // Adicionar role
+            string role = Input.TipoUsuario switch
+            {
+                TipoUsuario.Admin => "Admin",
+                TipoUsuario.Psicologo => "Psicologo",
+                TipoUsuario.Cliente => "Cliente",
+                _ => "Cliente"
+            };
+
+            await _userManager.AddToRoleAsync(novoUsuario, role);
+
+            // Vínculo bidirecional Psicologo.UserId ↔ ApplicationUser.PsicologoId
+            if (Input.TipoUsuario == TipoUsuario.Psicologo && Input.PsicologoId.HasValue)
+            {
+                var psicologo = await _context.Psicologos.FindAsync(Input.PsicologoId.Value);
+                if (psicologo != null)
+                {
+                    psicologo.UserId = novoUsuario.Id;
+                    if (!string.IsNullOrWhiteSpace(Input.CRP))
+                        psicologo.CRP = Input.CRP;
+                    if (!string.IsNullOrWhiteSpace(Input.NomeCompleto))
+                        psicologo.Nome = Input.NomeCompleto;
+                    psicologo.Email = Input.Email;
+                    psicologo.DataAtualizacao = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            // Se for cliente, criar paciente
+            if (Input.TipoUsuario == TipoUsuario.Cliente)
+            {
+                var novoPaciente = new Paciente
+                {
+                    Nome = Input.NomeCompleto,
+                    Email = Input.Email,
+                    CPF = Input.CPF ?? string.Empty,
+                    Telefone = Input.Telefone ?? string.Empty,
+                    Ativo = true,
+                    DataCadastro = DateTime.Now,
+                    DataCriacao = DateTime.Now,
+                    PsicoPontos = 0,
+                    ConsultasRealizadas = 0,
+                    ConsultasGratuitas = 0
+                };
+
+                _context.Pacientes.Add(novoPaciente);
+                await _context.SaveChangesAsync();
+
+                // Associar paciente ao usuário
+                novoUsuario.PacienteId = novoPaciente.Id;
+                await _userManager.UpdateAsync(novoUsuario);
+            }
+
+            // Registrar auditoria
+            var adminAtual = await _userManager.GetUserAsync(User);
+            if (adminAtual != null)
+            {
+                var detalhes = JsonSerializer.Serialize(new
+                {
+                    TipoUsuario = Input.TipoUsuario.ToString(),
+                    Role = role,
+                    CriadoPor = adminAtual.NomeCompleto,
+                    PsicologoId = Input.TipoUsuario == TipoUsuario.Psicologo ? Input.PsicologoId : null,
+                    PacienteId = Input.TipoUsuario == TipoUsuario.Cliente ? novoUsuario.PacienteId : null
+                });
+
+                await _auditoriaService.RegistrarAcaoAsync(
+                    adminId: adminAtual.Id,
+                    adminNome: adminAtual.NomeCompleto ?? adminAtual.Email ?? "Sistema",
+                    usuarioAfetadoId: novoUsuario.Id,
+                    usuarioAfetadoNome: novoUsuario.NomeCompleto,
+                    usuarioAfetadoEmail: novoUsuario.Email ?? string.Empty,
+                    acao: TipoAcaoAuditoria.CriacaoUsuario,
+                    detalhes: detalhes,
+                    ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString()
+                );
+            }
+
+            TempData["SuccessMessage"] = $"Usuário {Input.NomeCompleto} criado com sucesso!";
+            return RedirectToPage("/Admin/Usuarios");
         }
 
         private async Task CarregarPsicologosDisponiveisAsync()
         {
+            // Carregar psicólogos que ainda não têm usuário associado
             var psicologosComUsuario = await _context.Users
                 .Where(u => u.PsicologoId.HasValue)
                 .Select(u => u.PsicologoId!.Value)
                 .ToListAsync();
 
-            var psicologosComUserId = await _context.Psicologos
-                .Where(p => p.UserId != null && p.UserId != "")
-                .Select(p => p.Id)
-                .ToListAsync();
-
-            var ocupados = psicologosComUsuario.Union(psicologosComUserId).ToHashSet();
-
             PsicologosDisponiveis = await _context.Psicologos
-                .Where(p => p.Ativo && !ocupados.Contains(p.Id))
+                .Where(p => p.Ativo && !psicologosComUsuario.Contains(p.Id))
                 .OrderBy(p => p.Nome)
                 .ToListAsync();
         }
@@ -265,42 +220,37 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
     {
         [Required(ErrorMessage = "Nome completo é obrigatório")]
         [StringLength(200, ErrorMessage = "Nome deve ter no máximo 200 caracteres")]
-        [Display(Name = "Nome Completo")]
         public string NomeCompleto { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email é obrigatório")]
         [EmailAddress(ErrorMessage = "Email deve ter um formato válido")]
-        [Display(Name = "Email")]
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Senha é obrigatória")]
         [StringLength(100, MinimumLength = 6, ErrorMessage = "Senha deve ter pelo menos 6 caracteres")]
         [DataType(DataType.Password)]
-        [Display(Name = "Senha")]
         public string Senha { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Confirmação de senha é obrigatória")]
         [Compare("Senha", ErrorMessage = "Senha e confirmação não conferem")]
         [DataType(DataType.Password)]
-        [Display(Name = "Confirmar Senha")]
         public string ConfirmarSenha { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Tipo de usuário é obrigatório")]
-        [Display(Name = "Tipo de Usuário")]
-        public TipoUsuario? TipoUsuario { get; set; }
+        public TipoUsuario TipoUsuario { get; set; }
 
-        [RegularExpression(@"^$|^\d{11}$", ErrorMessage = "CPF deve conter exatamente 11 dígitos numéricos")]
-        [Display(Name = "CPF")]
+        // Campos específicos para Cliente
+        [StringLength(11, MinimumLength = 11, ErrorMessage = "CPF deve ter 11 dígitos")]
+        [RegularExpression(@"^\d{11}$", ErrorMessage = "CPF deve conter apenas números")]
         public string? CPF { get; set; }
 
-        [Display(Name = "Telefone")]
+        [Phone(ErrorMessage = "Telefone deve ter um formato válido")]
         public string? Telefone { get; set; }
 
-        [Display(Name = "Psicólogo")]
+        // Campos específicos para Psicólogo
         public int? PsicologoId { get; set; }
 
         [StringLength(20, ErrorMessage = "CRP deve ter no máximo 20 caracteres")]
-        [Display(Name = "CRP")]
         public string? CRP { get; set; }
     }
 }

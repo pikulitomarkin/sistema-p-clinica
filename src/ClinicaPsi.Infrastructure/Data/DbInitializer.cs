@@ -45,7 +45,11 @@ public static class DbInitializer
                 }
             }
             
-            Console.WriteLine("SEED COMPLETO - Somente usuario admin criado");
+            // Ligar psicólogos/usuários órfãos existentes (produção)
+            await AssociateUsersAsync(context, userManager);
+            await context.SaveChangesAsync();
+
+            Console.WriteLine("SEED COMPLETO - Admin + associação usuários↔psicólogos");
             return;
         }
 
@@ -342,7 +346,6 @@ public static class DbInitializer
 
     private static async Task AssociateUsersAsync(AppDbContext context, UserManager<ApplicationUser> userManager)
     {
-        // Associar todos os usuários psicólogos com suas entidades
         var psicologosUsers = await context.Users
             .Where(u => u.TipoUsuario == TipoUsuario.Psicologo && u.PsicologoId == null)
             .ToListAsync();
@@ -351,15 +354,48 @@ public static class DbInitializer
         {
             var psicologo = await context.Psicologos
                 .FirstOrDefaultAsync(p => p.Email == user.Email || p.CRP == user.CRP);
-            
+
             if (psicologo != null)
             {
                 user.PsicologoId = psicologo.Id;
+                if (string.IsNullOrEmpty(psicologo.UserId))
+                    psicologo.UserId = user.Id;
                 await userManager.UpdateAsync(user);
             }
         }
 
-        // Associar todos os usuários clientes com suas entidades
+        var psicologos = await context.Psicologos
+            .Where(p => p.UserId != null || p.Email != null)
+            .ToListAsync();
+
+        foreach (var psicologo in psicologos)
+        {
+            ApplicationUser? user = null;
+            if (!string.IsNullOrEmpty(psicologo.UserId))
+                user = await userManager.FindByIdAsync(psicologo.UserId);
+
+            user ??= !string.IsNullOrEmpty(psicologo.Email)
+                ? await userManager.FindByEmailAsync(psicologo.Email)
+                : null;
+
+            if (user == null)
+                continue;
+
+            if (user.TipoUsuario == TipoUsuario.Admin)
+                continue;
+
+            if (user.TipoUsuario != TipoUsuario.Psicologo)
+                user.TipoUsuario = TipoUsuario.Psicologo;
+
+            if (user.PsicologoId != psicologo.Id)
+                user.PsicologoId = psicologo.Id;
+            if (psicologo.UserId != user.Id)
+                psicologo.UserId = user.Id;
+            if (!await userManager.IsInRoleAsync(user, "Psicologo"))
+                await userManager.AddToRoleAsync(user, "Psicologo");
+            await userManager.UpdateAsync(user);
+        }
+
         var clientesUsers = await context.Users
             .Where(u => u.TipoUsuario == TipoUsuario.Cliente && u.PacienteId == null)
             .ToListAsync();
@@ -368,7 +404,7 @@ public static class DbInitializer
         {
             var paciente = await context.Pacientes
                 .FirstOrDefaultAsync(p => p.Email == user.Email || p.CPF == user.CPF);
-            
+
             if (paciente != null)
             {
                 user.PacienteId = paciente.Id;

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ClinicaPsi.Shared.Models;
 using ClinicaPsi.Application.Services;
-using System.ComponentModel.DataAnnotations;
 using PsicologoEntity = ClinicaPsi.Shared.Models.Psicologo;
 
 namespace ClinicaPsi.Web.Pages.Admin
@@ -14,15 +13,18 @@ namespace ClinicaPsi.Web.Pages.Admin
     {
         private readonly PsicologoService _psicologoService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly UsuarioPsicologoSyncService _syncService;
         private readonly ILogger<EditarPsicologoModel> _logger;
 
         public EditarPsicologoModel(
             PsicologoService psicologoService,
             UserManager<ApplicationUser> userManager,
+            UsuarioPsicologoSyncService syncService,
             ILogger<EditarPsicologoModel> logger)
         {
             _psicologoService = psicologoService;
             _userManager = userManager;
+            _syncService = syncService;
             _logger = logger;
         }
 
@@ -44,13 +46,11 @@ namespace ClinicaPsi.Web.Pages.Admin
                 }
 
                 Psicologo = psicologo;
-
-                // Buscar usuário vinculado
-                var usuarios = _userManager.Users.Where(u => u.PsicologoId == id).ToList();
-                if (usuarios.Any())
-                {
-                    UsuarioVinculado = usuarios.First();
-                }
+                UsuarioVinculado = _userManager.Users.FirstOrDefault(u => u.PsicologoId == id)
+                    ?? (!string.IsNullOrEmpty(psicologo.UserId)
+                        ? await _userManager.FindByIdAsync(psicologo.UserId)
+                        : null)
+                    ?? await _userManager.FindByEmailAsync(psicologo.Email);
 
                 return Page();
             }
@@ -73,7 +73,6 @@ namespace ClinicaPsi.Web.Pages.Admin
 
             try
             {
-                // Buscar psicólogo atual
                 var psicologoAtual = await _psicologoService.GetByIdAsync(id);
                 if (psicologoAtual == null)
                 {
@@ -81,7 +80,6 @@ namespace ClinicaPsi.Web.Pages.Admin
                     return RedirectToPage("/Admin/Psicologos");
                 }
 
-                // Atualizar campos
                 psicologoAtual.Nome = Psicologo.Nome;
                 psicologoAtual.Email = Psicologo.Email;
                 psicologoAtual.CRP = Psicologo.CRP;
@@ -89,16 +87,12 @@ namespace ClinicaPsi.Web.Pages.Admin
                 psicologoAtual.ValorConsulta = Psicologo.ValorConsulta;
                 psicologoAtual.Especialidades = Psicologo.Especialidades;
                 psicologoAtual.Ativo = Psicologo.Ativo;
-
-                // Horários
                 psicologoAtual.HorarioInicioManha = Psicologo.HorarioInicioManha;
                 psicologoAtual.HorarioFimManha = Psicologo.HorarioFimManha;
                 psicologoAtual.HorarioInicioTarde = Psicologo.HorarioInicioTarde;
                 psicologoAtual.HorarioFimTarde = Psicologo.HorarioFimTarde;
                 psicologoAtual.AtendeManha = Psicologo.AtendeManha;
                 psicologoAtual.AtendeTarde = Psicologo.AtendeTarde;
-
-                // Dias de atendimento
                 psicologoAtual.AtendeSegunda = Psicologo.AtendeSegunda;
                 psicologoAtual.AtendeTerca = Psicologo.AtendeTerca;
                 psicologoAtual.AtendeQuarta = Psicologo.AtendeQuarta;
@@ -106,40 +100,11 @@ namespace ClinicaPsi.Web.Pages.Admin
                 psicologoAtual.AtendeSexta = Psicologo.AtendeSexta;
                 psicologoAtual.AtendeSabado = Psicologo.AtendeSabado;
                 psicologoAtual.AtendeDomingo = Psicologo.AtendeDomingo;
+                psicologoAtual.DataAtualizacao = DateTime.UtcNow;
 
-                psicologoAtual.DataAtualizacao = DateTime.Now;
-
-                // Salvar
                 await _psicologoService.UpdateAsync(psicologoAtual);
-
-                // Atualizar dados do usuário vinculado, se existir
-                var usuario = _userManager.Users.FirstOrDefault(u => u.PsicologoId == id);
-                if (usuario != null)
-                {
-                    // Atualizar email do usuário se mudou
-                    if (usuario.Email != Psicologo.Email)
-                    {
-                        usuario.Email = Psicologo.Email;
-                        usuario.UserName = Psicologo.Email;
-                        usuario.NormalizedEmail = Psicologo.Email.ToUpper();
-                        usuario.NormalizedUserName = Psicologo.Email.ToUpper();
-                        await _userManager.UpdateAsync(usuario);
-                    }
-
-                    // Atualizar CRP
-                    if (usuario.CRP != Psicologo.CRP)
-                    {
-                        usuario.CRP = Psicologo.CRP;
-                        await _userManager.UpdateAsync(usuario);
-                    }
-
-                    // Sincronizar status ativo/inativo
-                    if (usuario.Ativo != Psicologo.Ativo)
-                    {
-                        usuario.Ativo = Psicologo.Ativo;
-                        await _userManager.UpdateAsync(usuario);
-                    }
-                }
+                await _syncService.SincronizarDadosUsuarioApartirDePsicologoAsync(psicologoAtual);
+                await _syncService.SincronizarTodosAsync();
 
                 TempData["SuccessMessage"] = "Psicólogo atualizado com sucesso!";
                 return RedirectToPage("/Admin/Psicologos");
