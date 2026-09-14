@@ -21,6 +21,11 @@ public class ApplicationUser : IdentityUser
     public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
     
     public bool Ativo { get; set; } = true;
+
+    /// <summary>
+    /// Quando true, o usuário deve trocar a senha no próximo login (senha provisória).
+    /// </summary>
+    public bool MustChangePassword { get; set; }
     
     // Relacionamentos
     public int? PacienteId { get; set; }

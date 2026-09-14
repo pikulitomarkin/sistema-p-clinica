@@ -201,6 +201,7 @@ builder.Services.AddScoped<PacienteService>();
 builder.Services.AddScoped<ConsultaService>();
 builder.Services.AddScoped<PsicologoService>();
 builder.Services.AddScoped<UsuarioPsicologoSyncService>();
+builder.Services.AddScoped<UsuarioPacienteOnboardingService>();
 builder.Services.AddScoped<ProntuarioService>();
 builder.Services.AddScoped<VideoConsultaService>();
 builder.Services.AddScoped<AuditoriaService>();
@@ -211,6 +212,27 @@ builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<OpenAIService>();
 builder.Services.AddScoped<WhatsAppBotService>();
 builder.Services.AddScoped<WhatsAppNotificationService>();
+
+
+// E-mail via Resend (API key só por env/secret — nunca no git)
+builder.Services.Configure<ClinicaPsi.Application.Services.Email.EmailOptions>(options =>
+{
+    builder.Configuration.GetSection(ClinicaPsi.Application.Services.Email.EmailOptions.SectionName).Bind(options);
+    options.ApiKey ??= builder.Configuration["RESEND_API_KEY"]
+        ?? builder.Configuration["Email:ApiKey"];
+    if (string.IsNullOrWhiteSpace(options.From))
+        options.From = builder.Configuration["Email:From"] ?? "onboarding@resend.dev";
+    if (string.IsNullOrWhiteSpace(options.FromName))
+        options.FromName = builder.Configuration["Email:FromName"] ?? "Psicóloga Ana Santos";
+    options.PublicAppUrl ??= builder.Configuration["PUBLIC_APP_URL"]
+        ?? builder.Configuration["WhatsApp:SiteUrl"]
+        ?? "https://psiianasantos.com.br";
+});
+builder.Services.AddHttpClient("Resend", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddScoped<ClinicaPsi.Application.Services.Email.IEmailService, ClinicaPsi.Application.Services.Email.ResendEmailService>();
 
 // Configurar HttpClient para WhatsApp Web (Venom-Bot)
 builder.Services.AddHttpClient<WhatsAppWebService>(client =>
@@ -268,6 +290,7 @@ using (var scope = app.Services.CreateScope())
         }
 
         await GarantirSchemaProntuarioEVideoAsync(context, logger);
+        await GarantirSchemaEmailAsync(context, logger);
     }
     catch (Exception ex)
     {
@@ -508,3 +531,27 @@ static async Task GarantirSchemaProntuarioEVideoAsync(AppDbContext context, ILog
         logger.LogWarning(ex, "Não foi possível garantir schema de prontuário/vídeo (pode ser SQLite local).");
     }
 }
+
+static async Task GarantirSchemaEmailAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""MustChangePassword"" boolean NOT NULL DEFAULT FALSE;");
+        logger.LogInformation("Schema de e-mail/senha provisória verificado (MustChangePassword).");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""AspNetUsers"" ADD COLUMN ""MustChangePassword"" INTEGER NOT NULL DEFAULT 0;");
+            logger.LogInformation("Coluna MustChangePassword adicionada (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "MustChangePassword já existe ou schema não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+

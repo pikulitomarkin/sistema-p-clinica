@@ -16,6 +16,7 @@ namespace ClinicaPsi.Web.Pages.Admin
         private readonly PsicologoService _psicologoService;
         private readonly UsuarioPsicologoSyncService _syncService;
         private readonly ConfiguracaoService _configuracaoService;
+        private readonly UsuarioPacienteOnboardingService _onboardingService;
         private readonly ILogger<PsicologosModel> _logger;
 
         public PsicologosModel(
@@ -23,12 +24,14 @@ namespace ClinicaPsi.Web.Pages.Admin
             PsicologoService psicologoService,
             UsuarioPsicologoSyncService syncService,
             ConfiguracaoService configuracaoService,
+            UsuarioPacienteOnboardingService onboardingService,
             ILogger<PsicologosModel> logger)
         {
             _userManager = userManager;
             _psicologoService = psicologoService;
             _syncService = syncService;
             _configuracaoService = configuracaoService;
+            _onboardingService = onboardingService;
             _logger = logger;
         }
 
@@ -200,7 +203,26 @@ namespace ClinicaPsi.Web.Pages.Admin
                 await _userManager.AddToRoleAsync(user, "Psicologo");
                 await _syncService.VincularAsync(user, psicologo);
 
-                TempData["SuccessMessage"] = $"Psicólogo {psicologo.Nome} cadastrado com sucesso!";
+                try
+                {
+                    user.MustChangePassword = true;
+                    await _userManager.UpdateAsync(user);
+                    var emailResult = await _onboardingService.EnviarBoasVindasPsicologoAsync(user, senha);
+                    if (emailResult.Success)
+                        TempData["SuccessMessage"] = $"Psicólogo {psicologo.Nome} cadastrado com sucesso! E-mail de boas-vindas enviado.";
+                    else
+                    {
+                        TempData["SuccessMessage"] = $"Psicólogo {psicologo.Nome} cadastrado com sucesso!";
+                        TempData["WarningMessage"] = $"E-mail de boas-vindas não enviado ({emailResult.ErrorMessage}). Informe as credenciais manualmente.";
+                    }
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError(emailEx, "Erro ao enviar boas-vindas ao psicólogo {Email}", user.Email);
+                    TempData["SuccessMessage"] = $"Psicólogo {psicologo.Nome} cadastrado com sucesso!";
+                    TempData["WarningMessage"] = "Cadastro ok, mas o e-mail de boas-vindas falhou.";
+                }
+
                 return RedirectToPage();
             }
             catch (Exception ex)

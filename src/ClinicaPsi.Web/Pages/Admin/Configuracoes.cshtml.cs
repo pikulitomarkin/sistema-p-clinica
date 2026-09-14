@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ClinicaPsi.Shared.Models;
 using ClinicaPsi.Application.Services;
+using ClinicaPsi.Application.Services.Email;
 
 namespace ClinicaPsi.Web.Pages.Admin
 {
@@ -13,13 +14,16 @@ namespace ClinicaPsi.Web.Pages.Admin
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ConfiguracaoService _configuracaoService;
+        private readonly IEmailService _emailService;
 
         public ConfiguracoesModel(
             UserManager<ApplicationUser> userManager,
-            ConfiguracaoService configuracaoService)
+            ConfiguracaoService configuracaoService,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _configuracaoService = configuracaoService;
+            _emailService = emailService;
         }
 
         [BindProperty]
@@ -35,6 +39,7 @@ namespace ClinicaPsi.Web.Pages.Admin
 
             await _configuracaoService.InicializarConfiguracoesAsync();
             Configuracoes = await CarregarConfiguracoesAsync();
+            ViewData["ResendConfigured"] = _emailService.IsConfigured;
             return Page();
         }
 
@@ -124,6 +129,12 @@ namespace ClinicaPsi.Web.Pages.Admin
             await _configuracaoService.SalvarAsync("Notificacoes.SMS.Habilitado", Configuracoes.SmsNotificacoes.ToString().ToLowerInvariant(),
                 "Habilitar envio de notificações por SMS", "Notificacoes", "boolean", usuarioNome);
 
+            await _configuracaoService.SalvarAsync("Email.From", Configuracoes.EmailFrom,
+                "Endereço From dos e-mails (domínio verificado no Resend)", "Email", "string", usuarioNome);
+
+            await _configuracaoService.SalvarAsync("Email.FromName", Configuracoes.EmailFromName,
+                "Nome exibido no From dos e-mails", "Email", "string", usuarioNome);
+
             await _configuracaoService.SalvarAsync("Sistema.ManterHistoricoCompleto", Configuracoes.ManterHistoricoCompleto.ToString().ToLowerInvariant(),
                 "Manter histórico completo de consultas e pontos", "Sistema", "boolean", usuarioNome);
 
@@ -191,6 +202,8 @@ namespace ClinicaPsi.Web.Pages.Admin
                 EmailNotificacoes = await _configuracaoService.ObterValorBoolAsync("Notificacoes.Email.Habilitado"),
                 WhatsappNotificacoes = await _configuracaoService.ObterValorBoolAsync("Notificacoes.WhatsApp.Habilitado"),
                 SmsNotificacoes = await _configuracaoService.ObterValorBoolAsync("Notificacoes.SMS.Habilitado"),
+                EmailFrom = await _configuracaoService.ObterValorStringAsync("Email.From", "onboarding@resend.dev") ?? "onboarding@resend.dev",
+                EmailFromName = await _configuracaoService.ObterValorStringAsync("Email.FromName", "Psicóloga Ana Santos") ?? "Psicóloga Ana Santos",
                 ManterHistoricoCompleto = await _configuracaoService.ObterValorBoolAsync("Sistema.ManterHistoricoCompleto", true),
                 BackupAutomatico = await _configuracaoService.ObterValorBoolAsync("Backup.Automatico.Habilitado"),
                 FrequenciaBackup = await _configuracaoService.ObterValorStringAsync("Backup.Automatico.Frequencia", "Diário") ?? "Diário"
@@ -217,6 +230,9 @@ namespace ClinicaPsi.Web.Pages.Admin
         public bool EmailNotificacoes { get; set; }
         public bool WhatsappNotificacoes { get; set; }
         public bool SmsNotificacoes { get; set; }
+
+        public string EmailFrom { get; set; } = "onboarding@resend.dev";
+        public string EmailFromName { get; set; } = "Psicóloga Ana Santos";
 
         public bool PermitirAgendamentoSabado { get; set; }
         public bool PermitirAgendamentoDomingo { get; set; }

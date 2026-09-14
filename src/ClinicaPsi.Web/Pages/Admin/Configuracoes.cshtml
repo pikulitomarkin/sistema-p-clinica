@@ -244,6 +244,48 @@
             </div>
         </div>
 
+        <!-- E-mail (Resend) -->
+        <div class="col-lg-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-envelope-at me-2"></i>
+                        E-mail (Resend)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        A chave <code>RESEND_API_KEY</code> deve ficar apenas no <code>.env</code> da VPS / secrets do container — não é salva nesta tela.
+                        @if (ViewData["ResendConfigured"] as bool? == true)
+                        {
+                            <span class="badge bg-success ms-2">API key detectada</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark ms-2">API key ausente</span>
+                        }
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="emailFrom" class="form-label">From (endereço)</label>
+                            <input type="email" class="form-control" id="emailFrom"
+                                   asp-for="Configuracoes.EmailFrom"
+                                   placeholder="noreply@psiianasantos.com.br">
+                            <div class="form-text">
+                                Preferir domínio verificado no Resend. Sem verificação, use <code>onboarding@resend.dev</code>.
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="emailFromName" class="form-label">From (nome)</label>
+                            <input type="text" class="form-control" id="emailFromName"
+                                   asp-for="Configuracoes.EmailFromName"
+                                   placeholder="Psicóloga Ana Santos">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Prontuário e Videochamada -->
         <div class="col-lg-12 mb-4">
             <div class="card">
