@@ -156,88 +156,6 @@
                             </table>
                         </div>
 
-                        @foreach (var consulta in Model.ConsultasHistorico)
-                        {
-                            <div class="modal fade" id="detalhesModal@(consulta.Id)" tabindex="-1" aria-labelledby="detalhesModalLabel@(consulta.Id)" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                    <div class="modal-content" style="background:#fff;">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="detalhesModalLabel@(consulta.Id)">Detalhes da Consulta</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <strong>Data/Horário:</strong><br>
-                                                    @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Duração:</strong><br>
-                                                    @consulta.DuracaoMinutos minutos
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Psicólogo:</strong><br>
-                                                    @consulta.Psicologo.Nome
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Especialidades:</strong><br>
-                                                    @consulta.Psicologo.Especialidades
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Tipo:</strong><br>
-                                                    @consulta.Tipo.GetDisplayName()
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Valor:</strong><br>
-                                                    @consulta.Valor.ToString("C")
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Status:</strong><br>
-                                                    <span class="badge @Model.GetStatusBadgeClass(consulta.Status)">
-                                                        @consulta.Status.GetDisplayName()
-                                                    </span>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Agendado em:</strong><br>
-                                                    @consulta.DataAgendamento.ToString("dd/MM/yyyy HH:mm")
-                                                </div>
-                                                @if (!string.IsNullOrWhiteSpace(consulta.Observacoes))
-                                                {
-                                                    <div class="col-12">
-                                                        <strong>Observações:</strong><br>
-                                                        @consulta.Observacoes
-                                                    </div>
-                                                }
-                                                @if (!string.IsNullOrWhiteSpace(consulta.RelatorioSessao))
-                                                {
-                                                    <div class="col-12">
-                                                        <strong>Relatório da Sessão:</strong><br>
-                                                        <div class="alert alert-light mb-0">
-                                                            @consulta.RelatorioSessao
-                                                        </div>
-                                                    </div>
-                                                }
-                                                @if (consulta.Status == StatusConsulta.Cancelada && !string.IsNullOrWhiteSpace(consulta.MotivoCancelamento))
-                                                {
-                                                    <div class="col-12">
-                                                        <strong>Motivo do Cancelamento:</strong><br>
-                                                        <div class="alert alert-warning mb-0">
-                                                            @consulta.MotivoCancelamento
-                                                        </div>
-                                                    </div>
-                                                }
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                Fechar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-
                         <!-- Paginação -->
                         @if (Model.TotalPaginas > 1)
                         {
@@ -318,3 +236,115 @@
         </div>
     </div>
 </div>
+
+@* Modais FORA de .card — transform no hover do card quebra position:fixed e causa flicker *@
+@if (Model.ConsultasHistorico.Any())
+{
+    foreach (var consulta in Model.ConsultasHistorico)
+    {
+        <div class="modal fade historico-detalhes-modal" id="detalhesModal@(consulta.Id)" tabindex="-1"
+             aria-labelledby="detalhesModalLabel@(consulta.Id)" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-white">
+                    <div class="modal-header bg-white">
+                        <h5 class="modal-title" id="detalhesModalLabel@(consulta.Id)">Detalhes da Consulta</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body bg-white text-dark">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <strong>Data/Horário:</strong><br>
+                                @consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Duração:</strong><br>
+                                @consulta.DuracaoMinutos minutos
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Psicólogo:</strong><br>
+                                @consulta.Psicologo.Nome
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Especialidades:</strong><br>
+                                @consulta.Psicologo.Especialidades
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Tipo:</strong><br>
+                                @consulta.Tipo.GetDisplayName()
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Valor:</strong><br>
+                                @consulta.Valor.ToString("C")
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Status:</strong><br>
+                                <span class="badge @Model.GetStatusBadgeClass(consulta.Status)">
+                                    @consulta.Status.GetDisplayName()
+                                </span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Agendado em:</strong><br>
+                                @consulta.DataAgendamento.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(consulta.Observacoes))
+                            {
+                                <div class="col-12">
+                                    <strong>Observações:</strong><br>
+                                    @consulta.Observacoes
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(consulta.RelatorioSessao))
+                            {
+                                <div class="col-12">
+                                    <strong>Relatório da Sessão:</strong><br>
+                                    <div class="alert alert-light mb-0">
+                                        @consulta.RelatorioSessao
+                                    </div>
+                                </div>
+                            }
+                            @if (consulta.Status == StatusConsulta.Cancelada && !string.IsNullOrWhiteSpace(consulta.MotivoCancelamento))
+                            {
+                                <div class="col-12">
+                                    <strong>Motivo do Cancelamento:</strong><br>
+                                    <div class="alert alert-warning mb-0">
+                                        @consulta.MotivoCancelamento
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-white">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+<script>
+(function () {
+    // Anexa modais ao <body> (evita stacking context de .card / .admin-content)
+    document.querySelectorAll('.historico-detalhes-modal').forEach(function (modalEl) {
+        if (modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+    });
+
+    // Um único backdrop: limpa sobras se houver show/hide rápido
+    document.querySelectorAll('.historico-detalhes-modal').forEach(function (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.modal-backdrop').forEach(function (b) {
+                if (!document.querySelector('.modal.show')) b.remove();
+            });
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+        });
+    });
+})();
+</script>
+}

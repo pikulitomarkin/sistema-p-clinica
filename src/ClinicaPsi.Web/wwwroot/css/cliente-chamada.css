@@ -65,18 +65,17 @@
   border-radius: 0.5rem;
   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.25);
   color: #212529;
+  opacity: 1 !important;
 }
 
 .modal-header,
-.modal-footer {
-  background-color: #ffffff;
-}
-
+.modal-footer,
 .modal-body {
   background-color: #ffffff;
+  color: #212529;
 }
 
-/* Evita que hover de card afete empilhamento do modal */
-.modal.show .modal-dialog {
-  transform: none;
+/* Banner não deve cobrir o modal aberto */
+body.modal-open .cliente-chamada-banner {
+  z-index: 2000;
 }

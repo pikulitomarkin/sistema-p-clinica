@@ -381,12 +381,18 @@ html, body {
 }
 
 .card {
-    transition: transform 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* transform no .card cria containing block p/ position:fixed → modal pisca */
+body.modal-open .card,
+body.modal-open .card:hover {
+    transform: none !important;
 }
 
 /* ===== ADMIN LAYOUT STYLES ===== */
@@ -414,11 +420,26 @@ html, body {
 }
 .modal-backdrop {
     z-index: 2050 !important;
+    background-color: rgba(0, 0, 0, 0.55);
+}
+.modal-backdrop + .modal-backdrop {
+    /* Evita backdrop duplicado piscando */
+    display: none !important;
 }
 .modal-content {
     background-color: #fff !important;
-    color: #212529;
+    color: #212529 !important;
+    opacity: 1 !important;
     box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.25);
+}
+.modal-header,
+.modal-body,
+.modal-footer {
+    background-color: #fff;
+    color: #212529;
+}
+.historico-detalhes-modal .modal-content {
+    background-color: #ffffff !important;
 }
 
 .admin-topbar {

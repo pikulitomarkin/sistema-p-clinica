@@ -1,9 +1,14 @@
 /**
  * Notificação global de videochamada para a área do Cliente.
  * SignalR (ChamadaRecebida) + polling /api/notificacoes/chamadas.
+ * Atualiza APENAS o banner — nunca recarrega a página nem mexe em modais.
  */
 (function (global) {
   'use strict';
+
+  var _started = false;
+  var _pollTimer = null;
+  var _lastConsultaId = null;
 
   function ensureBanner() {
     var el = document.getElementById('cliente-chamada-banner');
@@ -51,7 +56,10 @@
       return;
     }
 
+    var sameCall = _lastConsultaId === String(chamada.consultaId) && !banner.hidden;
     banner.dataset.consultaId = String(chamada.consultaId);
+    _lastConsultaId = String(chamada.consultaId);
+
     var nome = chamada.psicologoNome || 'seu(sua) psicólogo(a)';
     banner.querySelector('.cliente-chamada-banner__msg').textContent =
       ' — ' + nome + ' está chamando você para a consulta online.';
@@ -59,23 +67,32 @@
     link.href = chamada.videoUrl || ('/consulta/' + chamada.consultaId + '/video');
     banner.hidden = false;
 
-    try {
-      if (typeof banner._pulse === 'undefined') {
+    // Animação só na primeira exibição desta chamada (evita flicker a cada poll)
+    if (!sameCall && !banner._pulseDone) {
+      banner._pulseDone = true;
+      try {
         banner.animate(
           [{ transform: 'translateY(-8px)', opacity: 0.85 }, { transform: 'translateY(0)', opacity: 1 }],
           { duration: 400, easing: 'ease-out' }
         );
-      }
-    } catch (e) { /* ignore */ }
+      } catch (e) { /* ignore */ }
+    }
   }
 
   function hideIfEmpty(list) {
     var banner = document.getElementById('cliente-chamada-banner');
     if (!banner) return;
-    if (!list || !list.length) banner.hidden = true;
+    if (!list || !list.length) {
+      banner.hidden = true;
+      _lastConsultaId = null;
+      banner._pulseDone = false;
+    }
   }
 
   async function pollChamadas() {
+    // Não interferir enquanto modal Bootstrap estiver aberto
+    if (document.body.classList.contains('modal-open')) return;
+
     try {
       var res = await fetch('/api/notificacoes/chamadas', {
         credentials: 'same-origin',
@@ -120,13 +137,16 @@
   }
 
   function initClienteChamadaNotifier(options) {
+    if (_started) return;
+    _started = true;
+
     options = options || {};
     var intervalMs = options.pollIntervalMs || 4000;
 
     ensureBanner();
     startSignalR();
     pollChamadas();
-    setInterval(pollChamadas, intervalMs);
+    _pollTimer = setInterval(pollChamadas, intervalMs);
   }
 
   global.initClienteChamadaNotifier = initClienteChamadaNotifier;
