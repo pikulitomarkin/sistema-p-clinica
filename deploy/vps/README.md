@@ -5,7 +5,8 @@
 | Projeto | Portas host | Dominio / URL |
 |---------|-------------|---------------|
 | Astra Seduction | 80, 443 | https://astrasedution.com |
-| ClinicaPsi | 80/443 (via nginx Astra) + **8080** backup | https://psiianasantos.com.br / https://api.psiianasantos.com.br |
+| ClinicaPsi (frontend) | 80/443 (nginx) + **8080** backup | https://psiianasantos.com.br |
+| ClinicaPsi (backend/API) | 80/443 (nginx) | https://api.psiianasantos.com.br (`/api/*`, `/webhook/*`, `/health`) |
 
 O ClinicaPsi usa rede Docker propria (`clinicapsi-net`) + entra na rede `astraseduction_astra-net` para o proxy. PostgreSQL interno **sem** publicar 5432.
 
