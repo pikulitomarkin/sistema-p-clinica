@@ -50,6 +50,11 @@ services:
       Email__From: ${Email__From:-noreply@psiianasantos.com.br}
       Email__FromName: ${Email__FromName:-Psicóloga Ana Santos}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://psiianasantos.com.br}
+      # WebRTC ICE (coturn local + STUN Google)
+      WebRtc__TurnUrl: turn:${TURN_EXTERNAL_IP:-184.107.160.119}:3478
+      WebRtc__TurnUser: ${TURN_USER:-clinicapsi}
+      WebRtc__TurnPassword: ${TURN_PASSWORD:-clinicapsi_turn_change_me}
+      WebRtc__StunUrl: stun:${TURN_EXTERNAL_IP:-184.107.160.119}:3478
       # Video (opcional — produção usa WebRTC/SignalR sem chave)
       DAILY_API_KEY: ${DAILY_API_KEY:-}
       LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}
@@ -76,6 +81,34 @@ services:
       timeout: 5s
       retries: 5
       start_period: 60s
+
+  # TURN/STUN para WebRTC (NAT simétrico / CGNAT) — peers atrás de firewall
+  clinicapsi-turn:
+    image: coturn/coturn:4.6.2-alpine
+    container_name: clinicapsi-turn
+    restart: unless-stopped
+    command:
+      - -n
+      - --log-file=stdout
+      - --external-ip=${TURN_EXTERNAL_IP:-184.107.160.119}
+      - --listening-port=3478
+      - --min-port=49160
+      - --max-port=49200
+      - --fingerprint
+      - --lt-cred-mech
+      - --user=${TURN_USER:-clinicapsi}:${TURN_PASSWORD:-clinicapsi_turn_change_me}
+      - --realm=${TURN_REALM:-psiianasantos.com.br}
+      - --no-cli
+      - --no-tls
+      - --no-dtls
+      - --no-multicast-peers
+      - --no-stdout-timestamps
+    ports:
+      - "3478:3478/tcp"
+      - "3478:3478/udp"
+      - "49160-49200:49160-49200/udp"
+    networks:
+      - clinicapsi-net
 
 volumes:
   clinicapsi_pgdata:

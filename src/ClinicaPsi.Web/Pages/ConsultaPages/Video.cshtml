@@ -52,8 +52,8 @@ else if (Model.Consulta != null && !string.IsNullOrWhiteSpace(Model.RoomName))
         </div>
 
         <div class="video-room__controls">
-            <button type="button" class="btn btn-success" id="btnIniciar">
-                <i class="bi bi-play-fill me-1"></i>Iniciar
+            <button type="button" class="btn btn-success" id="btnIniciar" disabled>
+                <i class="bi bi-hourglass-split me-1"></i>Conectando…
             </button>
             @if (Model.SouPsicologoOuAdmin)
             {
@@ -81,49 +81,63 @@ else if (Model.Consulta != null && !string.IsNullOrWhiteSpace(Model.RoomName))
         <script src="~/js/video-consulta.js" asp-append-version="true"></script>
         <script>
             (function () {
-                const client = new VideoConsultaClient({
-                    consultaId: @Model.Consulta.Id,
-                    roomName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RoomName)),
-                    displayName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MeuNome)),
-                    role: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MeuPapel)),
-                    remoteNameDefault: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.NomeRemoto)),
-                    localVideo: document.getElementById('localVideo'),
-                    remoteVideo: document.getElementById('remoteVideo'),
-                    statusEl: document.getElementById('videoStatus'),
-                    localNameEl: document.getElementById('localNameLabel'),
-                    remoteNameEl: document.getElementById('remoteNameLabel'),
-                    peerStatusEl: document.getElementById('peerStatus')
-                });
-
+                const placeholder = document.getElementById('remotePlaceholder');
+                const remoteVideo = document.getElementById('remoteVideo');
                 const btnIniciar = document.getElementById('btnIniciar');
                 const btnChamar = document.getElementById('btnChamar');
                 const btnMute = document.getElementById('btnMute');
                 const btnCamera = document.getElementById('btnCamera');
                 const btnHangup = document.getElementById('btnHangup');
-                const placeholder = document.getElementById('remotePlaceholder');
-                const remoteVideo = document.getElementById('remoteVideo');
 
                 function setControlsActive(active) {
                     btnIniciar.disabled = active;
+                    btnIniciar.innerHTML = active
+                        ? '<i class="bi bi-check-circle me-1"></i>Na sala'
+                        : '<i class="bi bi-play-fill me-1"></i>Entrar novamente';
                     if (btnChamar) btnChamar.disabled = !active;
                     btnMute.disabled = !active;
                     btnCamera.disabled = !active;
                     btnHangup.disabled = !active;
                 }
 
+                const client = new VideoConsultaClient({
+                    consultaId: @Model.Consulta.Id,
+                    roomName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RoomName)),
+                    displayName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MeuNome)),
+                    role: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MeuPapel)),
+                    remoteNameDefault: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.NomeRemoto)),
+                    iceServers: @Html.Raw(Model.IceServersJson),
+                    localVideo: document.getElementById('localVideo'),
+                    remoteVideo: remoteVideo,
+                    statusEl: document.getElementById('videoStatus'),
+                    localNameEl: document.getElementById('localNameLabel'),
+                    remoteNameEl: document.getElementById('remoteNameLabel'),
+                    peerStatusEl: document.getElementById('peerStatus'),
+                    remotePlaceholder: placeholder,
+                    onStarted: function () { setControlsActive(true); },
+                    onMediaConnected: function () {
+                        if (placeholder) placeholder.classList.add('hidden');
+                    }
+                });
+
                 remoteVideo.addEventListener('playing', function () {
                     if (placeholder) placeholder.classList.add('hidden');
                 });
 
-                btnIniciar.addEventListener('click', async function () {
+                async function entrarNaSala() {
                     btnIniciar.disabled = true;
+                    btnIniciar.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Conectando…';
                     try {
                         await client.start();
                         setControlsActive(true);
                     } catch (e) {
+                        console.error(e);
                         btnIniciar.disabled = false;
+                        btnIniciar.innerHTML = '<i class="bi bi-play-fill me-1"></i>Tentar novamente';
                     }
-                });
+                }
+
+                btnIniciar.addEventListener('click', entrarNaSala);
 
                 if (btnChamar) {
                     btnChamar.addEventListener('click', async function () {
@@ -155,6 +169,9 @@ else if (Model.Consulta != null && !string.IsNullOrWhiteSpace(Model.RoomName))
                 window.addEventListener('beforeunload', function () {
                     try { client.hangUp(); } catch (e) {}
                 });
+
+                // Auto-inicia câmera + SignalR ao abrir a sala (não depende do botão Iniciar)
+                entrarNaSala();
             })();
         </script>
     }

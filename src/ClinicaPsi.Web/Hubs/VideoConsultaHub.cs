@@ -158,12 +158,21 @@ public class VideoConsultaHub : Hub
     public async Task SendOffer(string targetConnectionId, string sdp)
     {
         if (!CanSignal(targetConnectionId, out var me))
+        {
+            _logger.LogWarning(
+                "SendOffer bloqueado: caller={Caller} target={Target} (fora da mesma sala ou ausente)",
+                Context.ConnectionId, targetConnectionId);
             return;
+        }
+
+        _logger.LogInformation(
+            "WebRTC Offer {From} ({Name}) → {To} sdpLen={Len}",
+            Context.ConnectionId, me!.DisplayName, targetConnectionId, sdp?.Length ?? 0);
 
         await Clients.Client(targetConnectionId).SendAsync("ReceiveOffer", new
         {
             fromConnectionId = Context.ConnectionId,
-            displayName = me!.DisplayName,
+            displayName = me.DisplayName,
             role = me.Role,
             sdp
         });
@@ -172,12 +181,21 @@ public class VideoConsultaHub : Hub
     public async Task SendAnswer(string targetConnectionId, string sdp)
     {
         if (!CanSignal(targetConnectionId, out var me))
+        {
+            _logger.LogWarning(
+                "SendAnswer bloqueado: caller={Caller} target={Target}",
+                Context.ConnectionId, targetConnectionId);
             return;
+        }
+
+        _logger.LogInformation(
+            "WebRTC Answer {From} ({Name}) → {To} sdpLen={Len}",
+            Context.ConnectionId, me!.DisplayName, targetConnectionId, sdp?.Length ?? 0);
 
         await Clients.Client(targetConnectionId).SendAsync("ReceiveAnswer", new
         {
             fromConnectionId = Context.ConnectionId,
-            displayName = me!.DisplayName,
+            displayName = me.DisplayName,
             sdp
         });
     }
@@ -186,6 +204,10 @@ public class VideoConsultaHub : Hub
     {
         if (!CanSignal(targetConnectionId, out _))
             return;
+
+        _logger.LogDebug(
+            "WebRTC ICE {From} → {To} len={Len}",
+            Context.ConnectionId, targetConnectionId, candidateJson?.Length ?? 0);
 
         await Clients.Client(targetConnectionId).SendAsync("ReceiveIceCandidate", new
         {
