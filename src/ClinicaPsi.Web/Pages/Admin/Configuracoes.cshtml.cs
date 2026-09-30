@@ -67,7 +67,13 @@ namespace ClinicaPsi.Web.Pages.Admin
             var usuarioNome = user.NomeCompleto ?? user.Email;
 
             await _configuracaoService.SalvarAsync("Sistema.Nome", Configuracoes.NomeClinica,
-                "Nome do sistema", "Sistema", "string", usuarioNome);
+                "Nome white-label da plataforma", "Sistema", "string", usuarioNome);
+
+            await _configuracaoService.SalvarAsync("Brand.Primary", Configuracoes.BrandPrimary,
+                "Cor primária da marca (hex)", "Brand", "string", usuarioNome);
+
+            await _configuracaoService.SalvarAsync("Brand.Secondary", Configuracoes.BrandSecondary,
+                "Cor secundária da marca (hex)", "Brand", "string", usuarioNome);
 
             await _configuracaoService.SalvarAsync("Sistema.Email", Configuracoes.EmailContato,
                 "Email principal do sistema", "Sistema", "string", usuarioNome);
@@ -175,7 +181,9 @@ namespace ClinicaPsi.Web.Pages.Admin
 
             return new ConfiguracoesGerais
             {
-                NomeClinica = await _configuracaoService.ObterValorStringAsync("Sistema.Nome", "PsiiAnaSantos") ?? "PsiiAnaSantos",
+                NomeClinica = await _configuracaoService.ObterValorStringAsync("Sistema.Nome", "PsyAll") ?? "PsyAll",
+                BrandPrimary = await _configuracaoService.ObterValorStringAsync("Brand.Primary", "#1f7a4d") ?? "#1f7a4d",
+                BrandSecondary = await _configuracaoService.ObterValorStringAsync("Brand.Secondary", "#1ab8b0") ?? "#1ab8b0",
                 EmailContato = await _configuracaoService.ObterValorStringAsync("Sistema.Email", "psiianasantos@psiianasantos.com.br") ?? string.Empty,
                 TelefoneContato = await _configuracaoService.ObterValorStringAsync("Sistema.Telefone", "(42) 98859-3775") ?? string.Empty,
                 EnderecoCompleto = await _configuracaoService.ObterValorStringAsync("Sistema.Endereco", "Rua Emma Marcelino Peralta - 168 - 86030-540 - Londrina, PR") ?? string.Empty,
@@ -196,7 +204,7 @@ namespace ClinicaPsi.Web.Pages.Admin
                 WhatsappNotificacoes = await _configuracaoService.ObterValorBoolAsync("Notificacoes.WhatsApp.Habilitado"),
                 SmsNotificacoes = await _configuracaoService.ObterValorBoolAsync("Notificacoes.SMS.Habilitado"),
                 EmailFrom = await _configuracaoService.ObterValorStringAsync("Email.From", "noreply@psiianasantos.com.br") ?? "noreply@psiianasantos.com.br",
-                EmailFromName = await _configuracaoService.ObterValorStringAsync("Email.FromName", "Psicóloga Ana Santos") ?? "Psicóloga Ana Santos",
+                EmailFromName = await _configuracaoService.ObterValorStringAsync("Email.FromName", "PsyAll") ?? "PsyAll",
                 ManterHistoricoCompleto = await _configuracaoService.ObterValorBoolAsync("Sistema.ManterHistoricoCompleto", true),
                 BackupAutomatico = await _configuracaoService.ObterValorBoolAsync("Backup.Automatico.Habilitado"),
                 FrequenciaBackup = await _configuracaoService.ObterValorStringAsync("Backup.Automatico.Frequencia", "Diário") ?? "Diário",
@@ -209,6 +217,8 @@ namespace ClinicaPsi.Web.Pages.Admin
     public class ConfiguracoesGerais
     {
         public string NomeClinica { get; set; } = string.Empty;
+        public string BrandPrimary { get; set; } = "#1f7a4d";
+        public string BrandSecondary { get; set; } = "#1ab8b0";
         public string EmailContato { get; set; } = string.Empty;
         public string TelefoneContato { get; set; } = string.Empty;
         public string EnderecoCompleto { get; set; } = string.Empty;
@@ -224,7 +234,7 @@ namespace ClinicaPsi.Web.Pages.Admin
         public bool SmsNotificacoes { get; set; }
 
         public string EmailFrom { get; set; } = "noreply@psiianasantos.com.br";
-        public string EmailFromName { get; set; } = "Psicóloga Ana Santos";
+        public string EmailFromName { get; set; } = "PsyAll";
 
         public bool PermitirAgendamentoSabado { get; set; }
         public bool PermitirAgendamentoDomingo { get; set; }

@@ -16,7 +16,7 @@
     <link href="~/css/site.css" rel="stylesheet" />
     <style>
         body {
-            background: linear-gradient(135deg, #2d5016, #4a7c59, #28a745);
+            background: var(--brand-gradient-hero);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -29,14 +29,14 @@
         .register-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 18px 48px var(--brand-shadow);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             overflow: hidden;
         }
 
         .register-header {
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: var(--brand-gradient-soft);
             padding: 2rem;
             text-align: center;
             position: relative;
@@ -56,20 +56,20 @@
         .register-icon {
             width: 80px;
             height: 80px;
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--brand-gradient-chip);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2rem;
-            color: white;
+            color: var(--brand-primary);
             margin: 0 auto 1rem;
             backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid var(--brand-border);
         }
 
         .register-title {
-            color: white;
+            color: var(--brand-ink);
             font-weight: 700;
             font-size: 1.5rem;
             margin-bottom: 0.5rem;
@@ -94,26 +94,26 @@
             border-radius: 10px;
             padding: 0.75rem 1rem;
             background: #f8f9fa;
-            color: #2d5016;
+            color: var(--brand-ink);
             transition: all 0.3s ease;
             margin-bottom: 1rem;
             font-size: 0.95rem;
         }
 
         .form-control:focus {
-            border-color: #28a745;
-            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 0.2rem rgba(var(--brand-primary-rgb), 0.18);
             background: white;
         }
 
         .form-label {
-            color: #2d5016;
+            color: var(--brand-ink);
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
 
         .register-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: var(--brand-gradient);
             border: none;
             border-radius: 10px;
             padding: 0.875rem 2rem;
@@ -126,9 +126,9 @@
         }
 
         .register-btn:hover {
-            background: linear-gradient(135deg, #20c997, #28a745);
+            background: var(--brand-gradient);
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
+            box-shadow: 0 10px 25px var(--brand-shadow);
             color: white;
         }
 
@@ -139,7 +139,7 @@
         }
 
         .login-link {
-            color: #28a745;
+            color: var(--brand-primary);
             text-decoration: none;
             font-weight: 600;
         }
@@ -157,16 +157,16 @@
         }
 
         .navbar-brand {
-            color: white !important;
+            color: var(--brand-ink) !important;
             text-decoration: none;
             font-weight: 700;
             font-size: 1.2rem;
         }
 
         .top-navbar {
-            background: rgba(0, 0, 0, 0.1);
+            background: var(--brand-gradient-nav);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--brand-border);
             position: fixed;
             top: 0;
             left: 0;
@@ -174,12 +174,12 @@
             z-index: 1030;
         }
 
-        .btn-outline-light {
+        .btn-outline-success {
             color: white;
             border-color: white;
         }
 
-        .btn-outline-light:hover {
+        .btn-outline-success:hover {
             background: rgba(255, 255, 255, 0.1);
             color: white;
         }
@@ -213,7 +213,7 @@
         }
 
         .strength-strong {
-            color: #28a745;
+            color: var(--brand-primary);
         }
 
         @@media (max-width: 768px) {
@@ -245,10 +245,10 @@
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="/" aria-label="PsyAll">
                 <img src="~/images/psyall-logo.png" alt="PsyAll" width="36" height="40" style="object-fit:contain;" />
-                <span class="brand-name"><span style="color:#c8f0d8">Psy</span><span style="color:#7ee0d8">All</span></span>
+                <span class="brand-name"><span class="psy-brand-psy">Psy</span><span class="psy-brand-all">All</span></span>
             </a>
             <div>
-                <a href="/" class="btn btn-outline-light btn-sm">
+                <a href="/" class="btn btn-outline-success btn-sm">
                     <i class="bi bi-house me-1"></i>
                     Início
                 </a>

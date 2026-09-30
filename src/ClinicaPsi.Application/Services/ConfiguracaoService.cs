@@ -172,12 +172,15 @@ public class ConfiguracaoService
             { "Notificacoes.SMS.Habilitado", ("false", "Habilitar envio de notificações por SMS", "Notificacoes", "boolean") },
             { "Notificacoes.Lembrete.AntecedenciaHoras", ("24", "Antecedência em horas para envio de lembretes", "Notificacoes", "number") },
             
-            { "Sistema.Nome", ("PsiiAnaSantos", "Nome do sistema", "Sistema", "string") },
+            { "Sistema.Nome", ("PsyAll", "Nome white-label da plataforma", "Sistema", "string") },
             { "Sistema.Email", ("psiianasantos@psiianasantos.com.br", "Email principal do sistema", "Sistema", "string") },
             { "Sistema.Telefone", ("(42) 98859-3775", "Telefone de contato", "Sistema", "string") },
             { "Sistema.Endereco", ("Rua Emma Marcelino Peralta - 168 - 86030-540 - Londrina, PR", "Endereço da clínica", "Sistema", "string") },
             { "Sistema.HorarioFuncionamento", ("Segunda a Sexta: 9h às 17h", "Horário de funcionamento exibido no site", "Sistema", "string") },
             { "Sistema.ManterHistoricoCompleto", ("true", "Manter histórico completo de consultas", "Sistema", "boolean") },
+            { "Brand.Primary", ("#1f7a4d", "Cor primária da marca (hex)", "Brand", "string") },
+            { "Brand.Secondary", ("#1ab8b0", "Cor secundária da marca (hex)", "Brand", "string") },
+            { "Brand.LogoUrl", ("/images/psyall-logo.png", "URL do logo white-label", "Brand", "string") },
             
             { "Consultas.DuracaoPadrao", ("50", "Duração padrão das consultas em minutos", "Consultas", "number") },
             { "Consultas.IntervaloMinimo", ("15", "Intervalo mínimo entre consultas em minutos", "Consultas", "number") },
@@ -229,11 +232,14 @@ public class ConfiguracaoService
     {
         return new SistemaConfig
         {
-            Nome = await ObterValorStringAsync("Sistema.Nome", "PsiiAnaSantos") ?? "PsiiAnaSantos",
+            Nome = await ObterValorStringAsync("Sistema.Nome", "PsyAll") ?? "PsyAll",
             Email = await ObterValorStringAsync("Sistema.Email", "psiianasantos@psiianasantos.com.br") ?? string.Empty,
             Telefone = await ObterValorStringAsync("Sistema.Telefone", "(42) 98859-3775") ?? string.Empty,
             Endereco = await ObterValorStringAsync("Sistema.Endereco", "") ?? string.Empty,
-            HorarioFuncionamento = await ObterValorStringAsync("Sistema.HorarioFuncionamento", "Segunda a Sexta: 9h às 17h") ?? string.Empty
+            HorarioFuncionamento = await ObterValorStringAsync("Sistema.HorarioFuncionamento", "Segunda a Sexta: 9h às 17h") ?? string.Empty,
+            BrandPrimary = await ObterValorStringAsync("Brand.Primary", "#1f7a4d") ?? "#1f7a4d",
+            BrandSecondary = await ObterValorStringAsync("Brand.Secondary", "#1ab8b0") ?? "#1ab8b0",
+            BrandLogoUrl = await ObterValorStringAsync("Brand.LogoUrl", "/images/psyall-logo.png") ?? "/images/psyall-logo.png"
         };
     }
 
@@ -271,6 +277,9 @@ public class SistemaConfig
     public string Telefone { get; set; } = string.Empty;
     public string Endereco { get; set; } = string.Empty;
     public string HorarioFuncionamento { get; set; } = string.Empty;
+    public string BrandPrimary { get; set; } = "#1f7a4d";
+    public string BrandSecondary { get; set; } = "#1ab8b0";
+    public string BrandLogoUrl { get; set; } = "/images/psyall-logo.png";
 }
 
 public class ConsultasConfig

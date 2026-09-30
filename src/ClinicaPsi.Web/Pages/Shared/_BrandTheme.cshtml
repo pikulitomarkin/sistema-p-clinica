@@ -1,0 +1,36 @@
+@using ClinicaPsi.Application.Services
+@inject ConfiguracaoService ConfiguracaoService
+@{
+    var sistema = await ConfiguracaoService.ObterConfigSistemaAsync();
+    var primary = string.IsNullOrWhiteSpace(sistema.BrandPrimary) ? "#1f7a4d" : sistema.BrandPrimary.Trim();
+    var secondary = string.IsNullOrWhiteSpace(sistema.BrandSecondary) ? "#1ab8b0" : sistema.BrandSecondary.Trim();
+
+    int pr = 31, pg = 122, pb = 77;
+    int sr = 26, sg = 184, sb = 176;
+
+    void ApplyRgb(string hex, ref int r, ref int g, ref int b)
+    {
+        hex = (hex ?? "").Trim().TrimStart('#');
+        if (hex.Length == 3)
+            hex = $"{hex[0]}{hex[0]}{hex[1]}{hex[1]}{hex[2]}{hex[2]}";
+        if (hex.Length != 6) return;
+        try
+        {
+            r = Convert.ToInt32(hex.Substring(0, 2), 16);
+            g = Convert.ToInt32(hex.Substring(2, 2), 16);
+            b = Convert.ToInt32(hex.Substring(4, 2), 16);
+        }
+        catch { /* keep defaults */ }
+    }
+
+    ApplyRgb(primary, ref pr, ref pg, ref pb);
+    ApplyRgb(secondary, ref sr, ref sg, ref sb);
+}
+<style id="wl-brand-vars">
+:root {
+    --brand-primary: @primary;
+    --brand-primary-rgb: @pr, @pg, @pb;
+    --brand-secondary: @secondary;
+    --brand-secondary-rgb: @sr, @sg, @sb;
+}
+</style>

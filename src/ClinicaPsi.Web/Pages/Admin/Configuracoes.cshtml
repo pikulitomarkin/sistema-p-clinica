@@ -56,10 +56,32 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label for="nomeClinica" class="form-label">Nome da Clínica</label>
+                        <label for="nomeClinica" class="form-label">Nome da plataforma (white-label)</label>
                         <input type="text" class="form-control" id="nomeClinica" 
                                asp-for="Configuracoes.NomeClinica" required>
                         <span asp-validation-for="Configuracoes.NomeClinica" class="text-danger"></span>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="brandPrimary" class="form-label">Cor primária (logo)</label>
+                            <div class="input-group">
+                                <input type="color" class="form-control form-control-color" style="max-width:3.5rem"
+                                       value="@(Model.Configuracoes.BrandPrimary)"
+                                       oninput="document.getElementById('brandPrimary').value=this.value" />
+                                <input type="text" class="form-control" id="brandPrimary"
+                                       asp-for="Configuracoes.BrandPrimary" placeholder="#1f7a4d" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="brandSecondary" class="form-label">Cor secundária (logo)</label>
+                            <div class="input-group">
+                                <input type="color" class="form-control form-control-color" style="max-width:3.5rem"
+                                       value="@(Model.Configuracoes.BrandSecondary)"
+                                       oninput="document.getElementById('brandSecondary').value=this.value" />
+                                <input type="text" class="form-control" id="brandSecondary"
+                                       asp-for="Configuracoes.BrandSecondary" placeholder="#1ab8b0" />
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="emailContato" class="form-label">Email de Contato</label>

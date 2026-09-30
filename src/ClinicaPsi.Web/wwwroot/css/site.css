@@ -1,20 +1,5 @@
-/* Configurações globais */
+/* Configurações globais — tokens em brand-theme.css (white-label) */
 :root {
-    --primary-green: #1f7a4d;
-    --secondary-green: #1ab8b0;
-    --light-green: #e6f5ee;
-    --dark-green: #145233;
-    --psy-green: #1f7a4d;
-    --psy-teal: #1ab8b0;
-    --gradient-green: linear-gradient(135deg, #1f7a4d 0%, #1ab8b0 100%);
-    --gradient-green-light: linear-gradient(135deg, rgba(31, 122, 77, 0.08) 0%, rgba(26, 184, 176, 0.08) 100%);
-    --shadow-green: rgba(31, 122, 77, 0.18);
-    --text-dark: #1c3d2e;
-    --text-muted: #5a6b62;
-    --text-light: #ffffff;
-    --surface: #ffffff;
-    --surface-soft: #f3faf7;
-    --border-soft: rgba(31, 122, 77, 0.14);
     --radius-sm: 10px;
     --radius-md: 14px;
     --radius-lg: 18px;
@@ -24,7 +9,7 @@
 
 body {
     font-family: var(--font-sans);
-    background: var(--gradient-green-light);
+    background: var(--brand-gradient-page, var(--gradient-green-light));
     min-height: 100vh;
     color: var(--text-dark);
     margin: 0;
@@ -34,12 +19,12 @@ body {
 }
 
 .app-shell {
-    background: var(--surface-soft);
+    background: var(--brand-gradient-page, var(--surface-soft));
 }
 
 /* Hero Section */
 .hero-section {
-    background: var(--gradient-green);
+    background: var(--brand-gradient-hero, var(--gradient-green-light));
     padding: 4rem 0 5rem 0;
     margin: 0;
     position: relative;
@@ -47,17 +32,27 @@ body {
     min-height: 70vh;
     display: flex;
     align-items: center;
+    color: var(--text-dark);
+}
+
+.hero-section .text-white,
+.hero-section .display-3,
+.hero-section .lead {
+    color: var(--text-dark) !important;
+}
+
+.hero-section .text-white-50 {
+    color: var(--text-muted) !important;
 }
 
 .hero-section::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    opacity: 0.3;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(var(--brand-secondary-rgb, 26, 184, 176), 0.12), transparent 40%),
+        radial-gradient(circle at 80% 0%, rgba(var(--brand-primary-rgb, 31, 122, 77), 0.10), transparent 45%);
+    opacity: 1;
 }
 
 .hero-content {
@@ -82,10 +77,11 @@ body {
 }
 
 .modern-card .card-header {
-    background: var(--gradient-green);
-    color: var(--text-light);
+    background: var(--brand-gradient-soft, var(--gradient-green-light));
+    color: var(--text-dark);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
     border: none;
+    border-bottom: 1px solid var(--border-soft);
     padding: 1.25rem 1.5rem;
     position: relative;
     overflow: hidden;
@@ -242,21 +238,23 @@ body {
     border: 2px solid rgba(40, 167, 69, 0.2);
 }
 
-/* Navegação moderna */
+/* Navegação moderna — light white-label */
 .navbar {
-    background: var(--gradient-green) !important;
-    box-shadow: 0 2px 20px var(--shadow-green);
+    background: var(--brand-gradient-nav) !important;
+    box-shadow: 0 8px 28px rgba(var(--brand-primary-rgb, 31, 122, 77), 0.07);
     border: none;
-    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0.85rem 0;
     position: sticky;
     top: 0;
     z-index: 1000;
+    backdrop-filter: blur(12px);
 }
 
 .navbar-brand {
     font-weight: 700;
     font-size: 1.5rem;
-    color: white !important;
+    color: var(--text-dark) !important;
 }
 
 .navbar-brand .brand-name {
@@ -268,6 +266,7 @@ body {
 .brand-admin-title {
     font-weight: 700;
     letter-spacing: -0.01em;
+    color: var(--text-dark);
 }
 
 @media (max-width: 576px) {
@@ -276,21 +275,44 @@ body {
     }
 }
 
-.nav-link {
+.navbar .nav-link {
     font-weight: 500;
-    transition: all 0.3s ease;
-    color: rgba(255, 255, 255, 0.9) !important;
+    transition: color 0.2s ease, background 0.2s ease;
+    color: var(--text-dark) !important;
+    border-radius: 10px;
+    padding: 0.45rem 0.75rem !important;
 }
 
-.nav-link:hover {
-    transform: translateY(-2px);
-    color: white !important;
+.navbar .nav-link:hover {
+    transform: none;
+    color: var(--primary-green) !important;
+    background: var(--brand-gradient-chip, var(--gradient-green-light));
 }
 
-/* Footer moderno */
+.navbar-dark .navbar-toggler {
+    border-color: rgba(var(--brand-primary-rgb, 31, 122, 77), 0.25);
+}
+
+.navbar-dark .navbar-toggler-icon {
+    filter: invert(0.35) sepia(0.4) saturate(3) hue-rotate(100deg);
+}
+
+/* Footer moderno — light */
 footer {
-    background: linear-gradient(135deg, var(--dark-green) 0%, #1a5928 100%) !important;
+    background: var(--brand-gradient-soft) !important;
+    color: var(--text-dark) !important;
+    border-top: 1px solid var(--border-soft);
     margin-top: auto;
+}
+
+footer .text-muted,
+footer .opacity-75,
+footer a.link-light {
+    color: var(--text-muted) !important;
+}
+
+footer a.link-light:hover {
+    color: var(--primary-green) !important;
 }
 
 /* Animações */
@@ -381,25 +403,24 @@ html, body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* ===== ADMIN LAYOUT STYLES ===== */
+/* ===== ADMIN LAYOUT STYLES — light white-label ===== */
 .admin-sidebar {
     position: fixed;
     top: 0;
     left: 0;
     width: 280px;
     height: 100vh;
-    background: linear-gradient(165deg, #234016 0%, #3d6b4a 48%, #28a745 100%);
+    background: var(--brand-gradient-sidebar);
     z-index: 1000;
     overflow-y: auto;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
+    box-shadow: 4px 0 28px rgba(var(--brand-primary-rgb, 31, 122, 77), 0.08);
+    border-right: 1px solid var(--border-soft);
 }
 
 .admin-content {
     margin-left: 280px;
     min-height: 100vh;
-    background:
-        radial-gradient(ellipse at top right, rgba(32, 201, 151, 0.08), transparent 42%),
-        linear-gradient(160deg, #f7fbf8 0%, #eef6f0 100%);
+    background: var(--brand-gradient-page);
 }
 
 /* Modais acima do sidebar e com fundo sólido (evita texto sobreposto) */
@@ -416,9 +437,22 @@ html, body {
 }
 
 .admin-topbar {
-    background: linear-gradient(135deg, #2d5016, #4a7c59);
+    background: var(--brand-gradient-nav);
     padding: 0.85rem 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 18px rgba(var(--brand-primary-rgb, 31, 122, 77), 0.06);
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--text-dark);
+}
+
+.admin-topbar .text-white,
+.admin-topbar .breadcrumb-item,
+.admin-topbar .breadcrumb-item a,
+.admin-topbar .breadcrumb-item + .breadcrumb-item::before {
+    color: var(--text-muted) !important;
+}
+
+.admin-topbar .breadcrumb-item.active {
+    color: var(--text-dark) !important;
 }
 
 .admin-main {
@@ -436,9 +470,9 @@ html, body {
     height: 44px;
     border: none;
     border-radius: 12px;
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: var(--brand-gradient);
     color: #fff;
-    box-shadow: 0 6px 18px rgba(40, 167, 69, 0.35);
+    box-shadow: 0 6px 18px var(--shadow-green);
     align-items: center;
     justify-content: center;
     font-size: 1.35rem;
@@ -463,10 +497,19 @@ html, body {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
-/* Sidebar Navigation */
+/* Sidebar Navigation — light */
 .sidebar-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-soft);
     margin-bottom: 0.75rem;
+}
+
+.sidebar-header .text-white,
+.sidebar-header .opacity-75 {
+    color: var(--text-dark) !important;
+}
+
+.sidebar-header .opacity-75 {
+    color: var(--text-muted) !important;
 }
 
 .sidebar-nav {
@@ -481,23 +524,23 @@ html, body {
 }
 
 .nav-section-title {
-    color: rgba(255, 255, 255, 0.72);
+    color: var(--text-muted);
     font-size: 0.78rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     margin-bottom: 0.4rem;
     padding: 0.4rem 0.85rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-soft);
 }
 
 .admin-sidebar .nav-link {
-    color: rgba(255, 255, 255, 0.88) !important;
+    color: var(--text-dark) !important;
     text-decoration: none;
     padding: 0.7rem 0.9rem;
     border-radius: 10px;
     margin-bottom: 0.2rem;
-    transition: background 0.2s ease, transform 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
     display: flex;
     align-items: center;
     font-weight: 500;
@@ -505,15 +548,15 @@ html, body {
 }
 
 .admin-sidebar .nav-link:hover {
-    background: rgba(255, 255, 255, 0.14);
-    color: white !important;
+    background: var(--brand-gradient-chip, var(--gradient-green-light));
+    color: var(--primary-green) !important;
     transform: translateX(3px);
 }
 
 .admin-sidebar .nav-link.active {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white !important;
-    box-shadow: 0 4px 14px rgba(40, 167, 69, 0.28);
+    background: var(--brand-gradient);
+    color: #fff !important;
+    box-shadow: 0 4px 14px var(--shadow-green);
 }
 
 .admin-sidebar .nav-link i {
@@ -529,16 +572,16 @@ html, body {
 
 .breadcrumb-item + .breadcrumb-item::before {
     content: "›";
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted);
 }
 
 .breadcrumb-item a {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-muted);
     text-decoration: none;
 }
 
 .breadcrumb-item a:hover {
-    color: white;
+    color: var(--primary-green);
 }
 
 /* Admin Cards Enhancement */
@@ -573,7 +616,7 @@ html, body {
     padding: 1.5rem;
     box-shadow: 0 4px 18px rgba(45, 80, 22, 0.06);
     border: 1px solid var(--border-soft);
-    border-left: 4px solid #28a745;
+    border-left: 4px solid var(--brand-primary);
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
     position: relative;
     overflow: hidden;
@@ -594,13 +637,13 @@ html, body {
 .admin-stats-card:hover {
     transform: none;
     box-shadow: 0 8px 24px rgba(45, 80, 22, 0.1);
-    border-left-color: #20c997;
+    border-left-color: var(--brand-secondary);
 }
 
 .admin-stats-card .stats-icon {
     width: 52px;
     height: 52px;
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: var(--brand-gradient);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -613,7 +656,7 @@ html, body {
 .admin-stats-card .stats-number {
     font-size: 2.15rem;
     font-weight: 700;
-    color: #2d5016;
+    color: var(--brand-ink);
     margin-bottom: 0.25rem;
     letter-spacing: -0.02em;
 }
@@ -628,7 +671,7 @@ html, body {
 
 /* Action Buttons */
 .admin-action-btn {
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: var(--brand-gradient);
     border: none;
     border-radius: 10px;
     color: white;
@@ -642,7 +685,7 @@ html, body {
 }
 
 .admin-action-btn:hover {
-    background: linear-gradient(135deg, #20c997, #28a745);
+    background: var(--brand-gradient);
     transform: translateY(-1px);
     box-shadow: 0 5px 15px rgba(40, 167, 69, 0.35);
     color: white;
@@ -652,7 +695,7 @@ html, body {
     background: #edf2ef;
     border: 1px solid rgba(45, 80, 22, 0.12);
     border-radius: 10px;
-    color: #2d5016;
+    color: var(--brand-ink);
     padding: 0.65rem 1.25rem;
     font-weight: 600;
     text-decoration: none;
@@ -666,7 +709,7 @@ html, body {
     background: #e2ebe5;
     transform: translateY(-1px);
     box-shadow: none;
-    color: #2d5016;
+    color: var(--brand-ink);
 }
 
 /* Tables Enhancement */
@@ -683,7 +726,7 @@ html, body {
 
 .admin-table thead th {
     border: none;
-    color: #2d5016;
+    color: var(--brand-ink);
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.78rem;
@@ -714,11 +757,11 @@ html, body {
     margin-bottom: 1.5rem;
     box-shadow: 0 4px 18px rgba(45, 80, 22, 0.06);
     border: 1px solid var(--border-soft);
-    border-left: 4px solid #28a745;
+    border-left: 4px solid var(--brand-primary);
 }
 
 .admin-page-title {
-    color: #2d5016;
+    color: var(--brand-ink);
     font-weight: 700;
     margin-bottom: 0.35rem;
     letter-spacing: -0.02em;
@@ -732,7 +775,7 @@ html, body {
 /* Forms — densidade e foco consistentes */
 .admin-main .form-label {
     font-weight: 600;
-    color: #2d5016;
+    color: var(--brand-ink);
     margin-bottom: 0.35rem;
 }
 
@@ -747,7 +790,7 @@ html, body {
 
 .admin-main .form-control:focus,
 .admin-main .form-select:focus {
-    border-color: #28a745;
+    border-color: var(--brand-primary);
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
     background: #fff;
 }
@@ -773,7 +816,7 @@ html, body {
 }
 
 .empty-state__title {
-    color: #2d5016;
+    color: var(--brand-ink);
     font-weight: 700;
     margin-bottom: 0.35rem;
 }
@@ -801,14 +844,14 @@ html, body {
     background: #f7fbf8;
     border: 1px solid var(--border-soft);
     text-decoration: none;
-    color: #2d5016;
+    color: var(--brand-ink);
     transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
 .quick-action:hover {
     background: #eef7f1;
     border-color: rgba(40, 167, 69, 0.35);
-    color: #2d5016;
+    color: var(--brand-ink);
     transform: translateY(-2px);
 }
 
@@ -883,8 +926,8 @@ html, body {
 /* ===== PsyAll marketplace ===== */
 .psy-brand-psy { color: #1f7a4d; font-weight: 700; }
 .psy-brand-all { color: #1ab8b0; font-weight: 700; }
-.navbar .psy-brand-psy { color: #d4f5e4; }
-.navbar .psy-brand-all { color: #9aefe8; }
+.navbar .psy-brand-psy { color: var(--brand-primary); }
+.navbar .psy-brand-all { color: var(--brand-secondary); }
 .brand-logo-img { object-fit: contain; display: block; }
 
 .btn-psy-primary {
@@ -907,10 +950,7 @@ html, body {
 .btn-psy-ghost:hover { background: rgba(31, 122, 77, 0.06); color: var(--dark-green); }
 
 .psy-hero {
-    background:
-        radial-gradient(1200px 500px at 10% -10%, rgba(26, 184, 176, 0.18), transparent 55%),
-        radial-gradient(900px 420px at 90% 0%, rgba(31, 122, 77, 0.16), transparent 50%),
-        linear-gradient(180deg, #f7fcfa 0%, #eef8f4 100%);
+    background: var(--brand-gradient-hero);
     padding: 3.5rem 0 4rem;
 }
 .psy-hero-title {
@@ -1081,11 +1121,26 @@ html, body {
     color: var(--text-muted);
 }
 .psy-cta {
-    background: var(--gradient-green);
-    color: #fff;
+    background: var(--brand-gradient-soft);
+    color: var(--brand-ink);
+    border-top: 1px solid var(--brand-border);
+    border-bottom: 1px solid var(--brand-border);
 }
 .psy-cta h2 { font-weight: 700; }
-.psy-cta p { opacity: 0.9; }
+.psy-cta p { opacity: 0.85; color: var(--brand-muted); }
+.psy-cta .btn-light {
+    background: var(--brand-gradient);
+    border: none;
+    color: #fff;
+}
+.psy-cta .btn-outline-light {
+    border-color: rgba(var(--brand-primary-rgb), 0.35);
+    color: var(--brand-primary);
+}
+.psy-cta .btn-outline-light:hover {
+    background: var(--brand-gradient-chip);
+    color: var(--brand-ink);
+}
 .psy-legal { max-width: 820px; }
 .psy-legal h1 { font-weight: 700; letter-spacing: -0.02em; }
 .psy-legal h2 { font-size: 1.2rem; font-weight: 700; margin-top: 1.75rem; }
