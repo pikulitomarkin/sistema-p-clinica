@@ -57,7 +57,7 @@ public class VideoConsultaHub : Hub
 
         var isAdmin = Context.User!.IsInRole("Admin");
         var consulta = await _videoConsultaService.ObterConsultaComAcessoAsync(consultaId, user, isAdmin);
-        if (consulta == null || consulta.Formato != FormatoConsulta.Online)
+        if (consulta == null)
             throw new HubException("Sem permissão para esta sala.");
 
         if (string.IsNullOrWhiteSpace(consulta.VideoRoomName) ||

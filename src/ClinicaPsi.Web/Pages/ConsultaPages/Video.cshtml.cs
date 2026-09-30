@@ -62,11 +62,6 @@ public class VideoModel : PageModel
             MensagemErro = "Consulta não encontrada ou você não tem permissão para acessar esta sala.";
             return Page();
         }
-        if (Consulta.Formato != FormatoConsulta.Online)
-        {
-            MensagemErro = "Esta consulta não é online e não possui sala de vídeo.";
-            return Page();
-        }
         if (Consulta.Status == StatusConsulta.Cancelada)
         {
             MensagemErro = "Esta consulta foi cancelada.";

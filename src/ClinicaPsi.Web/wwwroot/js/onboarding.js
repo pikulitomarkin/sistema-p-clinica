@@ -10,7 +10,7 @@
             },
             {
                 title: 'Agendar consulta',
-                text: 'Use Agendar Consulta para escolher data, horário e formato (presencial ou online).',
+                text: 'Use Agendar Consulta para escolher data e horário. Todas as sessões são por teleterapia (videochamada).',
                 selector: '[data-tour="cliente-agendar"]',
                 href: '/Cliente/AgendarConsulta'
             },

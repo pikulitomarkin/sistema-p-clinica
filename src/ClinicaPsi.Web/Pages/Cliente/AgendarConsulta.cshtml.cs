@@ -45,7 +45,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
             public DateTime DataHorario { get; set; }
             public int DuracaoMinutos { get; set; } = 50;
             public TipoConsulta Tipo { get; set; } = TipoConsulta.Normal;
-            public FormatoConsulta Formato { get; set; } = FormatoConsulta.Presencial;
+            public FormatoConsulta Formato { get; set; } = FormatoConsulta.Online;
             public string? Observacoes { get; set; }
         }
 
@@ -132,7 +132,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     Valor = valorConsulta,
                     Status = StatusConsulta.Agendada,
                     Tipo = tipoConsulta,
-                    Formato = Input.Formato,
+                    Formato = FormatoConsulta.Online, // PsyAll: somente teleterapia
                     Observacoes = Input.Observacoes,
                     DataAgendamento = DateTime.Now,
                     DataCriacao = DateTime.Now,

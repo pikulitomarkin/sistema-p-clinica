@@ -116,12 +116,9 @@
                                             <span class="badge bg-success">@consulta.Status</span>
                                         </td>
                                         <td>
-                                            @if (consulta.Formato == FormatoConsulta.Online)
-                                            {
-                                                <a href="/consulta/@consulta.Id/video" class="btn btn-sm btn-info me-1" title="Videochamada">
-                                                    <i class="bi bi-camera-video"></i>
-                                                </a>
-                                            }
+                                            <a href="/consulta/@consulta.Id/video" class="btn btn-sm btn-info me-1" title="Videochamada">
+                                                <i class="bi bi-camera-video"></i>
+                                            </a>
                                             <a href="/Cliente/MinhasConsultas" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-eye"></i>
                                             </a>

@@ -167,10 +167,7 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-info">@consulta.Tipo.GetDisplayName()</span>
-                                        @if (consulta.Formato == FormatoConsulta.Online)
-                                        {
-                                            <span class="badge bg-primary ms-1"><i class="bi bi-camera-video"></i> Online</span>
-                                        }
+                                        <span class="badge bg-primary ms-1"><i class="bi bi-camera-video"></i> Teleterapia</span>
                                     </td>
                                     <td>@consulta.DuracaoMinutos min</td>
                                     <td>@consulta.Valor.ToString("C")</td>
@@ -181,8 +178,7 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            @if (consulta.Formato == FormatoConsulta.Online &&
-                                                 (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                                            @if (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada)
                                             {
                                                 <a class="btn btn-info" href="/consulta/@consulta.Id/video"
                                                    title="Entrar na videochamada">
@@ -271,8 +267,7 @@
                                             <button class="btn btn-outline-primary btn-sm" onclick="viewConsulta(@consulta.Id)">
                                                 <i class="bi bi-eye"></i>
                                             </button>
-                                            @if (consulta.Formato == FormatoConsulta.Online &&
-                                                 (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                                            @if (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada)
                                             {
                                                 <a class="btn btn-info btn-sm" href="/consulta/@consulta.Id/video">
                                                     <i class="bi bi-camera-video"></i>
@@ -390,11 +385,9 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="formatoConsulta" class="form-label">Formato</label>
-                            <select class="form-select" id="formatoConsulta" name="formatoConsulta" required>
-                                <option value="Presencial">Presencial</option>
-                                <option value="Online">Online (videochamada)</option>
-                            </select>
+                            <label class="form-label">Formato</label>
+                            <input type="text" class="form-control" value="Teleterapia (videochamada)" readonly>
+                            <input type="hidden" id="formatoConsulta" name="formatoConsulta" value="Online">
                         </div>
                         <div class="col-md-6">
                             <label for="dataConsulta" class="form-label">Data</label>

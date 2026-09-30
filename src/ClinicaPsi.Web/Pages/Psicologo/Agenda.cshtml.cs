@@ -143,7 +143,7 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             int duracao,
             decimal valor,
             string? observacoes,
-            string formatoConsulta = "Presencial")
+            string formatoConsulta = "Online")
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -176,10 +176,8 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     return await OnGetAsync();
                 }
 
-                // Criar nova consulta
-                var formato = Enum.TryParse<FormatoConsulta>(formatoConsulta, true, out var f)
-                    ? f
-                    : FormatoConsulta.Presencial;
+                // PsyAll: somente teleterapia (formatoConsulta ignorado se legado "Presencial")
+                _ = formatoConsulta;
 
                 var novaConsulta = new Consulta
                 {
@@ -190,7 +188,7 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     Valor = valor,
                     Status = StatusConsulta.Agendada,
                     Tipo = Enum.Parse<TipoConsulta>(tipoConsulta),
-                    Formato = formato,
+                    Formato = FormatoConsulta.Online,
                     Observacoes = observacoes,
                     DataCriacao = DateTime.Now,
                     DataAgendamento = DateTime.Now

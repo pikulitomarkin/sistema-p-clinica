@@ -117,18 +117,9 @@
                                                             <span class="badge bg-secondary">
                                                                 @consulta.DuracaoMinutos min
                                                             </span>
-                                                            @if (consulta.Formato == FormatoConsulta.Online)
-                                                            {
-                                                                <span class="badge bg-info ms-2">
-                                                                    <i class="bi bi-camera-video"></i> Online
-                                                                </span>
-                                                            }
-                                                            else
-                                                            {
-                                                                <span class="badge bg-dark ms-2">
-                                                                    <i class="bi bi-building"></i> Presencial
-                                                                </span>
-                                                            }
+                                                            <span class="badge bg-info ms-2">
+                                                                <i class="bi bi-camera-video"></i> Teleterapia
+                                                            </span>
                                                         </div>
                                                         <h6 class="mb-1">
                                                             <i class="bi bi-person me-1"></i>
@@ -143,8 +134,7 @@
                                                         }
                                                     </div>
                                                     <div class="btn-group-vertical btn-group-sm">
-                                                        @if (consulta.Formato == FormatoConsulta.Online &&
-                                                             (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                                                        @if (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada)
                                                         {
                                                             <a href="/consulta/@consulta.Id/video"
                                                                class="btn btn-info btn-sm" title="Entrar na videochamada">

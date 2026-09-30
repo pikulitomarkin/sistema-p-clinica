@@ -257,6 +257,7 @@ public class ConsultaService : IConsultaService
             DuracaoMinutos = agendarDto.DuracaoMinutos,
             Valor = agendarDto.ConsultaGratuita ? 0 : psicologo.ValorConsulta,
             Tipo = agendarDto.ConsultaGratuita ? TipoConsulta.Gratuita : TipoConsulta.Normal,
+            Formato = FormatoConsulta.Online,
             Status = StatusConsulta.Agendada,
             Observacoes = agendarDto.Observacoes,
             DataAgendamento = DateTime.Now

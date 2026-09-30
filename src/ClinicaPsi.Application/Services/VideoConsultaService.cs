@@ -52,8 +52,9 @@ public class VideoConsultaService
 
     public async Task GarantirSalaAsync(Consulta consulta)
     {
+        // PsyAll: somente teleterapia — coerce legado Presencial e sempre cria sala WebRTC
         if (consulta.Formato != FormatoConsulta.Online)
-            return;
+            consulta.Formato = FormatoConsulta.Online;
 
         if (SalaInternaValida(consulta))
             return;
@@ -77,8 +78,11 @@ public class VideoConsultaService
 
     public async Task FinalizarSalaAposCriacaoAsync(Consulta consulta)
     {
-        if (consulta.Formato != FormatoConsulta.Online || consulta.Id <= 0)
+        if (consulta.Id <= 0)
             return;
+
+        if (consulta.Formato != FormatoConsulta.Online)
+            consulta.Formato = FormatoConsulta.Online;
 
         if (SalaInternaValida(consulta) &&
             consulta.VideoRoomName!.StartsWith($"clinicapsi-{consulta.Id}-", StringComparison.Ordinal))
@@ -169,7 +173,6 @@ public class VideoConsultaService
             .AsNoTracking()
             .Include(c => c.Psicologo)
             .Where(c => c.PacienteId == pacienteId &&
-                        c.Formato == FormatoConsulta.Online &&
                         c.VideoChamadaAtivaEm != null &&
                         c.VideoChamadaAtivaEm >= limite &&
                         c.Status != StatusConsulta.Cancelada)

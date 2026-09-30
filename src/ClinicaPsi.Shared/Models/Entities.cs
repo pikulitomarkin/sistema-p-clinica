@@ -199,7 +199,8 @@ public class Consulta
 
     public StatusConsulta Status { get; set; } = StatusConsulta.Agendada;
     public TipoConsulta Tipo { get; set; } = TipoConsulta.Normal;
-    public FormatoConsulta Formato { get; set; } = FormatoConsulta.Presencial;
+    /// <summary>PsyAll opera somente com teleterapia; novas consultas usam Online.</summary>
+    public FormatoConsulta Formato { get; set; } = FormatoConsulta.Online;
 
     [StringLength(100)]
     public string? VideoRoomName { get; set; }
@@ -329,8 +330,13 @@ public enum TipoConsulta
     Avaliacao = 4
 }
 
+/// <summary>
+/// Formato da consulta. Presencial permanece no enum apenas para linhas históricas no banco;
+/// a plataforma não oferece mais atendimento presencial — somente teleterapia (Online).
+/// </summary>
 public enum FormatoConsulta
 {
+    /// <summary>Legado — não ofertar em novas agendas.</summary>
     Presencial = 1,
     Online = 2
 }

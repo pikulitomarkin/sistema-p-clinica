@@ -36,6 +36,8 @@ namespace ClinicaPsi.Web.Extensions
                 TipoConsulta.Gratuita => "Gratuita",
                 TipoConsulta.Retorno => "Retorno",
                 TipoConsulta.Avaliacao => "Avaliação",
+                FormatoConsulta.Online => "Teleterapia",
+                FormatoConsulta.Presencial => "Teleterapia", // legado: exibir como teleterapia
                 TipoNotificacao.Email => "Email",
                 TipoNotificacao.WhatsApp => "WhatsApp",
                 TipoNotificacao.SMS => "SMS",

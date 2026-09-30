@@ -77,12 +77,10 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold">Formato da Consulta *</label>
-                                    <select asp-for="Input.Formato" class="form-select" required>
-                                        <option value="@FormatoConsulta.Presencial">🏢 Presencial</option>
-                                        <option value="@FormatoConsulta.Online">💻 Online (Videochamada)</option>
-                                    </select>
-                                    <small class="text-muted d-block mt-1">Escolha se prefere atendimento presencial ou por videochamada</small>
+                                    <label class="form-label fw-bold">Formato da Consulta</label>
+                                    <input type="text" class="form-control" value="Teleterapia (videochamada)" readonly>
+                                    <input type="hidden" asp-for="Input.Formato" value="@FormatoConsulta.Online" />
+                                    <small class="text-muted d-block mt-1">A PsyAll atende apenas por teleterapia, com sala de vídeo na plataforma</small>
                                 </div>
                             </div>
                         </div>

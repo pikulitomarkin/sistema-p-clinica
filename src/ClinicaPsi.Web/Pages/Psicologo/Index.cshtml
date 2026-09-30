@@ -154,12 +154,9 @@
                                         <td>@consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")</td>
                                         <td>@consulta.DuracaoMinutos min</td>
                                         <td class="text-end">
-                                            @if (consulta.Formato == FormatoConsulta.Online)
-                                            {
-                                                <a href="/consulta/@consulta.Id/video" class="btn btn-sm btn-success" title="Sala de vídeo">
-                                                    <i class="bi bi-camera-video"></i>
-                                                </a>
-                                            }
+                                            <a href="/consulta/@consulta.Id/video" class="btn btn-sm btn-success" title="Sala de vídeo">
+                                                <i class="bi bi-camera-video"></i>
+                                            </a>
                                             <a href="/psicologo/consultas" class="btn btn-sm btn-outline-secondary" title="Consultas">
                                                 <i class="bi bi-eye"></i>
                                             </a>

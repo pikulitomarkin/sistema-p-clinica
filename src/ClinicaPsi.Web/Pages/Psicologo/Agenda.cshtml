@@ -294,11 +294,9 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="formatoConsulta" class="form-label">Formato</label>
-                            <select class="form-select" id="formatoConsulta" name="formatoConsulta" required>
-                                <option value="Presencial">Presencial</option>
-                                <option value="Online">Online (videochamada)</option>
-                            </select>
+                            <label class="form-label">Formato</label>
+                            <input type="text" class="form-control" value="Teleterapia (videochamada)" readonly>
+                            <input type="hidden" id="formatoConsulta" name="formatoConsulta" value="Online">
                         </div>
                         <div class="col-md-6">
                             <label for="dataConsulta" class="form-label">Data</label>
