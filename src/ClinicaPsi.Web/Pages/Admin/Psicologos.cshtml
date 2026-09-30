@@ -124,6 +124,14 @@
                                     <span class="badge @(psicologo.Ativo ? "bg-success" : "bg-secondary")">
                                         @(psicologo.Ativo ? "Ativo" : "Inativo")
                                     </span>
+                                    @if (psicologo.StatusValidacao == StatusValidacaoPsicologo.Pendente)
+                                    {
+                                        <span class="badge bg-warning text-dark ms-1">Validação</span>
+                                    }
+                                    else if (psicologo.StatusValidacao == StatusValidacaoPsicologo.Recusado)
+                                    {
+                                        <span class="badge bg-danger ms-1">Recusado</span>
+                                    }
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">

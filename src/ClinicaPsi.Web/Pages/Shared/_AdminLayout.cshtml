@@ -78,6 +78,10 @@
                         <i class="bi bi-person-badge me-2"></i>
                         Gestão de Psicólogos
                     </a>
+                    <a href="/admin/validacao-psicologos" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Admin/Validacao") == true ? "active" : "")">
+                        <i class="bi bi-shield-check me-2"></i>
+                        Validação cadastros
+                    </a>
                     <a href="/admin/consultas" class="nav-link">
                         <i class="bi bi-calendar-check me-2"></i>
                         Gestão de Consultas

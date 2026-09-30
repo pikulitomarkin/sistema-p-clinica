@@ -95,7 +95,10 @@ builder.Services.AddOpenTelemetry()
         }));
 
 // Adicionar serviços
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.ConfigureFilter(new ClinicaPsi.Web.Filters.PsicologoValidacaoPageFilter());
+});
 builder.Services.AddSignalR();
 
 // Health checks
@@ -210,6 +213,7 @@ builder.Services.AddScoped<NotificacaoService>();
 builder.Services.AddScoped<PdfService>();
 builder.Services.AddScoped<ConfiguracaoService>();
 builder.Services.AddScoped<ClinicaPsi.Web.Services.FotoPerfilService>();
+builder.Services.AddScoped<ClinicaPsi.Web.Services.DocumentoCadastroService>();
 builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<OpenAIService>();
 builder.Services.AddScoped<WhatsAppBotService>();
@@ -297,6 +301,7 @@ using (var scope = app.Services.CreateScope())
         await GarantirSchemaOnboardingAsync(context, logger);
         await GarantirSchemaFotoPerfilAsync(context, logger);
         await GarantirSchemaAvaliacoesAsync(context, logger);
+        await GarantirSchemaValidacaoPsicologoAsync(context, logger);
     }
     catch (Exception ex)
     {
@@ -365,6 +370,7 @@ app.UseStaticFiles();
 {
     var uploadsRoot = Path.Combine(app.Environment.ContentRootPath, "data", "uploads");
     Directory.CreateDirectory(Path.Combine(uploadsRoot, "perfil"));
+    Directory.CreateDirectory(Path.Combine(uploadsRoot, "docs"));
     app.UseStaticFiles(new StaticFileOptions
     {
         FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsRoot),
@@ -655,6 +661,54 @@ static async Task GarantirSchemaFotoPerfilAsync(AppDbContext context, ILogger lo
         catch (Exception ex2)
         {
             logger.LogDebug(ex2, "FotoUrl já existe ou schema não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+
+static async Task GarantirSchemaValidacaoPsicologoAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""StatusValidacao"" integer NOT NULL DEFAULT 2;
+              ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""AceiteTermosEm"" timestamp without time zone NULL;
+              ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""AceiteContratoEm"" timestamp without time zone NULL;
+              ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""ValorContratoConsulta"" numeric(10,2) NOT NULL DEFAULT 50;
+              ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""DocumentoCnhUrl"" character varying(400) NULL;
+              ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""DocumentoCrpUrl"" character varying(400) NULL;
+              ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""ValidadoEm"" timestamp without time zone NULL;
+              ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""ValidadoPorUserId"" character varying(450) NULL;
+              ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""MotivoRecusa"" character varying(1000) NULL;");
+        // DEFAULT 2 (Aprovado) preserva psicólogos já ativos; novos cadastros definem Pendente=1 no app.
+        logger.LogInformation("Schema de validação de psicólogo verificado.");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""StatusValidacao"" INTEGER NOT NULL DEFAULT 2;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""AceiteTermosEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""AceiteContratoEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""ValorContratoConsulta"" TEXT NOT NULL DEFAULT '50';");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""DocumentoCnhUrl"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""DocumentoCrpUrl"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""ValidadoEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""ValidadoPorUserId"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""MotivoRecusa"" TEXT NULL;");
+            logger.LogInformation("Colunas de validação de psicólogo adicionadas (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "Validação psicólogo já existe ou schema não aplicável. PG err={Pg}", ex.Message);
         }
     }
 }

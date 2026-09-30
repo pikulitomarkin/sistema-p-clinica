@@ -125,8 +125,42 @@ public class Psicologo
     /// <summary>Soft-delete: quando preenchido, o psicólogo não reaparece na listagem nem no seed/sync.</summary>
     public DateTime? ExcluidoEm { get; set; }
 
+    /// <summary>Validação do cadastro pelo admin (documentos CNH/CRP + contrato).</summary>
+    public StatusValidacaoPsicologo StatusValidacao { get; set; } = StatusValidacaoPsicologo.Pendente;
+
+    public DateTime? AceiteTermosEm { get; set; }
+    public DateTime? AceiteContratoEm { get; set; }
+
+    /// <summary>Valor da consulta previsto no contrato digital (padrão R$ 50).</summary>
+    [Range(0, double.MaxValue)]
+    public decimal ValorContratoConsulta { get; set; } = 50m;
+
+    [StringLength(400)]
+    public string? DocumentoCnhUrl { get; set; }
+
+    [StringLength(400)]
+    public string? DocumentoCrpUrl { get; set; }
+
+    public DateTime? ValidadoEm { get; set; }
+
+    [StringLength(450)]
+    public string? ValidadoPorUserId { get; set; }
+
+    [StringLength(1000)]
+    public string? MotivoRecusa { get; set; }
+
+    public bool PodeAtender =>
+        Ativo && ExcluidoEm == null && StatusValidacao == StatusValidacaoPsicologo.Aprovado;
+
     // Relacionamentos
     public virtual ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
+}
+
+public enum StatusValidacaoPsicologo
+{
+    Pendente = 1,
+    Aprovado = 2,
+    Recusado = 3
 }
 
 public class Consulta

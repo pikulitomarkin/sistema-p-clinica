@@ -9,7 +9,7 @@
     Layout = null;
     
     var psicologos = await PsicologoService.GetAllAsync();
-    var psicologosAtivos = psicologos.Where(p => p.Ativo).ToList();
+    var psicologosAtivos = psicologos.Where(p => p.Ativo && p.ExcluidoEm == null && p.StatusValidacao == StatusValidacaoPsicologo.Aprovado).ToList();
     
     // Se não houver psicólogos cadastrados, usa informações de fallback
     var infoFallback = !psicologosAtivos.Any();

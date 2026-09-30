@@ -16,7 +16,7 @@ public class RankingModel : PageModel
     public async Task OnGetAsync()
     {
         var ativos = await _db.Psicologos.AsNoTracking()
-            .Where(p => p.Ativo && p.ExcluidoEm == null)
+            .Where(p => p.Ativo && p.ExcluidoEm == null && p.StatusValidacao == StatusValidacaoPsicologo.Aprovado)
             .ToListAsync();
 
         var stats = await _db.Avaliacoes.AsNoTracking()

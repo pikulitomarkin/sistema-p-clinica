@@ -189,7 +189,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
             }
 
             Psicologos = await _context.Psicologos
-                .Where(p => p.Ativo)
+                .Where(p => p.Ativo && p.ExcluidoEm == null && p.StatusValidacao == StatusValidacaoPsicologo.Aprovado)
                 .OrderBy(p => p.Nome)
                 .ToListAsync();
 

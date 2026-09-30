@@ -16,7 +16,9 @@ public class PsicologoService
     public async Task<List<Psicologo>> GetAllAsync()
     {
         return await _context.Psicologos
-            .Where(p => p.Ativo && p.ExcluidoEm == null)
+            .Where(p => p.Ativo
+                        && p.ExcluidoEm == null
+                        && p.StatusValidacao == StatusValidacaoPsicologo.Aprovado)
             .OrderBy(p => p.Nome)
             .ToListAsync();
     }
@@ -44,7 +46,7 @@ public class PsicologoService
     public async Task<List<DateTime>> GetHorariosDisponiveisAsync(int psicologoId, DateTime data)
     {
         var psicologo = await GetByIdAsync(psicologoId);
-        if (psicologo == null || psicologo.ExcluidoEm != null || !psicologo.Ativo)
+        if (psicologo == null || psicologo.ExcluidoEm != null || !psicologo.PodeAtender)
             return new List<DateTime>();
 
         var diaSemana = data.DayOfWeek;

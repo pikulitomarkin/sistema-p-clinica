@@ -33,7 +33,7 @@ public class _HostModel : PageModel
         };
 
         var ativos = await _db.Psicologos.AsNoTracking()
-            .Where(p => p.Ativo && p.ExcluidoEm == null)
+            .Where(p => p.Ativo && p.ExcluidoEm == null && p.StatusValidacao == StatusValidacaoPsicologo.Aprovado)
             .OrderBy(p => p.Nome)
             .ToListAsync();
 
