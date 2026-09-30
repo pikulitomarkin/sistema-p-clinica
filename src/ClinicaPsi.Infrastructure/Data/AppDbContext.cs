@@ -19,6 +19,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<WhatsAppSession> WhatsAppSessions => Set<WhatsAppSession>();
     public DbSet<Avaliacao> Avaliacoes => Set<Avaliacao>();
     public DbSet<SolicitacaoPrivacidade> SolicitacoesPrivacidade => Set<SolicitacaoPrivacidade>();
+    public DbSet<CarteiraCliente> CarteirasCliente => Set<CarteiraCliente>();
+    public DbSet<MovimentacaoCarteira> MovimentacoesCarteira => Set<MovimentacaoCarteira>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -208,6 +210,45 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.ObservacaoAdmin).HasMaxLength(2000);
             entity.Property(e => e.RespondidoPorUserId).HasMaxLength(450);
             entity.Property(e => e.DataCriacao).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<CarteiraCliente>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.PacienteId).IsUnique();
+            entity.Property(e => e.Saldo).HasPrecision(12, 2);
+            entity.Property(e => e.DataCriacao).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(e => e.Paciente)
+                .WithOne(p => p.Carteira)
+                .HasForeignKey<CarteiraCliente>(e => e.PacienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<MovimentacaoCarteira>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.CarteiraClienteId);
+            entity.HasIndex(e => e.MercadoPagoPaymentId);
+            entity.HasIndex(e => e.ExternalReference);
+            entity.HasIndex(e => e.Status);
+            entity.Property(e => e.Valor).HasPrecision(12, 2);
+            entity.Property(e => e.SaldoApos).HasPrecision(12, 2);
+            entity.Property(e => e.Descricao).HasMaxLength(300);
+            entity.Property(e => e.MercadoPagoPaymentId).HasMaxLength(100);
+            entity.Property(e => e.ExternalReference).HasMaxLength(120);
+            entity.Property(e => e.PixCopiaECola).HasMaxLength(8000);
+            entity.Property(e => e.DataCriacao).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(e => e.CarteiraCliente)
+                .WithMany(c => c.Movimentacoes)
+                .HasForeignKey(e => e.CarteiraClienteId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Consulta)
+                .WithMany()
+                .HasForeignKey(e => e.ConsultaId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

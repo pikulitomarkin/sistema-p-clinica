@@ -184,7 +184,7 @@ public class ConfiguracaoService
             
             { "Consultas.DuracaoPadrao", ("50", "Duração padrão das consultas em minutos", "Consultas", "number") },
             { "Consultas.IntervaloMinimo", ("15", "Intervalo mínimo entre consultas em minutos", "Consultas", "number") },
-            { "Consultas.ValorPadrao", ("150.00", "Valor padrão da consulta", "Consultas", "number") },
+            { "Consultas.ValorPadrao", ("50.00", "Valor padrão da consulta (preço social)", "Consultas", "number") },
             { "Consultas.HorarioInicio", ("09:00", "Horário de início do atendimento", "Consultas", "string") },
             { "Consultas.HorarioFim", ("17:00", "Horário de fim do atendimento", "Consultas", "string") },
             { "Consultas.PermitirSabado", ("true", "Permitir agendamento aos sábados", "Consultas", "boolean") },
@@ -247,7 +247,7 @@ public class ConfiguracaoService
     {
         return new ConsultasConfig
         {
-            ValorPadrao = await ObterValorDecimalAsync("Consultas.ValorPadrao", 150.00m),
+            ValorPadrao = await ObterValorDecimalAsync("Consultas.ValorPadrao", 50.00m),
             DuracaoPadrao = await ObterValorIntAsync("Consultas.DuracaoPadrao", 50),
             IntervaloMinimo = await ObterValorIntAsync("Consultas.IntervaloMinimo", 15),
             HorarioInicio = await ObterValorStringAsync("Consultas.HorarioInicio", "09:00") ?? "09:00",
@@ -284,7 +284,7 @@ public class SistemaConfig
 
 public class ConsultasConfig
 {
-    public decimal ValorPadrao { get; set; } = 150.00m;
+    public decimal ValorPadrao { get; set; } = 50.00m;
     public int DuracaoPadrao { get; set; } = 50;
     public int IntervaloMinimo { get; set; } = 15;
     public string HorarioInicio { get; set; } = "09:00";

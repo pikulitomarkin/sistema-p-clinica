@@ -284,6 +284,7 @@ builder.Services.AddHttpClient("MercadoPago", client =>
     client.Timeout = TimeSpan.FromSeconds(45);
     client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 });
+builder.Services.AddScoped<ClinicaPsi.Application.Services.CarteiraService>();
 builder.Services.AddScoped<ClinicaPsi.Application.Services.MercadoPago.MercadoPagoService>();
 
 // Configurar HttpClient para WhatsApp Web (Venom-Bot)
@@ -350,6 +351,8 @@ using (var scope = app.Services.CreateScope())
         await GarantirSchemaValidacaoPsicologoAsync(context, logger);
         await GarantirSchemaLgpdAsync(context, logger);
         await GarantirSchemaMercadoPagoAsync(context, logger);
+        await GarantirSchemaCarteiraAsync(context, logger);
+        await GarantirPrecoSocialPsicologosAsync(context, logger);
     }
     catch (Exception ex)
     {
@@ -600,6 +603,122 @@ static async Task GarantirSchemaMercadoPagoAsync(AppDbContext context, ILogger l
         {
             logger.LogDebug(ex2, "Schema Mercado Pago já existe ou não aplicável. PG err={Pg}", ex.Message);
         }
+    }
+}
+
+static async Task GarantirSchemaCarteiraAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"CREATE TABLE IF NOT EXISTS ""CarteirasCliente"" (
+                ""Id"" SERIAL PRIMARY KEY,
+                ""PacienteId"" integer NOT NULL,
+                ""Saldo"" numeric(12,2) NOT NULL DEFAULT 0,
+                ""DataCriacao"" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                ""DataAtualizacao"" timestamp without time zone NULL,
+                CONSTRAINT ""FK_CarteirasCliente_Pacientes_PacienteId""
+                    FOREIGN KEY (""PacienteId"") REFERENCES ""Pacientes"" (""Id"") ON DELETE RESTRICT
+              );
+              CREATE UNIQUE INDEX IF NOT EXISTS ""IX_CarteirasCliente_PacienteId"" ON ""CarteirasCliente"" (""PacienteId"");
+
+              CREATE TABLE IF NOT EXISTS ""MovimentacoesCarteira"" (
+                ""Id"" SERIAL PRIMARY KEY,
+                ""CarteiraClienteId"" integer NOT NULL,
+                ""Tipo"" integer NOT NULL,
+                ""Valor"" numeric(12,2) NOT NULL,
+                ""SaldoApos"" numeric(12,2) NOT NULL DEFAULT 0,
+                ""Descricao"" character varying(300) NOT NULL DEFAULT '',
+                ""Status"" integer NOT NULL DEFAULT 0,
+                ""ConsultaId"" integer NULL,
+                ""MercadoPagoPaymentId"" character varying(100) NULL,
+                ""ExternalReference"" character varying(120) NULL,
+                ""PixCopiaECola"" character varying(8000) NULL,
+                ""PixQrCodeBase64"" text NULL,
+                ""PixExpiraEm"" timestamp without time zone NULL,
+                ""DataCriacao"" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                ""DataConfirmacao"" timestamp without time zone NULL,
+                CONSTRAINT ""FK_MovimentacoesCarteira_CarteirasCliente_CarteiraClienteId""
+                    FOREIGN KEY (""CarteiraClienteId"") REFERENCES ""CarteirasCliente"" (""Id"") ON DELETE CASCADE,
+                CONSTRAINT ""FK_MovimentacoesCarteira_Consultas_ConsultaId""
+                    FOREIGN KEY (""ConsultaId"") REFERENCES ""Consultas"" (""Id"") ON DELETE SET NULL
+              );
+              CREATE INDEX IF NOT EXISTS ""IX_MovimentacoesCarteira_CarteiraClienteId"" ON ""MovimentacoesCarteira"" (""CarteiraClienteId"");
+              CREATE INDEX IF NOT EXISTS ""IX_MovimentacoesCarteira_MercadoPagoPaymentId"" ON ""MovimentacoesCarteira"" (""MercadoPagoPaymentId"");
+              CREATE INDEX IF NOT EXISTS ""IX_MovimentacoesCarteira_ExternalReference"" ON ""MovimentacoesCarteira"" (""ExternalReference"");
+              CREATE INDEX IF NOT EXISTS ""IX_MovimentacoesCarteira_Status"" ON ""MovimentacoesCarteira"" (""Status"");");
+        logger.LogInformation("Schema carteira do cliente verificado.");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"CREATE TABLE IF NOT EXISTS ""CarteirasCliente"" (
+                    ""Id"" INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ""PacienteId"" INTEGER NOT NULL UNIQUE,
+                    ""Saldo"" TEXT NOT NULL DEFAULT '0',
+                    ""DataCriacao"" TEXT NOT NULL,
+                    ""DataAtualizacao"" TEXT NULL
+                  );");
+            await context.Database.ExecuteSqlRawAsync(
+                @"CREATE TABLE IF NOT EXISTS ""MovimentacoesCarteira"" (
+                    ""Id"" INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ""CarteiraClienteId"" INTEGER NOT NULL,
+                    ""Tipo"" INTEGER NOT NULL,
+                    ""Valor"" TEXT NOT NULL,
+                    ""SaldoApos"" TEXT NOT NULL DEFAULT '0',
+                    ""Descricao"" TEXT NOT NULL DEFAULT '',
+                    ""Status"" INTEGER NOT NULL DEFAULT 0,
+                    ""ConsultaId"" INTEGER NULL,
+                    ""MercadoPagoPaymentId"" TEXT NULL,
+                    ""ExternalReference"" TEXT NULL,
+                    ""PixCopiaECola"" TEXT NULL,
+                    ""PixQrCodeBase64"" TEXT NULL,
+                    ""PixExpiraEm"" TEXT NULL,
+                    ""DataCriacao"" TEXT NOT NULL,
+                    ""DataConfirmacao"" TEXT NULL
+                  );");
+            logger.LogInformation("Schema carteira criado (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "Schema carteira já existe ou não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+
+/// <summary>Alinha ValorConsulta / ValorContratoConsulta ao preço social R$ 50.</summary>
+static async Task GarantirPrecoSocialPsicologosAsync(AppDbContext context, ILogger logger)
+{
+    const decimal precoSocial = 50m;
+    try
+    {
+        var atualizados = await context.Psicologos
+            .Where(p => p.ExcluidoEm == null &&
+                        (p.ValorConsulta != precoSocial || p.ValorContratoConsulta != precoSocial))
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.ValorConsulta, precoSocial)
+                .SetProperty(p => p.ValorContratoConsulta, precoSocial)
+                .SetProperty(p => p.DataAtualizacao, DateTime.Now));
+
+        if (atualizados > 0)
+            logger.LogInformation("Preço social R$ 50 aplicado a {Count} psicólogo(s).", atualizados);
+
+        // Config padrão da clínica
+        var cfg = await context.ConfiguracoesSistema
+            .FirstOrDefaultAsync(c => c.Chave == "Consultas.ValorPadrao");
+        if (cfg is not null && cfg.Valor != "50.00" && cfg.Valor != "50")
+        {
+            cfg.Valor = "50.00";
+            cfg.DataAtualizacao = DateTime.Now;
+            await context.SaveChangesAsync();
+            logger.LogInformation("Config Consultas.ValorPadrao atualizada para 50.00.");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Falha ao sincronizar preço social R$ 50 (não bloqueia o boot)");
     }
 }
 

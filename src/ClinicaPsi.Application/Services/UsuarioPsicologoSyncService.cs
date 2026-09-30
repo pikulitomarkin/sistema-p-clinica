@@ -427,7 +427,8 @@ public class UsuarioPsicologoSyncService
                 ? $"PENDENTE-{usuario.Id[..Math.Min(8, usuario.Id.Length)]}"
                 : usuario.CRP,
             Telefone = usuario.PhoneNumber,
-            ValorConsulta = 150m,
+            ValorConsulta = 50m,
+            ValorContratoConsulta = 50m,
             Especialidades = string.Empty,
             Ativo = usuario.Ativo,
             UserId = usuario.Id,

@@ -1,24 +1,23 @@
 using System.Security.Claims;
+using ClinicaPsi.Application.Services;
 using ClinicaPsi.Application.Services.MercadoPago;
-using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace ClinicaPsi.Web.Pages.Cliente.Pagamento;
 
 [Authorize(Roles = "Cliente")]
 public class IndexModel : PageModel
 {
-    private readonly AppDbContext _db;
     private readonly MercadoPagoService _mp;
+    private readonly CarteiraService _carteira;
 
-    public IndexModel(AppDbContext db, MercadoPagoService mp)
+    public IndexModel(MercadoPagoService mp, CarteiraService carteira)
     {
-        _db = db;
         _mp = mp;
+        _carteira = carteira;
     }
 
     public Consulta? Consulta { get; set; }
@@ -30,6 +29,8 @@ public class IndexModel : PageModel
     public bool MpDisponivel { get; set; }
     public bool UseSandbox { get; set; }
     public string? Erro { get; set; }
+    public decimal SaldoCarteira { get; set; }
+    public bool PodePagarComCarteira { get; set; }
 
     public async Task<IActionResult> OnGetAsync(int consultaId)
     {
@@ -59,12 +60,15 @@ public class IndexModel : PageModel
             return Page();
         }
 
+        Amount = Consulta.Valor > 0 ? Consulta.Valor : 50m;
+        SaldoCarteira = await _carteira.ObterSaldoAsync(Consulta.PacienteId);
+        PodePagarComCarteira = SaldoCarteira >= Amount;
+
         MpDisponivel = _mp.IsConfigured;
         UseSandbox = _mp.UseSandbox;
         if (!MpDisponivel)
         {
             Erro = "Pagamentos ainda não estão disponíveis. Tente novamente em instantes.";
-            Amount = Consulta.Valor > 0 ? Consulta.Valor : 50m;
             return Page();
         }
 
@@ -74,7 +78,8 @@ public class IndexModel : PageModel
             PreferenceId = pref.PreferenceId;
             CheckoutUrl = pref.CheckoutUrl;
             Amount = pref.Amount;
-            PublicKey = _mp.PublicKey; // sempre via env/config — nunca hardcode
+            PublicKey = _mp.PublicKey;
+            PodePagarComCarteira = SaldoCarteira >= Amount;
         }
         catch (Exception ex)
         {
@@ -84,5 +89,33 @@ public class IndexModel : PageModel
         }
 
         return Page();
+    }
+
+    public async Task<IActionResult> OnPostPagarComCarteiraAsync(int consultaId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return RedirectToPage("/Account/Login");
+
+        var owned = await _mp.GetConsultaDoClienteAsync(consultaId, userId);
+        if (owned is null)
+        {
+            TempData["Error"] = "Consulta não encontrada.";
+            return RedirectToPage("/Cliente/MinhasConsultas");
+        }
+
+        var consulta = owned.Value.Consulta;
+        if (consulta.StatusPagamento == StatusPagamento.Pago)
+            return RedirectToPage("/Cliente/Pagamento/Sucesso", new { consultaId });
+
+        var ok = await _carteira.TentarDebitarConsultaAsync(consulta);
+        if (ok)
+        {
+            TempData["Success"] = "Consulta paga com saldo da carteira.";
+            return RedirectToPage("/Cliente/Pagamento/Sucesso", new { consultaId });
+        }
+
+        TempData["Error"] = "Saldo insuficiente. Deposite na carteira ou pague com PIX/cartão.";
+        return RedirectToPage(new { consultaId });
     }
 }

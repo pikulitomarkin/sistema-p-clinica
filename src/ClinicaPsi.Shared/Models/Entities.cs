@@ -74,6 +74,7 @@ public class Paciente
     // Relacionamentos
     public virtual ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
     public virtual ICollection<HistoricoPontos> HistoricoPontos { get; set; } = new List<HistoricoPontos>();
+    public virtual CarteiraCliente? Carteira { get; set; }
 }
 
 public class Psicologo
@@ -711,4 +712,79 @@ public class SolicitacaoPrivacidade
 
     [StringLength(450)]
     public string? RespondidoPorUserId { get; set; }
+}
+
+/// <summary>Carteira digital do paciente (saldo para pagar consultas).</summary>
+public class CarteiraCliente
+{
+    public int Id { get; set; }
+
+    [Required]
+    public int PacienteId { get; set; }
+    public virtual Paciente Paciente { get; set; } = null!;
+
+    [Range(0, double.MaxValue)]
+    public decimal Saldo { get; set; }
+
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+    public DateTime? DataAtualizacao { get; set; }
+
+    public virtual ICollection<MovimentacaoCarteira> Movimentacoes { get; set; } = new List<MovimentacaoCarteira>();
+}
+
+/// <summary>Crédito (depósito PIX) ou débito (pagamento de consulta) na carteira.</summary>
+public class MovimentacaoCarteira
+{
+    public int Id { get; set; }
+
+    [Required]
+    public int CarteiraClienteId { get; set; }
+    public virtual CarteiraCliente CarteiraCliente { get; set; } = null!;
+
+    public TipoMovimentacaoCarteira Tipo { get; set; }
+
+    [Range(0.01, double.MaxValue)]
+    public decimal Valor { get; set; }
+
+    public decimal SaldoApos { get; set; }
+
+    [StringLength(300)]
+    public string Descricao { get; set; } = string.Empty;
+
+    public StatusMovimentacaoCarteira Status { get; set; } = StatusMovimentacaoCarteira.Pendente;
+
+    public int? ConsultaId { get; set; }
+    public virtual Consulta? Consulta { get; set; }
+
+    [StringLength(100)]
+    public string? MercadoPagoPaymentId { get; set; }
+
+    [StringLength(120)]
+    public string? ExternalReference { get; set; }
+
+    /// <summary>PIX copia-e-cola (qr_code do Mercado Pago).</summary>
+    [StringLength(8000)]
+    public string? PixCopiaECola { get; set; }
+
+    /// <summary>QR Code em base64 (sem prefixo data:).</summary>
+    public string? PixQrCodeBase64 { get; set; }
+
+    public DateTime? PixExpiraEm { get; set; }
+
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+    public DateTime? DataConfirmacao { get; set; }
+}
+
+public enum TipoMovimentacaoCarteira
+{
+    Credito = 1,
+    Debito = 2
+}
+
+public enum StatusMovimentacaoCarteira
+{
+    Pendente = 0,
+    Confirmada = 1,
+    Cancelada = 2,
+    Falhou = 3
 }

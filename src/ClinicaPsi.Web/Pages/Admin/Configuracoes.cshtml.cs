@@ -188,7 +188,7 @@ namespace ClinicaPsi.Web.Pages.Admin
                 TelefoneContato = await _configuracaoService.ObterValorStringAsync("Sistema.Telefone", "(42) 98859-3775") ?? string.Empty,
                 EnderecoCompleto = await _configuracaoService.ObterValorStringAsync("Sistema.Endereco", "Rua Emma Marcelino Peralta - 168 - 86030-540 - Londrina, PR") ?? string.Empty,
                 HorarioFuncionamento = await _configuracaoService.ObterValorStringAsync("Sistema.HorarioFuncionamento", "Segunda a Sexta: 9h às 17h") ?? string.Empty,
-                ValorConsultaPadrao = await _configuracaoService.ObterValorDecimalAsync("Consultas.ValorPadrao", 150.00m),
+                ValorConsultaPadrao = await _configuracaoService.ObterValorDecimalAsync("Consultas.ValorPadrao", 50.00m),
                 DuracaoConsultaPadrao = await _configuracaoService.ObterValorIntAsync("Consultas.DuracaoPadrao", 50),
                 IntervaloEntreConsultas = await _configuracaoService.ObterValorIntAsync("Consultas.IntervaloMinimo", 15),
                 DiasLembreteConsulta = Math.Max(0, antecedenciaHoras / 24),

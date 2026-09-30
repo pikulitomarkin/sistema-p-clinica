@@ -120,7 +120,7 @@ namespace ClinicaPsi.Web.Pages.Admin
 
                 if (NovoPsicologo.ValorConsulta <= 0)
                 {
-                    NovoPsicologo.ValorConsulta = await _configuracaoService.ObterValorDecimalAsync("Consultas.ValorPadrao", 150.00m);
+                    NovoPsicologo.ValorConsulta = await _configuracaoService.ObterValorDecimalAsync("Consultas.ValorPadrao", 50.00m);
                 }
             }
             catch (Exception ex)

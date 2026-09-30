@@ -17,15 +17,18 @@ namespace ClinicaPsi.Web.Pages.Cliente
         private readonly AppDbContext _context;
         private readonly ConfiguracaoService _configuracaoService;
         private readonly VideoConsultaService _videoConsultaService;
+        private readonly CarteiraService _carteiraService;
 
         public AgendarConsultaModel(
             AppDbContext context,
             ConfiguracaoService configuracaoService,
-            VideoConsultaService videoConsultaService)
+            VideoConsultaService videoConsultaService,
+            CarteiraService carteiraService)
         {
             _context = context;
             _configuracaoService = configuracaoService;
             _videoConsultaService = videoConsultaService;
+            _carteiraService = carteiraService;
         }
 
         public List<ClinicaPsi.Shared.Models.Psicologo> Psicologos { get; set; } = new();
@@ -143,6 +146,14 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
                 await _context.SaveChangesAsync();
                 await _videoConsultaService.FinalizarSalaAposCriacaoAsync(consulta);
+
+                // Se houver saldo suficiente, debita carteira e confirma como paga
+                var pagoComCarteira = await _carteiraService.TentarDebitarConsultaAsync(consulta);
+                if (pagoComCarteira)
+                {
+                    TempData["Success"] = "Consulta agendada e paga com o saldo da carteira.";
+                    return RedirectToPage("/Cliente/MinhasConsultas");
+                }
 
                 TempData["Success"] = "Consulta reservada. Conclua o pagamento para confirmar.";
                 return RedirectToPage("/Cliente/Pagamento/Index", new { consultaId = consulta.Id });
