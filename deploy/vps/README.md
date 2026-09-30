@@ -5,8 +5,8 @@
 | Projeto | Portas host | Dominio / URL |
 |---------|-------------|---------------|
 | Astra Seduction | 80, 443 | https://astrasedution.com |
-| ClinicaPsi (frontend) | 80/443 (nginx) + **8080** backup | https://psiianasantos.com.br |
-| ClinicaPsi (backend/API) | 80/443 (nginx) | https://api.psiianasantos.com.br (`/api/*`, `/webhook/*`, `/health`) |
+| ClinicaPsi / PsyAll (frontend) | 80/443 (nginx) + **8080** backup | https://psyall.com.br (canônico); alias https://psiianasantos.com.br |
+| ClinicaPsi / PsyAll (backend/API) | 80/443 (nginx) | https://api.psyall.com.br (+ `api.psiianasantos.com.br`) — `/api/*`, `/webhook/*`, `/health` |
 
 O ClinicaPsi usa rede Docker propria (`clinicapsi-net`) + entra na rede `astraseduction_astra-net` para o proxy. PostgreSQL interno **sem** publicar 5432.
 
@@ -22,5 +22,8 @@ chmod +x deploy/vps/deploy.sh
 
 ## Nginx / SSL
 
-Snippet: `deploy/vps/nginx-clinicapsi.snippet.conf` (ja aplicado em `/opt/astraseduction/deploy/nginx/default.conf`).
-Certificado Let's Encrypt: `psiianasantos.com.br` (+ www + api).
+Snippet: `deploy/vps/nginx-clinicapsi.snippet.conf` (aplicado em `/opt/astraseduction/deploy/nginx/default.conf`).
+
+Certificados Let's Encrypt:
+- `psyall.com.br` (+ www + api)
+- `psiianasantos.com.br` (+ www + api) — legado / dual-host

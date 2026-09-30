@@ -232,7 +232,7 @@ builder.Services.Configure<ClinicaPsi.Application.Services.Email.EmailOptions>(o
         options.FromName = builder.Configuration["Email:FromName"] ?? "PsyAll";
     options.PublicAppUrl ??= builder.Configuration["PUBLIC_APP_URL"]
         ?? builder.Configuration["WhatsApp:SiteUrl"]
-        ?? "https://psiianasantos.com.br";
+        ?? "https://psyall.com.br";
 });
 builder.Services.AddHttpClient("Resend", client =>
 {

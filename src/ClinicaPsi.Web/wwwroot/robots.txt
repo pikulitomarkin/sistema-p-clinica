@@ -1,5 +1,5 @@
 # PsyAll — plataforma digital de psicologia
-# https://www.psiianasantos.com.br
+# https://psyall.com.br
 
 User-agent: *
 Allow: /
@@ -23,4 +23,4 @@ Disallow: /avaliacoes/
 Disallow: /hubs/
 Disallow: /api/
 
-Sitemap: https://www.psiianasantos.com.br/sitemap.xml
+Sitemap: https://psyall.com.br/sitemap.xml
