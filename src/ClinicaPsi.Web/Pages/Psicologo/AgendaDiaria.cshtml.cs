@@ -61,13 +61,23 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 DataSelecionada = dataEscolhida.Date;
             }
 
-            // Buscar consultas do dia
-            ConsultasDia = await _context.Consultas
+            // Agenda ativa do dia: exclui passadas e status finalizados
+            var agora = DateTime.Now;
+            var consultasDia = await _context.Consultas
                 .Include(c => c.Paciente)
                 .Where(c => c.PsicologoId == PsicologoId &&
-                           c.DataHorario.Date == DataSelecionada.Date)
+                           c.DataHorario.Date == DataSelecionada.Date &&
+                           c.Status != StatusConsulta.Cancelada &&
+                           c.Status != StatusConsulta.Realizada &&
+                           c.Status != StatusConsulta.NoShow)
                 .OrderBy(c => c.DataHorario)
                 .ToListAsync();
+
+            ConsultasDia = DataSelecionada.Date < DateTime.Today
+                ? new List<Consulta>()
+                : consultasDia
+                    .Where(c => c.DataHorario.AddMinutes(c.DuracaoMinutos) >= agora)
+                    .ToList();
 
                 return Page();
             }

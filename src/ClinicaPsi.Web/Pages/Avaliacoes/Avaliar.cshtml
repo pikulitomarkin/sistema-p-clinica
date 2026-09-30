@@ -1,0 +1,57 @@
+@page "/avaliacoes/avaliar"
+@model ClinicaPsi.Web.Pages.Avaliacoes.AvaliarModel
+@{
+    ViewData["Title"] = "Avaliar atendimento";
+    Layout = User.IsInRole("Cliente") ? "_AdminLayout" : "_AdminLayout";
+}
+
+<div class="container-fluid py-3" style="max-width: 640px;">
+    <h2 class="mb-1"><i class="bi bi-star me-2"></i>Avaliar</h2>
+    <p class="text-muted">Consulta #@Model.ConsultaId · @Model.AlvoNome</p>
+
+    @if (!string.IsNullOrEmpty(Model.Erro))
+    {
+        <div class="alert alert-warning">@Model.Erro</div>
+        <a href="/" class="btn btn-outline-secondary">Voltar</a>
+    }
+    else if (Model.JaAvaliou)
+    {
+        <div class="alert alert-info">Você já avaliou esta consulta.</div>
+        <a href="@(User.IsInRole("Cliente") ? "/Cliente/Historico" : "/psicologo/consultas")" class="btn btn-psy-primary">Voltar</a>
+    }
+    else
+    {
+        <form method="post" class="card border-0 shadow-sm">
+            <div class="card-body">
+                <input type="hidden" asp-for="ConsultaId" />
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nota (1 a 5)</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        @for (var i = 1; i <= 5; i++)
+                        {
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="Nota" id="nota@i" value="@i" checked="@(Model.Nota == i)" />
+                                <label class="form-check-label" for="nota@i">@i ★</label>
+                            </div>
+                        }
+                    </div>
+                    <span asp-validation-for="Nota" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Comentario" class="form-label">Comentário (opcional)</label>
+                    <textarea asp-for="Comentario" class="form-control" rows="4" maxlength="1000"
+                              placeholder="Compartilhe sua experiência de forma respeitosa. Não inclua dados clínicos sensíveis."></textarea>
+                </div>
+                @if (Model.Alvo == ClinicaPsi.Shared.Models.TipoAlvoAvaliacao.Psicologo)
+                {
+                    <p class="small text-muted">Sua avaliação do psicólogo pode aparecer publicamente no ranking da PsyAll.</p>
+                }
+                else
+                {
+                    <p class="small text-muted">A avaliação do paciente é interna (não entra no ranking público).</p>
+                }
+                <button type="submit" class="btn btn-psy-primary">Enviar avaliação</button>
+            </div>
+        </form>
+    }
+</div>

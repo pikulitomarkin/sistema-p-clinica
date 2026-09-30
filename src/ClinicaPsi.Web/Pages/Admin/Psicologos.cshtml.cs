@@ -14,15 +14,24 @@ namespace ClinicaPsi.Web.Pages.Admin
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly PsicologoService _psicologoService;
+        private readonly UsuarioPsicologoSyncService _syncService;
+        private readonly ConfiguracaoService _configuracaoService;
+        private readonly UsuarioPacienteOnboardingService _onboardingService;
         private readonly ILogger<PsicologosModel> _logger;
 
         public PsicologosModel(
             UserManager<ApplicationUser> userManager,
             PsicologoService psicologoService,
+            UsuarioPsicologoSyncService syncService,
+            ConfiguracaoService configuracaoService,
+            UsuarioPacienteOnboardingService onboardingService,
             ILogger<PsicologosModel> logger)
         {
             _userManager = userManager;
             _psicologoService = psicologoService;
+            _syncService = syncService;
+            _configuracaoService = configuracaoService;
+            _onboardingService = onboardingService;
             _logger = logger;
         }
 
@@ -54,37 +63,65 @@ namespace ClinicaPsi.Web.Pages.Admin
             public decimal ValorConsulta { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync(string? searchTerm, string? especialidade, bool? status)
+        public async Task<IActionResult> OnGetAsync(string? searchTerm, string? especialidade, string? status)
         {
             SearchTerm = searchTerm;
             EspecialidadeFiltro = especialidade;
-            StatusFiltro = status;
+
+            // Padrão: só ativos. "false"=inativos, "all"=não excluídos (ativos+inativos).
+            bool? statusFiltro = true;
+            if (string.Equals(status, "all", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(status, "todos", StringComparison.OrdinalIgnoreCase))
+            {
+                statusFiltro = null;
+            }
+            else if (bool.TryParse(status, out var parsed))
+            {
+                statusFiltro = parsed;
+            }
+            else if (!string.IsNullOrEmpty(status))
+            {
+                statusFiltro = true;
+            }
+
+            StatusFiltro = statusFiltro;
 
             try
             {
-                var psicologos = (await _psicologoService.GetAllAsync()).AsQueryable();
+                var sync = await _syncService.SincronizarTodosAsync();
+                if (sync.UsuariosCriados > 0)
+                {
+                    TempData["SuccessMessage"] =
+                        $"Sincronização: {sync.UsuariosCriados} usuário(s) criado(s) para psicólogos sem login. " +
+                        "Defina novas senhas em Gestão de Usuários se necessário.";
+                }
 
-                // Aplicar filtros
+                var psicologos = (await _psicologoService.GetAllIncludingInactiveAsync()).AsQueryable();
+
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
-                    psicologos = psicologos.Where(p => 
+                    psicologos = psicologos.Where(p =>
                         p.Nome.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
                         p.CRP.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                        p.Especialidades.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+                        (p.Especialidades != null && p.Especialidades.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
                 }
 
                 if (!string.IsNullOrEmpty(especialidade))
                 {
-                    psicologos = psicologos.Where(p => 
+                    psicologos = psicologos.Where(p =>
+                        p.Especialidades != null &&
                         p.Especialidades.Contains(especialidade, StringComparison.OrdinalIgnoreCase));
                 }
 
-                if (status.HasValue)
-                {
-                    psicologos = psicologos.Where(p => p.Ativo == status.Value);
-                }
+                if (statusFiltro.HasValue)
+                    psicologos = psicologos.Where(p => p.Ativo == statusFiltro.Value);
 
                 Psicologos = psicologos.OrderBy(p => p.Nome).ToList();
+
+                if (NovoPsicologo.ValorConsulta <= 0)
+                {
+                    NovoPsicologo.ValorConsulta = await _configuracaoService.ObterValorDecimalAsync("Consultas.ValorPadrao", 150.00m);
+                }
             }
             catch (Exception ex)
             {
@@ -98,65 +135,39 @@ namespace ClinicaPsi.Web.Pages.Admin
         public async Task<IActionResult> OnPostAddPsicologoAsync(string senha, string[] especialidades)
         {
             _logger.LogInformation("Iniciando cadastro de psicólogo: {Email}", NovoPsicologo?.Email);
-            
+
             if (!ModelState.IsValid)
             {
                 var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                _logger.LogWarning("ModelState inválido: {Errors}", errors);
                 TempData["ErrorMessage"] = $"Dados inválidos: {errors}";
-                await OnGetAsync(null, null, null);
+                await OnGetAsync(null, null, "true");
                 return Page();
             }
 
             if (string.IsNullOrEmpty(senha) || senha.Length < 6)
             {
-                _logger.LogWarning("Senha inválida ou muito curta");
                 TempData["ErrorMessage"] = "A senha deve ter no mínimo 6 caracteres.";
-                await OnGetAsync(null, null, null);
+                await OnGetAsync(null, null, "true");
                 return Page();
             }
 
             if (especialidades == null || especialidades.Length == 0)
             {
-                _logger.LogWarning("Nenhuma especialidade selecionada");
                 TempData["ErrorMessage"] = "Selecione pelo menos uma especialidade.";
-                await OnGetAsync(null, null, null);
+                await OnGetAsync(null, null, "true");
                 return Page();
             }
 
             try
             {
-                _logger.LogInformation("Criando usuário Identity para {Email}", NovoPsicologo.Email);
-                
-                // Criar usuário no Identity
-                var user = new ApplicationUser
+                var emailExistente = await _userManager.FindByEmailAsync(NovoPsicologo.Email);
+                if (emailExistente != null)
                 {
-                    UserName = NovoPsicologo.Email,
-                    Email = NovoPsicologo.Email,
-                    NomeCompleto = NovoPsicologo.Nome,
-                    TipoUsuario = TipoUsuario.Psicologo,
-                    EmailConfirmed = true,
-                    Ativo = true
-                };
-
-                var result = await _userManager.CreateAsync(user, senha);
-                if (!result.Succeeded)
-                {
-                    var errorMessages = string.Join("; ", result.Errors.Select(e => e.Description));
-                    _logger.LogError("Erro ao criar usuário Identity: {Errors}", errorMessages);
-                    TempData["ErrorMessage"] = $"Erro ao criar usuário: {errorMessages}";
-                    await OnGetAsync(null, null, null);
+                    TempData["ErrorMessage"] = "Já existe um usuário com este email.";
+                    await OnGetAsync(null, null, "true");
                     return Page();
                 }
 
-                _logger.LogInformation("Usuário criado com sucesso. Adicionando à role Psicologo...");
-                
-                // Adicionar à role
-                await _userManager.AddToRoleAsync(user, "Psicologo");
-                
-                _logger.LogInformation("Role adicionada. Criando registro de psicólogo...");
-
-                // Criar psicólogo
                 var psicologo = new PsicologoEntity
                 {
                     Nome = NovoPsicologo.Nome,
@@ -168,12 +179,10 @@ namespace ClinicaPsi.Web.Pages.Admin
                     Ativo = true,
                     DataCadastro = DateTime.UtcNow,
                     DataCriacao = DateTime.UtcNow,
-                    // Horários padrão
                     HorarioInicioManha = new TimeSpan(8, 0, 0),
                     HorarioFimManha = new TimeSpan(12, 0, 0),
                     HorarioInicioTarde = new TimeSpan(14, 0, 0),
                     HorarioFimTarde = new TimeSpan(18, 0, 0),
-                    // Dias padrão (segunda a sexta)
                     AtendeSegunda = true,
                     AtendeTerca = true,
                     AtendeQuarta = true,
@@ -184,17 +193,60 @@ namespace ClinicaPsi.Web.Pages.Admin
                 };
 
                 await _psicologoService.CreateAsync(psicologo);
-                
-                _logger.LogInformation("Psicólogo cadastrado com sucesso! ID: {Id}, Nome: {Nome}", psicologo.Id, psicologo.Nome);
 
-                TempData["SuccessMessage"] = $"Psicólogo {psicologo.Nome} cadastrado com sucesso!";
+                var user = new ApplicationUser
+                {
+                    UserName = NovoPsicologo.Email,
+                    Email = NovoPsicologo.Email,
+                    NomeCompleto = NovoPsicologo.Nome,
+                    TipoUsuario = TipoUsuario.Psicologo,
+                    CRP = NovoPsicologo.CRP,
+                    PsicologoId = psicologo.Id,
+                    EmailConfirmed = true,
+                    Ativo = true,
+                    DataCadastro = DateTime.UtcNow
+                };
+
+                var result = await _userManager.CreateAsync(user, senha);
+                if (!result.Succeeded)
+                {
+                    await _psicologoService.DeleteAsync(psicologo.Id);
+                    var errorMessages = string.Join("; ", result.Errors.Select(e => e.Description));
+                    TempData["ErrorMessage"] = $"Erro ao criar usuário: {errorMessages}";
+                    await OnGetAsync(null, null, "true");
+                    return Page();
+                }
+
+                await _userManager.AddToRoleAsync(user, "Psicologo");
+                await _syncService.VincularAsync(user, psicologo);
+
+                try
+                {
+                    user.MustChangePassword = true;
+                    await _userManager.UpdateAsync(user);
+                    var emailResult = await _onboardingService.EnviarBoasVindasPsicologoAsync(user, senha);
+                    if (emailResult.Success)
+                        TempData["SuccessMessage"] = $"Psicólogo {psicologo.Nome} cadastrado com sucesso! E-mail de boas-vindas enviado.";
+                    else
+                    {
+                        TempData["SuccessMessage"] = $"Psicólogo {psicologo.Nome} cadastrado com sucesso!";
+                        TempData["WarningMessage"] = $"E-mail de boas-vindas não enviado ({emailResult.ErrorMessage}). Informe as credenciais manualmente.";
+                    }
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError(emailEx, "Erro ao enviar boas-vindas ao psicólogo {Email}", user.Email);
+                    TempData["SuccessMessage"] = $"Psicólogo {psicologo.Nome} cadastrado com sucesso!";
+                    TempData["WarningMessage"] = "Cadastro ok, mas o e-mail de boas-vindas falhou.";
+                }
+
                 return RedirectToPage();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao criar psicólogo: {Message}", ex.Message);
                 TempData["ErrorMessage"] = $"Erro ao criar psicólogo: {ex.Message}";
-                await OnGetAsync(null, null, null);
+                await OnGetAsync(null, null, "true");
                 return Page();
             }
         }
@@ -203,32 +255,46 @@ namespace ClinicaPsi.Web.Pages.Admin
         {
             try
             {
-                var psicologo = await _psicologoService.GetByIdAsync(id);
+                var psicologo = await _psicologoService.GetByIdNaoExcluidoAsync(id);
                 if (psicologo == null)
                 {
                     TempData["ErrorMessage"] = "Psicólogo não encontrado.";
                     return RedirectToPage();
                 }
 
-                // Alternar status
-                psicologo.Ativo = !psicologo.Ativo;
-                psicologo.DataAtualizacao = DateTime.Now;
-                await _psicologoService.UpdateAsync(psicologo);
-
-                // Atualizar status do usuário vinculado, se existir
-                var usuario = _userManager.Users.FirstOrDefault(u => u.PsicologoId == id);
-                if (usuario != null)
-                {
-                    usuario.Ativo = psicologo.Ativo;
-                    await _userManager.UpdateAsync(usuario);
-                }
-
-                TempData["SuccessMessage"] = $"Psicólogo {(psicologo.Ativo ? "ativado" : "desativado")} com sucesso!";
+                var novoStatus = !psicologo.Ativo;
+                await _syncService.SincronizarStatusPorPsicologoIdAsync(id, novoStatus);
+                TempData["SuccessMessage"] = $"Psicólogo {(novoStatus ? "ativado" : "desativado")} com sucesso!";
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao alternar status do psicólogo {PsicologoId}", id);
                 TempData["ErrorMessage"] = "Erro ao alterar status do psicólogo.";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        {
+            try
+            {
+                var psicologo = await _psicologoService.GetByIdNaoExcluidoAsync(id);
+                if (psicologo == null)
+                {
+                    TempData["ErrorMessage"] = "Psicólogo não encontrado ou já excluído.";
+                    return RedirectToPage();
+                }
+
+                var nome = psicologo.Nome;
+                await _psicologoService.DeleteAsync(id);
+                await _syncService.SincronizarStatusPorPsicologoIdAsync(id, ativo: false);
+                TempData["SuccessMessage"] = $"Psicólogo {nome} excluído com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao excluir psicólogo {PsicologoId}", id);
+                TempData["ErrorMessage"] = "Erro ao excluir psicólogo. Verifique se há vínculos que impedem a exclusão.";
             }
 
             return RedirectToPage();

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 using ClinicaPsi.Web.Extensions;
+using ClinicaPsi.Web.Services;
 using System.Security.Claims;
 
 namespace ClinicaPsi.Web.Pages.Psicologo
@@ -15,21 +16,29 @@ namespace ClinicaPsi.Web.Pages.Psicologo
     {
         private readonly AppDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly FotoPerfilService _fotoPerfilService;
 
-        public PerfilModel(AppDbContext context, UserManager<ApplicationUser> userManager)
+        public PerfilModel(
+            AppDbContext context,
+            UserManager<ApplicationUser> userManager,
+            FotoPerfilService fotoPerfilService)
         {
             _context = context;
             _userManager = userManager;
+            _fotoPerfilService = fotoPerfilService;
         }
 
         public ClinicaPsi.Shared.Models.Psicologo Psicologo { get; set; } = new();
         public List<Consulta> ProximasConsultas { get; set; } = new();
-        
-        // Estatísticas
+        public string? FotoUrl { get; set; }
+
         public int TotalConsultas { get; set; }
         public int PacientesAtivos { get; set; }
         public decimal ReceitaTotal { get; set; }
         public double TaxaComparecimento { get; set; }
+
+        [BindProperty]
+        public IFormFile? FotoArquivo { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -44,15 +53,16 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     return Forbid();
 
                 var psicologoId = user.PsicologoId.Value;
+                FotoUrl = user.FotoUrl;
 
-                // Buscar dados do psicólogo
                 var psicologo = await _context.Psicologos.FindAsync(psicologoId);
                 if (psicologo == null)
                     return NotFound();
 
                 Psicologo = psicologo;
+                if (string.IsNullOrWhiteSpace(FotoUrl))
+                    FotoUrl = psicologo.FotoUrl;
 
-                // Buscar próximas consultas
                 ProximasConsultas = await _context.Consultas
                     .Include(c => c.Paciente)
                     .Where(c => c.PsicologoId == psicologoId &&
@@ -62,16 +72,76 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     .Take(10)
                     .ToListAsync();
 
-                // Calcular estatísticas
                 await CalcularEstatisticasAsync(psicologoId);
 
                 return Page();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 TempData["Error"] = "A página está sendo atualizada. Por favor, aguarde alguns minutos e recarregue.";
                 return Page();
             }
+        }
+
+        public async Task<IActionResult> OnPostUploadFotoAsync()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Forbid();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user?.PsicologoId == null)
+                return Forbid();
+
+            var (ok, url, erro) = await _fotoPerfilService.SalvarAsync(FotoArquivo!, user.FotoUrl);
+            if (!ok)
+            {
+                TempData["Error"] = erro ?? "Falha no upload da foto.";
+                return RedirectToPage();
+            }
+
+            user.FotoUrl = url;
+            await _userManager.UpdateAsync(user);
+
+            var psicologo = await _context.Psicologos.FindAsync(user.PsicologoId.Value);
+            if (psicologo != null)
+            {
+                psicologo.FotoUrl = url;
+                psicologo.DataAtualizacao = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["Success"] = "Foto de perfil atualizada com sucesso!";
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostRemoverFotoAsync()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Forbid();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user?.PsicologoId == null)
+                return Forbid();
+
+            var urlAnterior = user.FotoUrl;
+            _fotoPerfilService.RemoverArquivoFisico(urlAnterior);
+            user.FotoUrl = null;
+            await _userManager.UpdateAsync(user);
+
+            var psicologo = await _context.Psicologos.FindAsync(user.PsicologoId.Value);
+            if (psicologo != null)
+            {
+                if (!string.IsNullOrWhiteSpace(psicologo.FotoUrl) && psicologo.FotoUrl != urlAnterior)
+                    _fotoPerfilService.RemoverArquivoFisico(psicologo.FotoUrl);
+                psicologo.FotoUrl = null;
+                psicologo.DataAtualizacao = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["Success"] = "Foto de perfil removida.";
+            return RedirectToPage();
         }
 
         public async Task<IActionResult> OnPostAtualizarPerfilAsync(
@@ -95,16 +165,13 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 if (psicologo == null)
                     return NotFound();
 
-                // Atualizar dados
                 psicologo.Nome = nome;
                 psicologo.Telefone = telefone;
                 psicologo.Especialidades = especialidades;
                 psicologo.ValorConsulta = valorConsulta;
 
-                // Atualizar email se mudou
                 if (psicologo.Email != email)
                 {
-                    // Verificar se email já existe
                     var emailExiste = await _context.Users.AnyAsync(u => u.Email == email && u.Id != userId);
                     if (emailExiste)
                     {
@@ -113,8 +180,7 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     }
 
                     psicologo.Email = email;
-                    
-                    // Atualizar email no Identity
+
                     var identityUser = await _userManager.FindByIdAsync(userId);
                     if (identityUser != null)
                     {
@@ -154,7 +220,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 if (psicologo == null)
                     return NotFound();
 
-                // Resetar todos os dias e períodos
                 psicologo.AtendeSegunda = false;
                 psicologo.AtendeTerca = false;
                 psicologo.AtendeQuarta = false;
@@ -165,7 +230,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 psicologo.AtendeManha = false;
                 psicologo.AtendeTarde = false;
 
-                // Definir dias selecionados
                 if (diasAtendimento != null)
                 {
                     foreach (var dia in diasAtendimento)
@@ -197,7 +261,6 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     }
                 }
 
-                // Definir períodos selecionados
                 if (periodosAtendimento != null)
                 {
                     foreach (var periodo in periodosAtendimento)
@@ -254,14 +317,12 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     TempData["Success"] = "Senha alterada com sucesso!";
                     return RedirectToPage();
                 }
-                else
+
+                foreach (var error in result.Errors)
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
-                    return await OnGetAsync();
+                    ModelState.AddModelError("", error.Description);
                 }
+                return await OnGetAsync();
             }
             catch (Exception ex)
             {
@@ -275,27 +336,23 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             var dataAtual = DateTime.Now;
             var data30DiasAtras = dataAtual.AddDays(-30);
 
-            // Total de consultas
             TotalConsultas = await _context.Consultas
                 .Where(c => c.PsicologoId == psicologoId)
                 .CountAsync();
 
-            // Pacientes ativos (últimos 30 dias)
             PacientesAtivos = await _context.Consultas
                 .Where(c => c.PsicologoId == psicologoId && c.DataHorario >= data30DiasAtras)
                 .Select(c => c.PacienteId)
                 .Distinct()
                 .CountAsync();
 
-            // Receita total
             ReceitaTotal = await _context.Consultas
                 .Where(c => c.PsicologoId == psicologoId && c.Status == StatusConsulta.Realizada)
                 .SumAsync(c => c.Valor);
 
-            // Taxa de comparecimento
             var consultasComparencia = await _context.Consultas
                 .Where(c => c.PsicologoId == psicologoId &&
-                           (c.Status == StatusConsulta.Realizada || 
+                           (c.Status == StatusConsulta.Realizada ||
                             c.Status == StatusConsulta.NoShow ||
                             c.Status == StatusConsulta.Cancelada))
                 .CountAsync();
@@ -304,7 +361,7 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 .Where(c => c.PsicologoId == psicologoId && c.Status == StatusConsulta.Realizada)
                 .CountAsync();
 
-            TaxaComparecimento = consultasComparencia > 0 
+            TaxaComparecimento = consultasComparencia > 0
                 ? (double)consultasRealizadas / consultasComparencia * 100
                 : 0;
         }
