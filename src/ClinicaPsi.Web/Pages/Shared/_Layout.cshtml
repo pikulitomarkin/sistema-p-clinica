@@ -106,6 +106,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/agendamento">Agendar</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/privacidade">Privacidade</a>
+                    </li>
                 </ul>
 
                 <ul class="navbar-nav">
@@ -129,6 +132,7 @@
                                 {
                                     <li><a class="dropdown-item" href="/Cliente">Minha Área</a></li>
                                 }
+                                <li><a class="dropdown-item" href="/privacidade/meus-dados">Meus dados (LGPD)</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="/Account/Logout">Sair</a></li>
                             </ul>
@@ -166,6 +170,7 @@
                 </div>
                 <div class="col-md-4">
                     <h6 class="small text-uppercase opacity-75">Institucional</h6>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/privacidade">Política de Privacidade</a></p>
                     <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/termos/paciente">Termos — Pacientes</a></p>
                     <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/termos/psicologo">Termos — Psicólogos</a></p>
                     <p class="small mb-0"><a class="link-light link-underline-opacity-0" href="/ranking">Ranking</a></p>
@@ -189,5 +194,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <partial name="_ClienteChamadaNotifier" />
+    <partial name="_CookieConsent" />
 </body>
 </html>

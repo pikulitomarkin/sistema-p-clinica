@@ -119,6 +119,13 @@
                         </label>
                         <span asp-validation-for="Input.AceiteTermos" class="text-danger small d-block"></span>
                     </div>
+                    <div class="form-check mb-2">
+                        <input asp-for="Input.AceitePrivacidade" class="form-check-input" />
+                        <label asp-for="Input.AceitePrivacidade" class="form-check-label">
+                            Li e aceito a <a href="/privacidade" target="_blank">Política de Privacidade</a> (LGPD)
+                        </label>
+                        <span asp-validation-for="Input.AceitePrivacidade" class="text-danger small d-block"></span>
+                    </div>
                     <div class="form-check mb-3">
                         <input asp-for="Input.AceiteContrato" class="form-check-input" />
                         <label asp-for="Input.AceiteContrato" class="form-check-label">
@@ -132,9 +139,12 @@
                 <p class="small text-muted text-center mt-3 mb-0">
                     <a href="/Account/CriarConta">Escolher outro perfil</a>
                     · É paciente? <a href="/Account/Register">Criar conta de paciente</a>
+                    <br />
+                    <a href="/privacidade">Privacidade</a> · <a href="/termos/psicologo">Termos</a>
                 </p>
             </form>
         </div>
     </div>
+    <partial name="_CookieConsent" />
 </body>
 </html>

@@ -334,6 +334,22 @@
                                 <span asp-validation-for="Input.AceiteTermos" class="error-message d-block"></span>
                             </div>
 
+                            <div class="mb-3 form-check">
+                                <input asp-for="Input.AceitePrivacidade" class="form-check-input" />
+                                <label asp-for="Input.AceitePrivacidade" class="form-check-label">
+                                    Li e aceito a <a href="/privacidade" target="_blank" rel="noopener">Política de Privacidade</a> (LGPD)
+                                </label>
+                                <span asp-validation-for="Input.AceitePrivacidade" class="error-message d-block"></span>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input asp-for="Input.ConsentimentoDadosSaude" class="form-check-input" />
+                                <label asp-for="Input.ConsentimentoDadosSaude" class="form-check-label">
+                                    Consinto o tratamento de dados de saúde / sensíveis necessários ao atendimento psicológico na plataforma, nos termos da LGPD
+                                </label>
+                                <span asp-validation-for="Input.ConsentimentoDadosSaude" class="error-message d-block"></span>
+                            </div>
+
                             <button type="submit" class="register-btn">
                                 <i class="bi bi-check-circle me-2"></i>
                                 Criar Conta
@@ -347,6 +363,10 @@
                             <a asp-page="./Login" class="login-link">Faça login aqui</a>
                             <br />
                             <a href="/Account/CriarConta" class="login-link">Escolher outro perfil</a>
+                            <br />
+                            <a href="/privacidade" class="login-link">Política de Privacidade</a>
+                            ·
+                            <a href="/termos/paciente" class="login-link">Termos</a>
                         </small>
                     </div>
                 </div>
@@ -355,6 +375,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_CookieConsent" />
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const registerContainer = document.querySelector('.register-container');

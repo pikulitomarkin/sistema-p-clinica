@@ -62,6 +62,15 @@ public class Paciente
     public DateTime? DataAtualizacao { get; set; }
     public bool Ativo { get; set; } = true;
 
+    /// <summary>Aceite dos Termos de Uso (UTC).</summary>
+    public DateTime? AceiteTermosEm { get; set; }
+
+    /// <summary>Aceite da Política de Privacidade (UTC).</summary>
+    public DateTime? AceitePrivacidadeEm { get; set; }
+
+    /// <summary>Consentimento para tratamento de dados de saúde / sensíveis (UTC).</summary>
+    public DateTime? ConsentimentoDadosSaudeEm { get; set; }
+
     // Relacionamentos
     public virtual ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
     public virtual ICollection<HistoricoPontos> HistoricoPontos { get; set; } = new List<HistoricoPontos>();
@@ -130,6 +139,9 @@ public class Psicologo
 
     public DateTime? AceiteTermosEm { get; set; }
     public DateTime? AceiteContratoEm { get; set; }
+
+    /// <summary>Aceite da Política de Privacidade (UTC).</summary>
+    public DateTime? AceitePrivacidadeEm { get; set; }
 
     /// <summary>Valor da consulta previsto no contrato digital (padrão R$ 50).</summary>
     [Range(0, double.MaxValue)]
@@ -623,4 +635,58 @@ public enum TipoAlvoAvaliacao
 {
     Psicologo = 1,
     Paciente = 2
+}
+
+/// <summary>Tipo de solicitação de direitos do titular (LGPD arts. 18 e ss.).</summary>
+public enum TipoSolicitacaoPrivacidade
+{
+    Acesso = 1,
+    Exportacao = 2,
+    Correcao = 3,
+    Eliminacao = 4,
+    Outro = 5
+}
+
+public enum StatusSolicitacaoPrivacidade
+{
+    Pendente = 1,
+    EmAnalise = 2,
+    Concluida = 3,
+    Recusada = 4
+}
+
+/// <summary>Solicitação de exercício de direitos do titular de dados pessoais.</summary>
+public class SolicitacaoPrivacidade
+{
+    public int Id { get; set; }
+
+    [Required]
+    [StringLength(450)]
+    public string UserId { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(200)]
+    public string NomeTitular { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    [StringLength(200)]
+    public string EmailTitular { get; set; } = string.Empty;
+
+    public TipoSolicitacaoPrivacidade Tipo { get; set; }
+
+    public StatusSolicitacaoPrivacidade Status { get; set; } = StatusSolicitacaoPrivacidade.Pendente;
+
+    [StringLength(2000)]
+    public string? Detalhes { get; set; }
+
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+
+    public DateTime? DataAtualizacao { get; set; }
+
+    [StringLength(2000)]
+    public string? ObservacaoAdmin { get; set; }
+
+    [StringLength(450)]
+    public string? RespondidoPorUserId { get; set; }
 }

@@ -302,6 +302,7 @@ using (var scope = app.Services.CreateScope())
         await GarantirSchemaFotoPerfilAsync(context, logger);
         await GarantirSchemaAvaliacoesAsync(context, logger);
         await GarantirSchemaValidacaoPsicologoAsync(context, logger);
+        await GarantirSchemaLgpdAsync(context, logger);
     }
     catch (Exception ex)
     {
@@ -757,6 +758,83 @@ static async Task GarantirSchemaAvaliacoesAsync(AppDbContext context, ILogger lo
         catch (Exception ex2)
         {
             logger.LogDebug(ex2, "Avaliacoes já existe ou schema não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+
+static async Task GarantirSchemaLgpdAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""AceiteTermosEm"" timestamp without time zone NULL;
+              ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""AceitePrivacidadeEm"" timestamp without time zone NULL;
+              ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""ConsentimentoDadosSaudeEm"" timestamp without time zone NULL;
+              ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""CookieAnalyticsAceito"" boolean NULL;
+              ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""CookieConsentimentoEm"" timestamp without time zone NULL;
+              ALTER TABLE ""Pacientes"" ADD COLUMN IF NOT EXISTS ""AceiteTermosEm"" timestamp without time zone NULL;
+              ALTER TABLE ""Pacientes"" ADD COLUMN IF NOT EXISTS ""AceitePrivacidadeEm"" timestamp without time zone NULL;
+              ALTER TABLE ""Pacientes"" ADD COLUMN IF NOT EXISTS ""ConsentimentoDadosSaudeEm"" timestamp without time zone NULL;
+              ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""AceitePrivacidadeEm"" timestamp without time zone NULL;
+              CREATE TABLE IF NOT EXISTS ""SolicitacoesPrivacidade"" (
+                ""Id"" SERIAL PRIMARY KEY,
+                ""UserId"" character varying(450) NOT NULL,
+                ""NomeTitular"" character varying(200) NOT NULL,
+                ""EmailTitular"" character varying(200) NOT NULL,
+                ""Tipo"" integer NOT NULL,
+                ""Status"" integer NOT NULL DEFAULT 1,
+                ""Detalhes"" character varying(2000) NULL,
+                ""DataCriacao"" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                ""DataAtualizacao"" timestamp without time zone NULL,
+                ""ObservacaoAdmin"" character varying(2000) NULL,
+                ""RespondidoPorUserId"" character varying(450) NULL
+              );
+              CREATE INDEX IF NOT EXISTS ""IX_SolicitacoesPrivacidade_UserId"" ON ""SolicitacoesPrivacidade"" (""UserId"");
+              CREATE INDEX IF NOT EXISTS ""IX_SolicitacoesPrivacidade_Status"" ON ""SolicitacoesPrivacidade"" (""Status"");
+              CREATE INDEX IF NOT EXISTS ""IX_SolicitacoesPrivacidade_DataCriacao"" ON ""SolicitacoesPrivacidade"" (""DataCriacao"");");
+        logger.LogInformation("Schema LGPD verificado.");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""AspNetUsers"" ADD COLUMN ""AceiteTermosEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""AspNetUsers"" ADD COLUMN ""AceitePrivacidadeEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""AspNetUsers"" ADD COLUMN ""ConsentimentoDadosSaudeEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""AspNetUsers"" ADD COLUMN ""CookieAnalyticsAceito"" INTEGER NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""AspNetUsers"" ADD COLUMN ""CookieConsentimentoEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Pacientes"" ADD COLUMN ""AceiteTermosEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Pacientes"" ADD COLUMN ""AceitePrivacidadeEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Pacientes"" ADD COLUMN ""ConsentimentoDadosSaudeEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""AceitePrivacidadeEm"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"CREATE TABLE IF NOT EXISTS ""SolicitacoesPrivacidade"" (
+                    ""Id"" INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ""UserId"" TEXT NOT NULL,
+                    ""NomeTitular"" TEXT NOT NULL,
+                    ""EmailTitular"" TEXT NOT NULL,
+                    ""Tipo"" INTEGER NOT NULL,
+                    ""Status"" INTEGER NOT NULL DEFAULT 1,
+                    ""Detalhes"" TEXT NULL,
+                    ""DataCriacao"" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    ""DataAtualizacao"" TEXT NULL,
+                    ""ObservacaoAdmin"" TEXT NULL,
+                    ""RespondidoPorUserId"" TEXT NULL
+                  );");
+            logger.LogInformation("Schema LGPD adicionado (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "Schema LGPD já existe ou não aplicável. PG err={Pg}", ex.Message);
         }
     }
 }

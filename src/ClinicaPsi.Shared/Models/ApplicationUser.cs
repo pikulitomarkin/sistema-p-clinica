@@ -35,6 +35,20 @@ public class ApplicationUser : IdentityUser
     /// <summary>Caminho relativo da foto de perfil (ex.: /uploads/perfil/abc.jpg).</summary>
     [StringLength(300)]
     public string? FotoUrl { get; set; }
+
+    /// <summary>Timestamp do aceite dos Termos de Uso (LGPD / prova de consentimento).</summary>
+    public DateTime? AceiteTermosEm { get; set; }
+
+    /// <summary>Timestamp do aceite da Política de Privacidade.</summary>
+    public DateTime? AceitePrivacidadeEm { get; set; }
+
+    /// <summary>Consentimento para tratamento de dados de saúde / sensíveis (art. 11 LGPD), quando aplicável.</summary>
+    public DateTime? ConsentimentoDadosSaudeEm { get; set; }
+
+    /// <summary>Preferência de cookies analíticos (opcional). Essenciais não dependem deste flag.</summary>
+    public bool? CookieAnalyticsAceito { get; set; }
+
+    public DateTime? CookieConsentimentoEm { get; set; }
     
     // Relacionamentos
     public int? PacienteId { get; set; }

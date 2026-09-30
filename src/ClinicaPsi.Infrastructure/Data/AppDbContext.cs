@@ -18,6 +18,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ProntuarioEletronico> ProntuariosEletronicos => Set<ProntuarioEletronico>();
     public DbSet<WhatsAppSession> WhatsAppSessions => Set<WhatsAppSession>();
     public DbSet<Avaliacao> Avaliacoes => Set<Avaliacao>();
+    public DbSet<SolicitacaoPrivacidade> SolicitacoesPrivacidade => Set<SolicitacaoPrivacidade>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -190,6 +191,21 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany()
                 .HasForeignKey(e => e.PacienteId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<SolicitacaoPrivacidade>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.DataCriacao);
+            entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
+            entity.Property(e => e.NomeTitular).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.EmailTitular).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Detalhes).HasMaxLength(2000);
+            entity.Property(e => e.ObservacaoAdmin).HasMaxLength(2000);
+            entity.Property(e => e.RespondidoPorUserId).HasMaxLength(450);
+            entity.Property(e => e.DataCriacao).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
     }
 }

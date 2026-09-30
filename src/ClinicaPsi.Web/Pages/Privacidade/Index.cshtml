@@ -1,0 +1,149 @@
+@page "/privacidade"
+@model ClinicaPsi.Web.Pages.Privacidade.IndexModel
+@{
+    ViewData["Title"] = "Política de Privacidade | PsyAll";
+    ViewData["MetaDescription"] = "Política de Privacidade da PsyAll alinhada à LGPD (Lei 13.709/2018): controlador, finalidades, bases legais, direitos do titular, retenção e cookies.";
+    ViewData["Canonical"] = "https://www.psiianasantos.com.br/privacidade";
+    var email = string.IsNullOrWhiteSpace(Model.Clinica.Email) ? "contato via configurações da plataforma" : Model.Clinica.Email;
+    var telefone = Model.Clinica.Telefone;
+    var endereco = Model.Clinica.Endereco;
+    var nome = string.IsNullOrWhiteSpace(Model.Clinica.Nome) ? "PsyAll" : Model.Clinica.Nome;
+}
+
+<article class="container py-5 psy-legal">
+    <header class="mb-4">
+        <p class="psy-eyebrow mb-2">PsyAll · LGPD</p>
+        <h1>Política de Privacidade</h1>
+        <p class="text-muted">Última atualização: 30 de setembro de 2026 · Lei nº 13.709/2018 (LGPD)</p>
+    </header>
+
+    <p>
+        Esta Política descreve como a plataforma digital <strong>@nome</strong> trata dados pessoais
+        de pacientes, psicólogos e visitantes, em conformidade com a Lei Geral de Proteção de Dados
+        (Lei nº 13.709/2018 — LGPD), o Marco Civil da Internet e as resoluções do Conselho Federal de Psicologia
+        aplicáveis à documentação e à telepsicologia.
+    </p>
+
+    <h2>1. Controlador e canal de contato (DPO / encarregado)</h2>
+    <p>
+        O controlador dos dados tratados pela plataforma é a operação responsável pela <strong>@nome</strong>,
+        com sede administrativa em @(string.IsNullOrWhiteSpace(endereco) ? "Londrina/PR" : endereco).
+    </p>
+    <ul>
+        <li><strong>Canal de privacidade / encarregado:</strong> <a href="mailto:@email">@email</a></li>
+        @if (!string.IsNullOrWhiteSpace(telefone))
+        {
+            <li><strong>Telefone:</strong> @telefone</li>
+        }
+        <li>
+            Titulares autenticados também podem abrir solicitação em
+            <a href="/privacidade/meus-dados">Meus dados (direitos do titular)</a>.
+        </li>
+    </ul>
+    <p class="small text-muted">
+        Não publicamos um e-mail fictício de DPO: utilizamos o e-mail institucional configurado no sistema
+        (<code>Sistema.Email</code>) como canal oficial de privacidade.
+    </p>
+
+    <h2>2. Dados que tratamos</h2>
+    <ul>
+        <li><strong>Cadastro:</strong> nome, e-mail, telefone, CPF (quando solicitado), data de nascimento, senha (hash).</li>
+        <li><strong>Profissionais:</strong> CRP, especialidades, documentos de validação (ex.: CNH/CRP), aceite contratual.</li>
+        <li><strong>Agendamento e consultas:</strong> horários, status, formato (presencial/online), valores operacionais.</li>
+        <li><strong>Dados de saúde / sensíveis:</strong> informações clínicas, prontuário eletrônico e conteúdos de sessão — tratados com acesso restrito.</li>
+        <li><strong>Uso técnico:</strong> logs de segurança, cookies essenciais e, se aceitos, cookies analíticos opcionais.</li>
+        <li><strong>Avaliações:</strong> notas e comentários pós-consulta, conforme regras da plataforma.</li>
+    </ul>
+
+    <h2>3. Finalidades</h2>
+    <ul>
+        <li>Criar e gerenciar contas; autenticar usuários; prestar suporte.</li>
+        <li>Intermediar agendamentos e teleconsultas entre pacientes e psicólogos.</li>
+        <li>Permitir registro clínico (prontuário) pelo profissional responsável.</li>
+        <li>Cumprir obrigações legais, éticas e de segurança da informação.</li>
+        <li>Melhorar a plataforma (quando houver consentimento para analytics).</li>
+        <li>Atender direitos do titular e comunicações operacionais relacionadas ao serviço.</li>
+    </ul>
+
+    <h2>4. Bases legais (LGPD)</h2>
+    <ul>
+        <li><strong>Execução de contrato</strong> (art. 7º, V): cadastro, agendamento, acesso à plataforma.</li>
+        <li><strong>Consentimento</strong> (art. 7º, I e art. 11): política de privacidade, cookies opcionais e tratamento de dados sensíveis de saúde quando aplicável.</li>
+        <li><strong>Legítimo interesse</strong> (art. 7º, IX): segurança, prevenção a fraude e melhoria operacional, com salvaguardas.</li>
+        <li><strong>Obrigação legal / regulatória</strong> (art. 7º, II): retenção de registros exigidos por lei ou pelo CFP, quando cabível.</li>
+        <li><strong>Tutela da saúde</strong> (art. 11, II, f), quando o tratamento for realizado por profissionais de saúde / entidades vinculadas, nos limites legais.</li>
+    </ul>
+
+    <h2>5. Dados sensíveis de saúde</h2>
+    <p>
+        Dados de saúde são tratados com confidencialidade reforçada. O psicólogo responsável pelo atendimento
+        também atua, no âmbito clínico, como controlador/operador dos registros clínicos, nos termos da LGPD
+        e do Código de Ética Profissional do Psicólogo. A plataforma aplica controles de acesso e não comercializa
+        dados clínicos.
+    </p>
+
+    <h2>6. Compartilhamento</h2>
+    <p>
+        Dados podem ser compartilhados com: (i) o psicólogo escolhido para o atendimento; (ii) provedores de
+        infraestrutura (hospedagem, e-mail transacional) sob contrato e necessidade; (iii) autoridades quando
+        houver obrigação legal. Não vendemos dados pessoais.
+    </p>
+
+    <h2>7. Retenção</h2>
+    <ul>
+        <li>Dados de conta: enquanto a conta estiver ativa e pelo prazo necessário a obrigações legais.</li>
+        <li>Registros clínicos / prontuário: prazos definidos pela legislação e resoluções do CFP aplicáveis ao profissional.</li>
+        <li>Logs de segurança e solicitações LGPD: pelo tempo necessário à defesa de direitos e à auditoria.</li>
+        <li>Cookies: conforme preferência registrada no banner (essenciais vs. analíticos).</li>
+    </ul>
+
+    <h2>8. Cookies</h2>
+    <p>
+        Utilizamos <strong>cookies essenciais</strong> para autenticação, segurança e funcionamento da plataforma
+        (não exigem aceite opcional). <strong>Cookies analíticos</strong> só são usados se você aceitar no banner.
+        Você pode alterar a preferência a qualquer momento limpando o armazenamento local do navegador ou
+        reabrindo as configurações de cookies (quando disponível).
+    </p>
+
+    <h2>9. Direitos do titular (art. 18 LGPD)</h2>
+    <p>Você pode solicitar:</p>
+    <ul>
+        <li>confirmação de tratamento e acesso aos dados;</li>
+        <li>correção de dados incompletos, inexatos ou desatualizados;</li>
+        <li>anonimização, bloqueio ou eliminação de dados desnecessários ou tratados em desconformidade;</li>
+        <li>portabilidade, quando aplicável;</li>
+        <li>informação sobre compartilhamentos;</li>
+        <li>revogação de consentimento, quando a base legal for o consentimento.</li>
+    </ul>
+    <p>
+        Para exercer esses direitos: envie e-mail para <a href="mailto:@email">@email</a>
+        ou, se estiver logado, use <a href="/privacidade/meus-dados">/privacidade/meus-dados</a>
+        (inclui exportação simplificada dos seus dados cadastrais).
+    </p>
+
+    <h2>10. Segurança</h2>
+    <p>
+        Adotamos medidas técnicas e administrativas razoáveis (controle de acesso, HTTPS, hashing de senhas,
+        segregação de papéis). Nenhum sistema é 100% isento de risco; em incidente relevante, atuaremos conforme
+        a LGPD e comunicaremos os canais competentes quando exigido.
+    </p>
+
+    <h2>11. Menores de idade</h2>
+    <p>
+        O uso por menores de 18 anos depende de autorização e acompanhamento do responsável legal,
+        nos termos da legislação e da ética profissional.
+    </p>
+
+    <h2>12. Alterações</h2>
+    <p>
+        Esta Política pode ser atualizada. A versão vigente permanece publicada em
+        <a href="/privacidade">/privacidade</a>, com data de atualização no topo.
+    </p>
+
+    <p class="mt-4">
+        <a href="/termos/paciente">Termos — Pacientes</a> ·
+        <a href="/termos/psicologo">Termos — Psicólogos</a> ·
+        <a href="/privacidade/meus-dados">Meus dados</a> ·
+        <a href="/">Home</a>
+    </p>
+</article>

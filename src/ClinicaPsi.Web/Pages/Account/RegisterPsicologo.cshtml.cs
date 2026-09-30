@@ -73,6 +73,10 @@ public class RegisterPsicologoModel : PageModel
         [Display(Name = "Aceite dos Termos")]
         public bool AceiteTermos { get; set; }
 
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Aceite a Política de Privacidade")]
+        [Display(Name = "Aceite da Privacidade")]
+        public bool AceitePrivacidade { get; set; }
+
         [Range(typeof(bool), "true", "true", ErrorMessage = "Aceite o Contrato Digital (consultas a R$ 50,00)")]
         [Display(Name = "Aceite do Contrato")]
         public bool AceiteContrato { get; set; }
@@ -136,6 +140,7 @@ public class RegisterPsicologoModel : PageModel
             StatusValidacao = StatusValidacaoPsicologo.Pendente,
             AceiteTermosEm = agora,
             AceiteContratoEm = agora,
+            AceitePrivacidadeEm = agora,
             DocumentoCnhUrl = urlCnh,
             DocumentoCrpUrl = urlCrp,
             DataCadastro = agora,
@@ -165,7 +170,9 @@ public class RegisterPsicologoModel : PageModel
             PsicologoId = psicologo.Id,
             EmailConfirmed = true,
             Ativo = true,
-            DataCadastro = agora
+            DataCadastro = agora,
+            AceiteTermosEm = agora,
+            AceitePrivacidadeEm = agora
         };
 
         var result = await _userManager.CreateAsync(user, Input.Password);

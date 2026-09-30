@@ -94,6 +94,10 @@
                         <i class="bi bi-shield-check me-2"></i>
                         Auditoria
                     </a>
+                    <a href="/admin/privacidade" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Admin/Privacidade") == true ? "active" : "")">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        Privacidade LGPD
+                    </a>
                     <a href="/admin/whatsapp" class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString()?.StartsWith("/Admin/WhatsApp") == true ? "active" : "")">
                         <i class="bi bi-whatsapp me-2"></i>
                         WhatsApp Bot
@@ -385,5 +389,6 @@
     @await RenderSectionAsync("Scripts", required: false)
     <partial name="_ClienteChamadaNotifier" />
     <partial name="_OnboardingTour" />
+    <partial name="_CookieConsent" />
 </body>
 </html>
