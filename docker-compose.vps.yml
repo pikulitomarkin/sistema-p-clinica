@@ -43,13 +43,13 @@ services:
       WhatsApp__PhoneNumberId: ${WHATSAPP_PHONE_NUMBER_ID:-}
       WhatsApp__AppSecret: ${WHATSAPP_APP_SECRET:-}
       WhatsApp__BotUrl: ${WHATSAPP_BOT_URL:-}
-      WhatsApp__SiteUrl: ${PUBLIC_APP_URL:-https://psiianasantos.com.br}
+      WhatsApp__SiteUrl: ${PUBLIC_APP_URL:-https://psyall.com.br}
       OpenAI__ApiKey: ${OPENAI_API_KEY:-}
       # E-mail Resend (chave só no .env da VPS)
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       Email__From: ${Email__From:-noreply@psiianasantos.com.br}
-      Email__FromName: ${Email__FromName:-Psicóloga Ana Santos}
-      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://psiianasantos.com.br}
+      Email__FromName: ${Email__FromName:-PsyAll}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://psyall.com.br}
       # Video (opcional — produção usa WebRTC/SignalR sem chave)
       DAILY_API_KEY: ${DAILY_API_KEY:-}
       LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}

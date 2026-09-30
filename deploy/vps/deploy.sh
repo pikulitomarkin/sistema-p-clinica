@@ -36,9 +36,12 @@ sleep 5
 curl -fsS "http://127.0.0.1:${CLINICAPSI_HTTP_PORT:-8080}/health" && echo " OK" || echo "Aguardando app subir..."
 
 echo "==> Health via dominio (se DNS/nginx ok)"
-curl -fsSk "https://psiianasantos.com.br/health" && echo " OK psi" || echo "Dominio psi ainda nao respondeu"
-curl -fsSk "https://api.psiianasantos.com.br/health" && echo " OK api.psi" || echo "Dominio api.psi ainda nao respondeu"
+curl -fsSk "https://psyall.com.br/health" && echo " OK psyall" || echo "Dominio psyall ainda nao respondeu"
+curl -fsSk "https://api.psyall.com.br/health" && echo " OK api.psyall" || echo "Dominio api.psyall ainda nao respondeu"
+curl -fsSk "https://psiianasantos.com.br/health" && echo " OK psi (alias)" || echo "Dominio psi alias ainda nao respondeu"
+curl -fsSk "https://api.psiianasantos.com.br/health" && echo " OK api.psi (alias)" || echo "Dominio api.psi alias ainda nao respondeu"
 
 echo "Deploy concluido."
-echo "ClinicaPsi: https://psiianasantos.com.br  |  https://api.psiianasantos.com.br  |  :8080"
-echo "Astra: https://astrasedution.com"
+echo "PsyAll: https://psyall.com.br  |  https://api.psyall.com.br  |  :8080"
+echo "Alias:  https://psiianasantos.com.br  |  https://api.psiianasantos.com.br"
+echo "Astra:  https://astrasedution.com"

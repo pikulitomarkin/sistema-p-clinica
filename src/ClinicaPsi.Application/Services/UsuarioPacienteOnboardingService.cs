@@ -204,7 +204,7 @@ public class UsuarioPacienteOnboardingService
 
     public string ResolvePublicBaseUrl()
     {
-        var url = FirstNonEmpty(_emailOptions.CurrentValue.PublicAppUrl, _configuration["PUBLIC_APP_URL"], _configuration["Email:PublicAppUrl"], _configuration["WhatsApp:SiteUrl"], "https://psiianasantos.com.br");
+        var url = FirstNonEmpty(_emailOptions.CurrentValue.PublicAppUrl, _configuration["PUBLIC_APP_URL"], _configuration["Email:PublicAppUrl"], _configuration["WhatsApp:SiteUrl"], "https://psyall.com.br");
         return url!.TrimEnd('/');
     }
 
