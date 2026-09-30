@@ -1146,9 +1146,154 @@ html, body {
 .psy-legal h2 { font-size: 1.2rem; font-weight: 700; margin-top: 1.75rem; }
 .psy-legal p, .psy-legal li { color: #3d5248; line-height: 1.65; }
 
+/* ===== Marketing pages (/para-voce, /valor-social) ===== */
+.psy-mkt-title-sm {
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    max-width: 18ch;
+}
+.psy-mkt-hero .psy-hero-lead strong { color: var(--brand-ink); font-weight: 600; }
+
+.psy-benefit-list {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+.psy-benefit-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.15rem;
+    align-items: start;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--brand-border);
+}
+.psy-benefit-row:last-child { border-bottom: none; }
+.psy-benefit-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--brand-gradient-chip);
+    color: var(--brand-primary);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.psy-benefit-row h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0.15rem 0 0.35rem;
+    color: var(--brand-ink);
+}
+.psy-benefit-row p {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.psy-mkt-split {
+    max-width: 640px;
+    margin: 0 auto;
+}
+.psy-mkt-split h2 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+}
+.psy-mkt-split p { color: var(--text-muted); line-height: 1.65; }
+
+.psy-value-flow {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+.psy-value-item {
+    border-left: 3px solid var(--brand-secondary);
+    padding-left: 1.15rem;
+}
+.psy-value-num {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--psy-teal);
+    margin-bottom: 0.35rem;
+}
+.psy-value-item h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 0.4rem;
+    color: var(--brand-ink);
+}
+.psy-value-item p {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.65;
+}
+
+.psy-price-anchor {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px;
+    min-height: 180px;
+    padding: 1.5rem;
+    border-radius: 50%;
+    background: var(--brand-gradient-soft);
+    border: 1px solid var(--brand-border);
+    animation: psy-mkt-pulse 4.5s ease-in-out infinite;
+}
+.psy-price-anchor-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--brand-muted);
+    font-weight: 600;
+}
+.psy-price-anchor-value {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1.2;
+}
+
+@keyframes psy-mkt-fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes psy-mkt-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--brand-secondary-rgb), 0.12); }
+    50% { transform: scale(1.02); box-shadow: 0 12px 36px rgba(var(--brand-primary-rgb), 0.12); }
+}
+.psy-mkt-reveal {
+    animation: psy-mkt-fade-up 0.7s ease both;
+}
+.psy-mkt-reveal-delay {
+    animation-delay: 0.18s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .psy-mkt-reveal,
+    .psy-mkt-reveal-delay,
+    .psy-price-anchor {
+        animation: none;
+    }
+}
+
 @media (max-width: 768px) {
     .psy-hero { padding: 2.5rem 0 3rem; text-align: center; }
     .psy-hero-lead { margin-inline: auto; }
     .psy-hero-inner .d-flex { justify-content: center; }
     .psy-rank-item { flex-wrap: wrap; }
+    .psy-benefit-row { text-align: left; }
+    .psy-mkt-title-sm { max-width: none; margin-inline: auto; }
 }
