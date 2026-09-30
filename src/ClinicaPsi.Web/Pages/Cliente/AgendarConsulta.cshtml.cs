@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 using ClinicaPsi.Application.Services;
+using MercadoPago = ClinicaPsi.Application.Services.MercadoPago;
 using ClinicaPsi.Web.Extensions;
 using System.Security.Claims;
 
@@ -115,9 +116,9 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     return Page();
                 }
 
-                // Sem programa de pontos/brindes: sempre consulta padrão paga
+                // Sem programa de pontos/brindes: sempre consulta padrão paga (plataforma R$ 50)
                 var tipoConsulta = TipoConsulta.Normal;
-                var valorConsulta = psicologo.ValorConsulta;
+                var valorConsulta = MercadoPago.MercadoPagoService.ResolveValorConsulta(psicologo);
 
                 var consulta = new Consulta
                 {
@@ -133,7 +134,8 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     DataAgendamento = DateTime.Now,
                     DataCriacao = DateTime.Now,
                     NotificacaoEnviada = false,
-                    ConfirmacaoRecebida = false
+                    ConfirmacaoRecebida = false,
+                    StatusPagamento = StatusPagamento.Pendente
                 };
 
                 await _videoConsultaService.GarantirSalaAsync(consulta);
@@ -142,10 +144,8 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 await _context.SaveChangesAsync();
                 await _videoConsultaService.FinalizarSalaAposCriacaoAsync(consulta);
 
-                TempData["Success"] = Input.Formato == FormatoConsulta.Online
-                    ? "Consulta online agendada! Use o botão de videochamada em Minhas Consultas no horário."
-                    : "Consulta agendada com sucesso!";
-                return RedirectToPage("MinhasConsultas");
+                TempData["Success"] = "Consulta reservada. Conclua o pagamento para confirmar.";
+                return RedirectToPage("/Cliente/Pagamento/Index", new { consultaId = consulta.Id });
             }
             catch (Exception ex)
             {

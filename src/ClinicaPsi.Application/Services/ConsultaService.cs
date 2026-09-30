@@ -1,5 +1,6 @@
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
+using MercadoPago = ClinicaPsi.Application.Services.MercadoPago;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClinicaPsi.Application.Services;
@@ -43,11 +44,13 @@ public class ConsultaService
         if (psicologo == null || paciente == null)
             throw new Exception("Psicólogo ou paciente não encontrado");
 
-        consulta.Valor = psicologo.ValorConsulta;
+        consulta.Valor = MercadoPago.MercadoPagoService.ResolveValorConsulta(psicologo);
         consulta.Tipo = TipoConsulta.Normal;
 
         consulta.DataAgendamento = DateTime.UtcNow;
         consulta.Status = StatusConsulta.Agendada;
+        if (consulta.StatusPagamento == default)
+            consulta.StatusPagamento = StatusPagamento.Pendente;
 
         await _videoConsultaService.GarantirSalaAsync(consulta);
         _context.Consultas.Add(consulta);

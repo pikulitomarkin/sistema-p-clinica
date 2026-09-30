@@ -226,6 +226,18 @@ public class Consulta
     public bool NotificacaoEnviada { get; set; } = false;
     public bool ConfirmacaoRecebida { get; set; } = false;
 
+    /// <summary>Status do pagamento da consulta (Mercado Pago).</summary>
+    public StatusPagamento StatusPagamento { get; set; } = StatusPagamento.Pendente;
+
+    /// <summary>Quando o pagamento foi confirmado (UTC/local conforme app).</summary>
+    public DateTime? PaidAt { get; set; }
+
+    [StringLength(100)]
+    public string? MercadoPagoPreferenceId { get; set; }
+
+    [StringLength(100)]
+    public string? MercadoPagoPaymentId { get; set; }
+
     // Relacionamentos
     public virtual ICollection<NotificacaoConsulta> Notificacoes { get; set; } = new List<NotificacaoConsulta>();
 }
@@ -296,6 +308,16 @@ public enum StatusConsulta
     Cancelada = 4,
     NoShow = 5,
     Reagendada = 6
+}
+
+public enum StatusPagamento
+{
+    Pendente = 0,
+    Aguardando = 1,
+    Pago = 2,
+    Falhou = 3,
+    Reembolsado = 4,
+    Cancelado = 5
 }
 
 public enum TipoConsulta

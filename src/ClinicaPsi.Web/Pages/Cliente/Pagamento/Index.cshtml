@@ -1,0 +1,177 @@
+@page "/Cliente/Pagamento"
+@model ClinicaPsi.Web.Pages.Cliente.Pagamento.IndexModel
+@{
+    ViewData["Title"] = "Pagar consulta";
+    Layout = "_AdminLayout";
+    var consulta = Model.Consulta;
+}
+
+<style>
+    .pay-hero {
+        background:
+            radial-gradient(ellipse at 10% 0%, rgba(var(--brand-secondary-rgb, 26, 184, 176), 0.18), transparent 55%),
+            radial-gradient(ellipse at 90% 20%, rgba(var(--brand-primary-rgb, 31, 122, 77), 0.14), transparent 50%),
+            var(--brand-gradient-page, #f3faf7);
+        border-radius: 1.25rem;
+        padding: 1.75rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .pay-hero h1 {
+        font-family: var(--brand-font-display, Georgia, serif);
+        font-size: clamp(1.6rem, 3vw, 2.1rem);
+        color: var(--brand-ink, #14352a);
+        margin: 0 0 0.35rem;
+    }
+    .pay-amount {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--brand-primary, #1f7a4d);
+        letter-spacing: -0.02em;
+    }
+    .pay-panel {
+        background: rgba(255,255,255,0.72);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(var(--brand-primary-rgb, 31, 122, 77), 0.12);
+        border-radius: 1.1rem;
+        padding: 1.25rem;
+    }
+    #paymentBrick_container { min-height: 320px; }
+    .pay-meta dt { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7c74; }
+    .pay-meta dd { margin: 0 0 0.75rem; font-weight: 600; color: var(--brand-ink, #14352a); }
+</style>
+
+<div class="container-fluid py-2">
+    <div class="pay-hero">
+        <p class="mb-1 text-muted small">PsyAll · Pagamento seguro</p>
+        <h1>Pagar consulta</h1>
+        <p class="mb-0 text-muted">PIX ou cartão de crédito — ambiente @(Model.MpDisponivel ? "de teste Mercado Pago" : "indisponível")</p>
+    </div>
+
+    @if (Model.JaPago)
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>
+            Esta consulta já está paga.
+            <a href="/Cliente/MinhasConsultas" class="alert-link">Voltar às minhas consultas</a>
+        </div>
+    }
+    else if (consulta is null)
+    {
+        <div class="alert alert-warning">Consulta não encontrada.</div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="pay-panel h-100">
+                    <dl class="pay-meta mb-0">
+                        <dt>Psicólogo(a)</dt>
+                        <dd>@consulta.Psicologo?.Nome</dd>
+                        <dt>Data e horário</dt>
+                        <dd>@consulta.DataHorario.ToString("dd/MM/yyyy HH:mm")</dd>
+                        <dt>Formato</dt>
+                        <dd>@(consulta.Formato == FormatoConsulta.Online ? "Online (videochamada)" : "Presencial")</dd>
+                        <dt>Valor</dt>
+                        <dd class="pay-amount mb-0">@Model.Amount.ToString("C")</dd>
+                    </dl>
+                    @if (!string.IsNullOrWhiteSpace(Model.CheckoutUrl))
+                    {
+                        <hr />
+                        <a class="btn btn-outline-secondary btn-sm w-100" href="@Model.CheckoutUrl" target="_blank" rel="noopener">
+                            Abrir Checkout Pro (alternativa)
+                        </a>
+                    }
+                    <a class="btn btn-link btn-sm px-0 mt-2" href="/Cliente/MinhasConsultas">Pagar depois</a>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="pay-panel">
+                    @if (!string.IsNullOrEmpty(Model.Erro))
+                    {
+                        <div class="alert alert-danger">@Model.Erro</div>
+                    }
+                    @if (Model.MpDisponivel && !string.IsNullOrEmpty(Model.PublicKey))
+                    {
+                        <div id="paymentBrick_container"></div>
+                        <p class="small text-muted mt-3 mb-0">
+                            Pagamento processado pelo Mercado Pago. Em modo teste, use cartões e PIX de sandbox.
+                        </p>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mb-0">@(Model.Erro ?? "Pagamentos indisponíveis no momento.")</div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+@if (Model.MpDisponivel && !string.IsNullOrEmpty(Model.PublicKey) && !Model.JaPago && consulta is not null)
+{
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script>
+(async function () {
+    const publicKey = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PublicKey));
+    const preferenceId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PreferenceId));
+    const amount = @Model.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    const consultaId = @consulta.Id;
+
+    const mp = new MercadoPago(publicKey, { locale: 'pt-BR' });
+    const bricksBuilder = mp.bricks();
+
+    await bricksBuilder.create('payment', 'paymentBrick_container', {
+        initialization: {
+            amount: amount,
+            preferenceId: preferenceId || undefined
+        },
+        customization: {
+            visual: {
+                style: {
+                    theme: 'default'
+                }
+            },
+            paymentMethods: {
+                creditCard: 'all',
+                bankTransfer: 'all',
+                maxInstallments: 1
+            }
+        },
+        callbacks: {
+            onReady: function () {},
+            onSubmit: function ({ formData }) {
+                return new Promise(function (resolve, reject) {
+                    fetch('/api/mercadopago/process-payment/' + consultaId, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData),
+                        credentials: 'same-origin'
+                    })
+                    .then(async function (res) {
+                        const data = await res.json().catch(function () { return {}; });
+                        if (!res.ok) {
+                            reject(data.error || data.detail || 'Falha no pagamento');
+                            return;
+                        }
+                        resolve();
+                        if (data.redirectUrl) {
+                            window.location.href = data.redirectUrl;
+                        } else {
+                            window.location.href = '/Cliente/Pagamento/Pendente?consultaId=' + consultaId;
+                        }
+                    })
+                    .catch(function (err) {
+                        reject(err);
+                    });
+                });
+            },
+            onError: function (error) {
+                console.error('Payment Brick error', error);
+            }
+        }
+    });
+})();
+</script>
+}
+}

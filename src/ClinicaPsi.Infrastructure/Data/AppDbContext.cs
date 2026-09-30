@@ -77,6 +77,8 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => e.DataHorario);
+            entity.HasIndex(e => e.MercadoPagoPaymentId);
+            entity.HasIndex(e => e.MercadoPagoPreferenceId);
         });
 
         modelBuilder.Entity<HistoricoPontos>(entity =>

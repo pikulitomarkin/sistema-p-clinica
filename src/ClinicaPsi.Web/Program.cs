@@ -219,6 +219,29 @@ builder.Services.AddScoped<OpenAIService>();
 builder.Services.AddScoped<WhatsAppBotService>();
 builder.Services.AddScoped<WhatsAppNotificationService>();
 
+// Mercado Pago (checkout + webhook) — secrets só via env / .env da VPS
+builder.Services.Configure<ClinicaPsi.Application.Services.MercadoPago.MercadoPagoOptions>(options =>
+{
+    builder.Configuration.GetSection(ClinicaPsi.Application.Services.MercadoPago.MercadoPagoOptions.SectionName).Bind(options);
+    options.PublicKey ??= builder.Configuration["MercadoPago__PublicKey"]
+        ?? builder.Configuration["MERCADOPAGO_PUBLIC_KEY"];
+    options.AccessToken ??= builder.Configuration["MercadoPago__AccessToken"]
+        ?? builder.Configuration["MERCADOPAGO_ACCESS_TOKEN"];
+    options.WebhookSecret ??= builder.Configuration["MercadoPago__WebhookSecret"]
+        ?? builder.Configuration["MERCADOPAGO_WEBHOOK_SECRET"];
+    options.PublicAppUrl ??= builder.Configuration["PUBLIC_APP_URL"]
+        ?? builder.Configuration["WhatsApp:SiteUrl"]
+        ?? "https://psyall.com.br";
+    if (!options.UseSandbox &&
+        bool.TryParse(builder.Configuration["MercadoPago__UseSandbox"] ?? builder.Configuration["MERCADOPAGO_USE_SANDBOX"], out var sandbox))
+        options.UseSandbox = sandbox;
+});
+builder.Services.AddHttpClient("MercadoPago", client =>
+{
+    client.BaseAddress = new Uri("https://api.mercadopago.com/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddScoped<ClinicaPsi.Application.Services.MercadoPago.MercadoPagoService>();
 
 // E-mail via Resend (API key só por env/secret — nunca no git)
 builder.Services.Configure<ClinicaPsi.Application.Services.Email.EmailOptions>(options =>
@@ -239,6 +262,32 @@ builder.Services.AddHttpClient("Resend", client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 builder.Services.AddScoped<ClinicaPsi.Application.Services.Email.IEmailService, ClinicaPsi.Application.Services.Email.ResendEmailService>();
+
+// Mercado Pago (pagamento de consultas) — credenciais só via env
+builder.Services.Configure<ClinicaPsi.Application.Services.MercadoPago.MercadoPagoOptions>(options =>
+{
+    builder.Configuration.GetSection(ClinicaPsi.Application.Services.MercadoPago.MercadoPagoOptions.SectionName).Bind(options);
+    options.AccessToken ??= builder.Configuration["MercadoPago:AccessToken"]
+        ?? builder.Configuration["MercadoPago__AccessToken"];
+    options.PublicKey ??= builder.Configuration["MercadoPago:PublicKey"]
+        ?? builder.Configuration["MercadoPago__PublicKey"];
+    options.WebhookSecret ??= builder.Configuration["MercadoPago:WebhookSecret"]
+        ?? builder.Configuration["MercadoPago__WebhookSecret"];
+    var sandboxRaw = builder.Configuration["MercadoPago:UseSandbox"]
+        ?? builder.Configuration["MercadoPago__UseSandbox"];
+    if (bool.TryParse(sandboxRaw, out var sandbox))
+        options.UseSandbox = sandbox;
+    options.PublicAppUrl ??= builder.Configuration["PUBLIC_APP_URL"]
+        ?? builder.Configuration["WhatsApp:SiteUrl"]
+        ?? "https://psyall.com.br";
+});
+builder.Services.AddHttpClient("MercadoPago", client =>
+{
+    client.BaseAddress = new Uri("https://api.mercadopago.com/");
+    client.Timeout = TimeSpan.FromSeconds(45);
+    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
+builder.Services.AddScoped<ClinicaPsi.Application.Services.MercadoPago.MercadoPagoService>();
 
 // Configurar HttpClient para WhatsApp Web (Venom-Bot)
 builder.Services.AddHttpClient<WhatsAppWebService>(client =>
@@ -303,6 +352,8 @@ using (var scope = app.Services.CreateScope())
         await GarantirSchemaAvaliacoesAsync(context, logger);
         await GarantirSchemaValidacaoPsicologoAsync(context, logger);
         await GarantirSchemaLgpdAsync(context, logger);
+        await GarantirSchemaPagamentoConsultaAsync(context, logger);
+        await GarantirSchemaMercadoPagoAsync(context, logger);
     }
     catch (Exception ex)
     {
@@ -521,6 +572,25 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+static async Task GarantirSchemaMercadoPagoAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""StatusPagamento"" integer NOT NULL DEFAULT 0;
+              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""MercadoPagoPaymentId"" character varying(100) NULL;
+              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""MercadoPagoPreferenceId"" character varying(100) NULL;
+              ALTER TABLE ""Consultas"" ADD COLUMN IF NOT EXISTS ""PaidAt"" timestamp without time zone NULL;
+              CREATE INDEX IF NOT EXISTS ""IX_Consultas_MercadoPagoPaymentId"" ON ""Consultas"" (""MercadoPagoPaymentId"");
+              CREATE INDEX IF NOT EXISTS ""IX_Consultas_MercadoPagoPreferenceId"" ON ""Consultas"" (""MercadoPagoPreferenceId"");");
+        logger.LogInformation("Schema Mercado Pago (pagamento consulta) verificado.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Não foi possível garantir schema Mercado Pago (pode ser SQLite local).");
+    }
+}
 
 static async Task GarantirSchemaProntuarioEVideoAsync(AppDbContext context, ILogger logger)
 {

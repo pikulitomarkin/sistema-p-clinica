@@ -166,6 +166,11 @@
                                             </div>
                                         </div>
                                         <div class="col-12">
+                                            <span class="badge @(consulta.StatusPagamento == StatusPagamento.Pago ? "bg-success" : consulta.StatusPagamento == StatusPagamento.Aguardando ? "bg-warning text-dark" : "bg-secondary")">
+                                                Pagamento: @consulta.StatusPagamento.GetDisplayName()
+                                            </span>
+                                        </div>
+                                        <div class="col-12">
                                             <span class="badge @(consulta.Formato == FormatoConsulta.Online ? "bg-info" : "bg-secondary")">
                                                 <i class="bi @(consulta.Formato == FormatoConsulta.Online ? "bi-camera-video" : "bi-building") me-1"></i>
                                                 @(consulta.Formato == FormatoConsulta.Online ? "Online" : "Presencial")
@@ -191,12 +196,36 @@
                                 </div>
                                 <div class="card-footer bg-transparent border-0">
                                     <div class="btn-group w-100" role="group">
+                                        @if (consulta.StatusPagamento != StatusPagamento.Pago &&
+                                             consulta.Status != StatusConsulta.Cancelada &&
+                                             consulta.Valor > 0)
+                                        {
+                                            <a href="/Cliente/Pagamento?consultaId=@consulta.Id" class="btn btn-warning btn-sm">
+                                                <i class="bi bi-credit-card me-1"></i>
+                                                @(consulta.StatusPagamento == StatusPagamento.Aguardando ? "Concluir pagamento" : "Pagar")
+                                            </a>
+                                        }
+                                        @if (consulta.StatusPagamento == StatusPagamento.Pago)
+                                        {
+                                            <span class="btn btn-outline-success btn-sm disabled">
+                                                <i class="bi bi-check2-circle me-1"></i>Pago
+                                            </span>
+                                        }
                                         @if (consulta.Formato == FormatoConsulta.Online &&
-                                             (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                                             (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada) &&
+                                             consulta.StatusPagamento == StatusPagamento.Pago)
                                         {
                                             <a href="/consulta/@consulta.Id/video" class="btn btn-info btn-sm">
                                                 <i class="bi bi-camera-video me-1"></i>Entrar na videochamada
                                             </a>
+                                        }
+                                        else if (consulta.Formato == FormatoConsulta.Online &&
+                                             (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada) &&
+                                             consulta.StatusPagamento != StatusPagamento.Pago)
+                                        {
+                                            <button type="button" class="btn btn-outline-info btn-sm" disabled title="Disponível após o pagamento">
+                                                <i class="bi bi-camera-video me-1"></i>Videochamada
+                                            </button>
                                         }
                                         @if (Model.PrecisaConfirmacao(consulta))
                                         {
@@ -320,8 +349,16 @@
                                         </div>
                                     </div>
                                     <div class="modal-footer">
+                                        @if (consulta.StatusPagamento != StatusPagamento.Pago &&
+                                             consulta.Status != StatusConsulta.Cancelada)
+                                        {
+                                            <a href="/Cliente/Pagamento?consultaId=@consulta.Id" class="btn btn-warning">
+                                                <i class="bi bi-credit-card me-1"></i>Pagar agora
+                                            </a>
+                                        }
                                         @if (consulta.Formato == FormatoConsulta.Online &&
-                                             (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                                             (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada) &&
+                                             consulta.StatusPagamento == StatusPagamento.Pago)
                                         {
                                             <a href="/consulta/@consulta.Id/video" class="btn btn-info">
                                                 <i class="bi bi-camera-video me-1"></i>Entrar na videochamada
