@@ -1,0 +1,31 @@
+@{
+    var pageTitle = ViewData["Title"] as string ?? "PsyAll";
+    var metaDescription = ViewData["MetaDescription"] as string
+        ?? "PsyAll — plataforma digital que conecta pacientes a psicólogos com CRP ativo. Agende teleterapia online a R$ 50 e avalie profissionais.";
+    var canonical = ViewData["Canonical"] as string ?? "https://psyall.com.br/";
+    var robots = ViewData["Robots"] as string
+        ?? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
+    var ogTitle = ViewData["OgTitle"] as string ?? pageTitle;
+    var ogImage = ViewData["OgImage"] as string ?? "https://psyall.com.br/images/psyall-logo.png";
+    var ogType = ViewData["OgType"] as string ?? "website";
+}
+<meta name="description" content="@metaDescription" />
+<meta name="robots" content="@robots" />
+<meta name="googlebot" content="@(robots.StartsWith("noindex", StringComparison.OrdinalIgnoreCase) ? "noindex, nofollow" : "index, follow")" />
+<link rel="canonical" href="@canonical" />
+<meta name="language" content="Portuguese (Brazilian)" />
+<meta property="og:title" content="@ogTitle" />
+<meta property="og:description" content="@metaDescription" />
+<meta property="og:type" content="@ogType" />
+<meta property="og:url" content="@canonical" />
+<meta property="og:locale" content="pt_BR" />
+<meta property="og:site_name" content="PsyAll" />
+<meta property="og:image" content="@ogImage" />
+<meta property="og:image:alt" content="Logo PsyAll — plataforma digital de psicologia" />
+<meta property="og:image:width" content="748" />
+<meta property="og:image:height" content="839" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="@ogTitle" />
+<meta name="twitter:description" content="@metaDescription" />
+<meta name="twitter:image" content="@ogImage" />
+<meta name="twitter:image:alt" content="Logo PsyAll — plataforma digital de psicologia" />

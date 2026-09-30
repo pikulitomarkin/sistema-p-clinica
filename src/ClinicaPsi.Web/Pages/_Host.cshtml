@@ -2,9 +2,53 @@
 @model ClinicaPsi.Web.Pages._HostModel
 @{
     ViewData["Title"] = "PsyAll — Plataforma digital de psicologia";
-    ViewData["MetaDescription"] = "PsyAll é a plataforma digital que conecta pacientes a psicólogos com CRP ativo. Agende teleterapia online, avalie profissionais e encontre o atendimento certo para você.";
+    ViewData["MetaDescription"] = "PsyAll é a plataforma digital que conecta pacientes a psicólogos com CRP ativo. Agende teleterapia online a R$ 50, avalie profissionais e encontre o atendimento certo para você.";
     ViewData["Canonical"] = "https://psyall.com.br/";
+    ViewData["OgTitle"] = "PsyAll — Plataforma digital de psicologia";
     var clinica = Model.Clinica;
+}
+
+@section JsonLd {
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@@type": "Question",
+      "name": "O que é a PsyAll?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "PsyAll é a plataforma digital de psicologia que conecta pacientes a psicólogos com CRP ativo para teleterapia online, avaliações e ranking."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "Quanto custa uma consulta na PsyAll?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "As consultas intermediadas pela PsyAll têm preço social padronizado de R$ 50,00."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "As consultas são presenciais ou online?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "Na PsyAll o atendimento é somente por teleterapia, com sala de vídeo integrada à plataforma."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "Como funciona o agendamento?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "Você escolhe um psicólogo ativo com CRP validado, agenda a teleterapia e entra na sala de vídeo pela PsyAll. Depois da consulta, pode avaliar o profissional."
+      }
+    }
+  ]
+}
+</script>
 }
 
 <section class="psy-hero">

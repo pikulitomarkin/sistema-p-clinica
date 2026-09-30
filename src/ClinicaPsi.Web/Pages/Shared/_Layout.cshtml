@@ -3,7 +3,17 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@(ViewData["Title"] ?? "PsyAll") — PsyAll | Plataforma digital de psicologia</title>
+    @{
+        var pageTitle = ViewData["Title"] as string ?? "PsyAll";
+        var documentTitle = pageTitle.Contains("PsyAll", StringComparison.OrdinalIgnoreCase)
+            ? pageTitle
+            : $"{pageTitle} — PsyAll";
+        if (string.IsNullOrWhiteSpace(ViewData["OgTitle"] as string))
+        {
+            ViewData["OgTitle"] = documentTitle;
+        }
+    }
+    <title>@documentTitle</title>
 
     <link rel="icon" type="image/png" href="~/images/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="~/images/psyall-icon.png" />
@@ -11,31 +21,9 @@
     <meta name="theme-color" content="#1f7a4d" />
     <partial name="_BrandTheme" />
 
-    @{
-        var metaDescription = ViewData["MetaDescription"] as string
-            ?? "PsyAll — plataforma digital que conecta pacientes a psicólogos com CRP ativo. Agende teleterapia online e avalie profissionais.";
-        var canonical = ViewData["Canonical"] as string ?? "https://psyall.com.br/";
-    }
-    <meta name="description" content="@metaDescription" />
-    <meta name="keywords" content="PsyAll, psicologia online, psicólogo online, telepsicologia, agendar psicólogo, terapia online, plataforma psicologia, Londrina, CRP" />
+    <meta name="keywords" content="PsyAll, psicologia online, psicólogo online, telepsicologia, teleterapia, agendar psicólogo, terapia online, preço social, plataforma psicologia, Londrina, CRP" />
     <meta name="author" content="PsyAll" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    <meta name="googlebot" content="index, follow" />
-    <link rel="canonical" href="@canonical" />
-    <meta name="language" content="Portuguese (Brazilian)" />
-
-    <meta property="og:title" content="@(ViewData["Title"] ?? "PsyAll") — Plataforma digital de psicologia" />
-    <meta property="og:description" content="@metaDescription" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="@canonical" />
-    <meta property="og:locale" content="pt_BR" />
-    <meta property="og:site_name" content="PsyAll" />
-    <meta property="og:image" content="https://psyall.com.br/images/psyall-logo.png" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="PsyAll — Psicologia digital" />
-    <meta name="twitter:description" content="@metaDescription" />
-    <meta name="twitter:image" content="https://psyall.com.br/images/psyall-logo.png" />
+    <partial name="_PublicSeoMeta" />
 
     <script type="application/ld+json">
     {
@@ -45,14 +33,19 @@
       "alternateName": "PsyAll Psicologia",
       "url": "https://psyall.com.br",
       "logo": "https://psyall.com.br/images/psyall-logo.png",
-      "description": "Plataforma digital que conecta pacientes e psicólogos para agendamento, teleconsulta e avaliações.",
+      "image": "https://psyall.com.br/images/psyall-logo.png",
+      "description": "Plataforma digital que conecta pacientes e psicólogos para agendamento, teleterapia online a R$ 50 e avaliações.",
       "address": {
         "@@type": "PostalAddress",
         "addressLocality": "Londrina",
         "addressRegion": "PR",
         "addressCountry": "BR"
       },
-      "areaServed": "BR",
+      "areaServed": {
+        "@@type": "Country",
+        "name": "BR"
+      },
+      "knowsAbout": ["psicologia", "teleterapia", "telepsicologia", "saúde mental"],
       "sameAs": []
     }
     </script>
@@ -61,14 +54,17 @@
       "@@context": "https://schema.org",
       "@@type": "WebSite",
       "name": "PsyAll",
+      "alternateName": "PsyAll Psicologia",
       "url": "https://psyall.com.br",
-      "potentialAction": {
-        "@@type": "SearchAction",
-        "target": "https://psyall.com.br/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
+      "inLanguage": "pt-BR",
+      "publisher": {
+        "@@type": "Organization",
+        "name": "PsyAll",
+        "url": "https://psyall.com.br"
       }
     }
     </script>
+    @await RenderSectionAsync("JsonLd", required: false)
 
     <base href="~/" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
