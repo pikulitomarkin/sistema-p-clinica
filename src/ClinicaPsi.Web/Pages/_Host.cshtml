@@ -1,298 +1,258 @@
 @page "/"
+@model ClinicaPsi.Web.Pages._HostModel
 @{
-    ViewData["Title"] = "Psicóloga Ana Santos - Clínica de Psicologia em Londrina";
+    ViewData["Title"] = "PsyAll — Plataforma digital de psicologia";
+    ViewData["MetaDescription"] = "PsyAll é a plataforma digital que conecta pacientes a psicólogos com CRP ativo. Agende consultas online ou presenciais, avalie profissionais e encontre o atendimento certo para você.";
+    ViewData["Canonical"] = "https://www.psiianasantos.com.br/";
+    var clinica = Model.Clinica;
 }
 
-<!-- Hero Section Moderna -->
-<div class="hero-section">
-    <div class="container hero-content">
-        <div class="row align-items-center justify-content-center text-center">
-            <div class="col-lg-10">
-                <div class="psychologist-image mb-4 animate-fade-in">
-                    <img src="~/images/ana-santos.jpg"
-                         alt="Psicóloga Ana Santos - Terapia em Londrina"
-                         class="rounded-circle img-fluid"
-                         style="width: 250px; height: 250px; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                </div>
-                <h1 class="display-3 fw-bold text-white mb-3 animate-fade-in animate-delay-1">
-                    Psicóloga Ana Santos
-                    <br>
-                    <small class="d-block text-white-50" style="font-size: 0.4em; margin-top: 10px;">Clínica de Psicologia em Londrina - PR</small>
+<section class="psy-hero">
+    <div class="container psy-hero-inner">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <p class="psy-eyebrow">Plataforma digital de psicologia</p>
+                <h1 class="psy-hero-title">
+                    <span class="psy-brand-psy">Psy</span><span class="psy-brand-all">All</span>
                 </h1>
-                <div class="badge bg-light text-dark fs-6 mb-3 animate-fade-in animate-delay-2">
-                    <i class="bi bi-award"></i> CRP: 08/45168
+                <p class="psy-hero-lead">
+                    Conecte-se a psicólogos ativos, agende consultas e cuide da saúde mental
+                    com transparência, avaliações e atendimento online ou presencial.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a href="#psicologos" class="btn btn-psy-primary btn-lg">
+                        Ver psicólogos
+                    </a>
+                    <a href="/Account/Register" class="btn btn-psy-ghost btn-lg">
+                        Criar conta gratuita
+                    </a>
                 </div>
-                <p class="lead text-white mb-4 animate-fade-in animate-delay-2">
-                    Psicóloga Clínica especializada em Terapia Cognitivo-Comportamental (TCC)
-                    <br>
-                    <small class="text-white-50">Atendimento presencial, online e por videochamada em Londrina</small>
+                <p class="psy-hero-note mt-3 mb-0">
+                    Sede administrativa em Londrina-PR — atendimento digital em todo o Brasil.
                 </p>
-                <p class="fs-5 text-white-50 mb-5 animate-fade-in animate-delay-3">
-                    Transformando vidas através da psicoterapia humanizada e baseada em evidências científicas
-                </p>
-                <div class="d-flex flex-wrap gap-3 justify-content-center animate-fade-in animate-delay-3">
-                    <a href="/Account/Login" class="btn btn-modern">
-                        <i class="bi bi-calendar-check me-2"></i> Agendar Consulta
-                    </a>
-                    <a href="#psicopontos" class="btn btn-outline-modern">
-                        <i class="bi bi-star-fill me-2"></i> Sistema PsicoPontos
-                    </a>
-                    <a href="/Account/Login" class="btn btn-outline-modern">
-                        <i class="bi bi-person-circle me-2"></i> Área do Cliente
-                    </a>
+            </div>
+            <div class="col-lg-5 text-center">
+                <img src="~/images/psyall-logo.png"
+                     alt="PsyAll Psicologia"
+                     class="psy-hero-logo img-fluid"
+                     width="320" height="360" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section" id="como-funciona">
+    <div class="container">
+        <header class="psy-section-head">
+            <h2>Como a PsyAll funciona</h2>
+            <p>Marketplace clínico com a estrutura completa de agenda, prontuário e consulta online.</p>
+        </header>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="psy-step">
+                    <span class="psy-step-num">1</span>
+                    <h3>Escolha o profissional</h3>
+                    <p>Veja CRP, especialidades, avaliações e disponibilidade dos psicólogos ativos.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="psy-step">
+                    <span class="psy-step-num">2</span>
+                    <h3>Agende com segurança</h3>
+                    <p>Marque consulta online ou presencial. Confirmações e sala de vídeo na plataforma.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="psy-step">
+                    <span class="psy-step-num">3</span>
+                    <h3>Avalie a experiência</h3>
+                    <p>Após a consulta, paciente e psicólogo podem avaliar — o ranking destaca os melhores.</p>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="container my-5">
-    <!-- Seção sobre Clínica de Psicologia em Londrina -->
-    <div class="row mb-5">
-        <div class="col-lg-12">
-            <div class="alert alert-info mb-4">
-                <h5><i class="bi bi-info-circle me-2"></i> Bem-vindo à Clínica de Psicologia</h5>
-                <p class="mb-0">
-                    Localizada em Londrina, oferecemos atendimento psicológico de qualidade com foco em Terapia Cognitivo-Comportamental. 
-                    Agende sua consulta com a psicóloga Ana Santos e cuide de sua saúde mental.
-                </p>
+<section class="psy-section psy-section-alt" id="psicologos">
+    <div class="container">
+        <header class="psy-section-head">
+            <h2>Psicólogos ativos</h2>
+            <p>Profissionais com perfil ativo na PsyAll — escolha e agende.</p>
+        </header>
+
+        @if (!Model.Psicologos.Any())
+        {
+            <div class="psy-empty">
+                <p class="mb-0">Em breve novos psicólogos estarão disponíveis. Cadastre-se como paciente ou profissional.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var psi in Model.Psicologos)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <article class="psy-pro-card">
+                            <div class="psy-pro-top">
+                                @if (!string.IsNullOrWhiteSpace(psi.FotoUrl))
+                                {
+                                    <img src="@psi.FotoUrl" alt="Foto de @psi.Nome" class="psy-pro-avatar" width="72" height="72" />
+                                }
+                                else
+                                {
+                                    <div class="psy-pro-avatar psy-pro-avatar-fallback" aria-hidden="true">
+                                        @(psi.Nome.Length > 0 ? psi.Nome[0].ToString().ToUpperInvariant() : "?")
+                                    </div>
+                                }
+                                <div>
+                                    <h3 class="psy-pro-name">@psi.Nome</h3>
+                                    <p class="psy-pro-crp mb-0">CRP @psi.CRP</p>
+                                </div>
+                            </div>
+                            <p class="psy-pro-specs">
+                                @(string.IsNullOrWhiteSpace(psi.Especialidades) ? "Psicologia clínica" : psi.Especialidades)
+                            </p>
+                            <div class="psy-pro-meta">
+                                <span class="psy-stars" title="@psi.AvaliacaoMedia.ToString("0.0") de 5">
+                                    @for (var i = 1; i <= 5; i++)
+                                    {
+                                        <i class="bi @(i <= Math.Round(psi.AvaliacaoMedia) ? "bi-star-fill" : "bi-star")"></i>
+                                    }
+                                    @if (psi.TotalAvaliacoes > 0)
+                                    {
+                                        <span class="psy-stars-label">@psi.AvaliacaoMedia.ToString("0.0") (@psi.TotalAvaliacoes)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="psy-stars-label">Sem avaliações</span>
+                                    }
+                                </span>
+                            </div>
+                            <div class="psy-pro-actions">
+                                <a class="btn btn-psy-primary w-100"
+                                   href="@(User.Identity?.IsAuthenticated == true ? $"/Cliente/AgendarConsulta?psicologoId={psi.Id}" : "/Account/Login?returnUrl=/Cliente/AgendarConsulta?psicologoId=" + psi.Id)">
+                                    Agendar
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<section class="psy-section" id="ranking">
+    <div class="container">
+        <header class="psy-section-head">
+            <h2>Ranking dos mais bem avaliados</h2>
+            <p>Atualizado com base nas avaliações públicas de pacientes após consultas realizadas.</p>
+        </header>
+
+        @if (!Model.Ranking.Any())
+        {
+            <div class="psy-empty">
+                <p class="mb-0">O ranking aparece assim que houver avaliações de consultas realizadas.</p>
+            </div>
+        }
+        else
+        {
+            <ol class="psy-rank-list">
+                @for (var i = 0; i < Model.Ranking.Count; i++)
+                {
+                    var psi = Model.Ranking[i];
+                    <li class="psy-rank-item">
+                        <span class="psy-rank-pos">@(i + 1)</span>
+                        <div class="psy-rank-info">
+                            <strong>@psi.Nome</strong>
+                            <span>CRP @psi.CRP</span>
+                        </div>
+                        <div class="psy-rank-score">
+                            <i class="bi bi-star-fill"></i>
+                            @psi.AvaliacaoMedia.ToString("0.0")
+                            <small>(@psi.TotalAvaliacoes)</small>
+                        </div>
+                    </li>
+                }
+            </ol>
+            <div class="text-center mt-4">
+                <a href="/ranking" class="btn btn-psy-ghost">Ver ranking completo</a>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="psy-section psy-section-alt" id="para-quem">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="psy-audience">
+                    <h2>Para pacientes</h2>
+                    <p>Encontre psicólogos, agende, entre na sala online e avalie o atendimento.</p>
+                    <ul>
+                        <li>Perfis com CRP e especialidades</li>
+                        <li>Histórico e documentos na sua área</li>
+                        <li>Avaliação após cada consulta realizada</li>
+                    </ul>
+                    <a href="/Account/Register" class="btn btn-psy-primary">Sou paciente</a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="psy-audience">
+                    <h2>Para psicólogos</h2>
+                    <p>Gerencie agenda, prontuário, teleconsulta e construa reputação com avaliações.</p>
+                    <ul>
+                        <li>Agenda e sala de vídeo integradas</li>
+                        <li>Prontuário e documentos clínicos</li>
+                        <li>Ranking público por avaliação</li>
+                    </ul>
+                    <a href="/Account/Login" class="btn btn-psy-primary">Área do psicólogo</a>
+                </div>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- Cards de Informações Profissionais -->
-    <div class="row g-4 mb-5">
-        <div class="col-lg-4">
-            <div class="modern-card h-100 animate-fade-in animate-delay-1">
-                <div class="card-header text-center">
-                    <div class="translucent-icon">
-                        <i class="bi bi-mortarboard-fill"></i>
-                    </div>
-                    <h5 class="mb-0">Formação Acadêmica</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <h6 class="text-success fw-bold">Psicologia</h6>
-                        <small class="text-muted">Centro Universitário Campo Real - 2024</small>
-                    </div>
-                    <div class="mb-3">
-                        <h6 class="text-success fw-bold">Especialização em TCC</h6>
-                        <small class="text-muted">Instituto Descomplica Ead - 2025</small>
-                    </div>
-                    <div class="mb-0">
-                        <h6 class="text-success fw-bold">Especialização em Psicologia Organizacional</h6>
-                        <small class="text-muted">Instituto Descomplica Ead - 2025</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="modern-card h-100 animate-fade-in animate-delay-2">
-                <div class="card-header text-center">
-                    <div class="translucent-icon">
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                    <h5 class="mb-0">Especialidades em Psicologia</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        <span class="small">Terapia Cognitivo-Comportamental (TCC)</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        <span class="small">Psicologia Organizacional</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="modern-card h-100 animate-fade-in animate-delay-3">
-                <div class="card-header text-center">
-                    <div class="translucent-icon">
-                        <i class="bi bi-briefcase-fill"></i>
-                    </div>
-                    <h5 class="mb-0">Experiência</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-0">
-                        <h6 class="text-success fw-bold">2022 - 2024</h6>
-                        <small class="text-muted">Estágio em Psicologia Clínica - Centro Universitário Campo Real</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sistema PsicoPontos -->
-    <div id="psicopontos" class="points-section animate-fade-in">
-        <div class="row align-items-center">
+<section class="psy-section" id="contato">
+    <div class="container">
+        <header class="psy-section-head">
+            <h2>Contato e sede</h2>
+            <p>
+                A PsyAll é uma <strong>plataforma digital</strong> para psicólogos e pacientes.
+                O endereço abaixo é da sede administrativa / apoio presencial quando aplicável — não substitui o consultório de cada profissional.
+            </p>
+        </header>
+        <div class="row g-4 justify-content-center">
             <div class="col-lg-8">
-                <h3 class="text-dark fw-bold mb-3">
-                    <i class="bi bi-trophy-fill me-2"></i>
-                    Sistema PsicoPontos - Programa de Fidelidade
-                </h3>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-success rounded-circle p-2 me-3">
-                                <i class="bi bi-plus-lg text-white"></i>
-                            </div>
-                            <span><strong>Ganhe 1 ponto</strong> a cada consulta realizada</span>
+                <div class="psy-contact">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h3><i class="bi bi-geo-alt"></i> Endereço</h3>
+                            <p style="white-space: pre-line;">@(clinica.Endereco)</p>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-success rounded-circle p-2 me-3">
-                                <i class="bi bi-gift text-white"></i>
-                            </div>
-                            <span><strong>Troque 10 pontos</strong> por 1 consulta gratuita</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-success rounded-circle p-2 me-3">
-                                <i class="bi bi-arrow-repeat text-white"></i>
-                            </div>
-                            <span><strong>Incentive</strong> a continuidade do tratamento</span>
-                        </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="bg-success rounded-circle p-2 me-3">
-                                <i class="bi bi-graph-up text-white"></i>
-                            </div>
-                            <span><strong>Acompanhe</strong> seus pontos online</span>
+                        <div class="col-md-6">
+                            <h3><i class="bi bi-telephone"></i> Telefone</h3>
+                            <p>@(clinica.Telefone)</p>
+                            <h3><i class="bi bi-envelope"></i> E-mail</h3>
+                            <p>@(clinica.Email)</p>
+                            <h3><i class="bi bi-clock"></i> Horários de suporte</h3>
+                            <p>@(clinica.HorarioFuncionamento)</p>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4 text-center">
-                <a href="/Account/Login" class="btn btn-modern btn-lg">
-                    <i class="bi bi-person-circle me-2"></i>
-                    Ver Meus Pontos
-                </a>
-            </div>
         </div>
     </div>
+</section>
 
-    <!-- Informações de Contato -->
-    <div class="contact-section animate-fade-in">
-        <div class="row">
-            <div class="col-lg-6">
-                <h4 class="text-success fw-bold mb-4">
-                    <i class="bi bi-geo-alt-fill me-2"></i>
-                    Informações de Contato
-                </h4>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-building text-success me-2"></i>
-                                <strong>Endereço:</strong>
-                            </div>
-                            <small class="text-muted">
-                                Rua Orlando Ferreira Neto, 39 - Jd Itapoã<br>
-                                Londrina - PR, 86043-470
-                            </small>
-                        </div>
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-telephone-fill text-success me-2"></i>
-                                <strong>Telefone:</strong>
-                            </div>
-                            <small class="text-muted">(42) 99936-9724</small>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-envelope-fill text-success me-2"></i>
-                                <strong>E-mail:</strong>
-                            </div>
-                            <small class="text-muted">psiianasantos@psiianasantos.com.br</small>
-                        </div>
-                        <div class="mb-3">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-clock-fill text-success me-2"></i>
-                                <strong>Horários:</strong>
-                            </div>
-                            <small class="text-muted">Segunda a Sexta: 9h às 17h</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="text-center">
-                    <h5 class="text-success fw-bold mb-3">Pronta para Atendê-la!</h5>
-                    <p class="text-muted mb-4">Agende sua consulta e comece sua jornada de autoconhecimento e bem-estar.</p>
-                    <a href="/agendamento" class="btn btn-modern btn-lg">
-                        <i class="bi bi-calendar-plus me-2"></i>
-                        Agendar Agora
-                    </a>
-                </div>
-            </div>
+<section class="psy-section psy-cta">
+    <div class="container text-center">
+        <h2>Pronto para começar?</h2>
+        <p>Crie sua conta e acesse psicólogos ativos na PsyAll.</p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <a href="/Account/Register" class="btn btn-light btn-lg">Criar conta</a>
+            <a href="/termos/paciente" class="btn btn-outline-light btn-lg">Termos do paciente</a>
+            <a href="/termos/psicologo" class="btn btn-outline-light btn-lg">Termos do psicólogo</a>
         </div>
     </div>
-
-    <!-- Área de Acesso por Perfil -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <div class="modern-card animate-fade-in">
-                <div class="card-header text-center">
-                    <div class="translucent-icon">
-                        <i class="bi bi-shield-lock-fill"></i>
-                    </div>
-                    <h5 class="mb-0">Área Restrita - Acesso por Perfil</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row g-4 text-center">
-                        <div class="col-lg-4">
-                            <div class="modern-card border-0" style="background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%);">
-                                <div class="card-body">
-                                    <div class="translucent-icon" style="background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%); color: #dc3545;">
-                                        <i class="bi bi-person-gear"></i>
-                                    </div>
-                                    <h6 class="text-danger fw-bold">Área Administrativa</h6>
-                                    <p class="small text-muted">Psicóloga Ana Santos<br>Controle total do sistema</p>
-                                    <a href="/admin" class="btn btn-outline-danger">
-                                        <i class="bi bi-box-arrow-in-right me-1"></i>
-                                        Acessar
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="modern-card border-0" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);">
-                                <div class="card-body">
-                                    <div class="translucent-icon" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%); color: #0d6efd;">
-                                        <i class="bi bi-person-badge"></i>
-                                    </div>
-                                    <h6 class="text-primary fw-bold">Área dos Psicólogos</h6>
-                                    <p class="small text-muted">Agenda e compromissos<br>Consultas e relatórios</p>
-                                    <a href="/psicologo" class="btn btn-outline-primary">
-                                        <i class="bi bi-box-arrow-in-right me-1"></i>
-                                        Acessar
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="modern-card border-0" style="background: var(--gradient-green-light);">
-                                <div class="card-body">
-                                    <div class="translucent-icon">
-                                        <i class="bi bi-person-heart"></i>
-                                    </div>
-                                    <h6 class="text-success fw-bold">Portal do Cliente</h6>
-                                    <p class="small text-muted">Agendamentos e pontos<br>Consultas e histórico</p>
-                                    <a href="/cliente" class="btn btn-outline-modern">
-                                        <i class="bi bi-box-arrow-in-right me-1"></i>
-                                        Acessar
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+</section>

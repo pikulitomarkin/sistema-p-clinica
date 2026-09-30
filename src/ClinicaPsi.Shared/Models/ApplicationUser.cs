@@ -21,6 +21,20 @@ public class ApplicationUser : IdentityUser
     public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
     
     public bool Ativo { get; set; } = true;
+
+    /// <summary>
+    /// Quando true, o usuário deve trocar a senha no próximo login (senha provisória).
+    /// </summary>
+    public bool MustChangePassword { get; set; }
+
+    /// <summary>
+    /// Quando true, o tour guiado de primeiro acesso foi concluído ou dispensado.
+    /// </summary>
+    public bool OnboardingCompleted { get; set; }
+
+    /// <summary>Caminho relativo da foto de perfil (ex.: /uploads/perfil/abc.jpg).</summary>
+    [StringLength(300)]
+    public string? FotoUrl { get; set; }
     
     // Relacionamentos
     public int? PacienteId { get; set; }

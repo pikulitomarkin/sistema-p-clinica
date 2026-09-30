@@ -1,0 +1,163 @@
+@page "{id:int}"
+@model ClinicaPsi.Web.Pages.Psicologo.EditarPacienteModel
+@{
+    ViewData["Title"] = "Editar Paciente";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="/Psicologo/Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-page="/Psicologo/Pacientes">Meus Pacientes</a></li>
+            <li class="breadcrumb-item active">Editar</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="gradient-text mb-0">
+        <i class="bi bi-pencil-square me-2"></i>
+        Editar Paciente
+    </h2>
+    <a asp-page="/Psicologo/Pacientes" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i>
+        Voltar
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        @Model.ErrorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-10">
+        <div class="card card-modern">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person me-2"></i>
+                    Dados do Paciente
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <input type="hidden" asp-for="Input.Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Input.Nome" class="form-label"></label>
+                            <input asp-for="Input.Nome" class="form-control" required maxlength="100" />
+                            <span asp-validation-for="Input.Nome" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.Email" class="form-label"></label>
+                            <input asp-for="Input.Email" type="email" class="form-control" required />
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.CPF" class="form-label"></label>
+                            <input asp-for="Input.CPF" class="form-control" id="cpf" maxlength="14" required
+                                   placeholder="000.000.000-00" />
+                            <span asp-validation-for="Input.CPF" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.Telefone" class="form-label"></label>
+                            <input asp-for="Input.Telefone" class="form-control" id="telefone" maxlength="15" required
+                                   placeholder="(00) 00000-0000" />
+                            <span asp-validation-for="Input.Telefone" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.DataNascimento" class="form-label"></label>
+                            <input asp-for="Input.DataNascimento" type="date" class="form-control" required />
+                            <span asp-validation-for="Input.DataNascimento" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.ContatoEmergencia" class="form-label"></label>
+                            <input asp-for="Input.ContatoEmergencia" class="form-control" maxlength="100" />
+                            <span asp-validation-for="Input.ContatoEmergencia" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.TelefoneEmergencia" class="form-label"></label>
+                            <input asp-for="Input.TelefoneEmergencia" class="form-control" id="telefoneEmergencia"
+                                   maxlength="15" placeholder="(00) 00000-0000" />
+                            <span asp-validation-for="Input.TelefoneEmergencia" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="Input.Ativo" class="form-check-input" type="checkbox" role="switch" />
+                                <label asp-for="Input.Ativo" class="form-check-label">Paciente ativo</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Input.Endereco" class="form-label"></label>
+                            <input asp-for="Input.Endereco" class="form-control" maxlength="200" />
+                            <span asp-validation-for="Input.Endereco" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Input.HistoricoMedico" class="form-label"></label>
+                            <textarea asp-for="Input.HistoricoMedico" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Input.HistoricoMedico" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Input.MedicamentosUso" class="form-label"></label>
+                            <textarea asp-for="Input.MedicamentosUso" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="Input.MedicamentosUso" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Input.Observacoes" class="form-label"></label>
+                            <textarea asp-for="Input.Observacoes" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="Input.Observacoes" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a asp-page="/Psicologo/Pacientes" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function maskCpf(el) {
+            let value = el.value.replace(/\D/g, '').slice(0, 11);
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            el.value = value;
+        }
+
+        function maskTelefone(el) {
+            let value = el.value.replace(/\D/g, '').slice(0, 11);
+            value = value.replace(/(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            el.value = value;
+        }
+
+        document.getElementById('cpf')?.addEventListener('input', function (e) { maskCpf(e.target); });
+        document.getElementById('telefone')?.addEventListener('input', function (e) { maskTelefone(e.target); });
+        document.getElementById('telefoneEmergencia')?.addEventListener('input', function (e) { maskTelefone(e.target); });
+    </script>
+}

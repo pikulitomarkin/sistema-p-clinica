@@ -42,6 +42,10 @@ public class Paciente
     public string? MedicamentosUso { get; set; }
     public string? Observacoes { get; set; }
 
+    /// <summary>Caminho relativo da foto de perfil (ex.: /uploads/perfil/abc.jpg).</summary>
+    [StringLength(300)]
+    public string? FotoUrl { get; set; }
+
     // Sistema de pontos
     [Range(0, int.MaxValue, ErrorMessage = "PsicoPontos não pode ser negativo")]
     public int PsicoPontos { get; set; } = 0;
@@ -114,6 +118,13 @@ public class Psicologo
     public DateTime? DataAtualizacao { get; set; }
     public bool Ativo { get; set; } = true;
 
+    /// <summary>Caminho relativo da foto de perfil (ex.: /uploads/perfil/abc.jpg).</summary>
+    [StringLength(300)]
+    public string? FotoUrl { get; set; }
+
+    /// <summary>Soft-delete: quando preenchido, o psicólogo não reaparece na listagem nem no seed/sync.</summary>
+    public DateTime? ExcluidoEm { get; set; }
+
     // Relacionamentos
     public virtual ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
 }
@@ -142,6 +153,15 @@ public class Consulta
     public StatusConsulta Status { get; set; } = StatusConsulta.Agendada;
     public TipoConsulta Tipo { get; set; } = TipoConsulta.Normal;
     public FormatoConsulta Formato { get; set; } = FormatoConsulta.Presencial;
+
+    [StringLength(100)]
+    public string? VideoRoomName { get; set; }
+
+    [StringLength(500)]
+    public string? VideoRoomUrl { get; set; }
+
+    /// <summary>Quando o psicólogo inicia "Chamar paciente"; usado para notificação in-app / polling.</summary>
+    public DateTime? VideoChamadaAtivaEm { get; set; }
 
     [StringLength(1000, ErrorMessage = "Observações deve ter no máximo 1000 caracteres")]
     public string? Observacoes { get; set; }
@@ -527,4 +547,46 @@ public class ProntuarioEletronico
     /// Confidencial - acesso restrito
     /// </summary>
     public bool Confidencial { get; set; } = true;
+}
+
+/// <summary>
+/// Avaliação mútua pós-consulta: paciente avalia psicólogo e psicólogo avalia paciente.
+/// </summary>
+public class Avaliacao
+{
+    public int Id { get; set; }
+
+    [Required]
+    public int ConsultaId { get; set; }
+    public virtual Consulta Consulta { get; set; } = null!;
+
+    public int? PsicologoId { get; set; }
+    public virtual Psicologo? Psicologo { get; set; }
+
+    public int? PacienteId { get; set; }
+    public virtual Paciente? Paciente { get; set; }
+
+    /// <summary>Quem está sendo avaliado.</summary>
+    public TipoAlvoAvaliacao Alvo { get; set; }
+
+    /// <summary>UserId (AspNetUsers) de quem enviou a avaliação.</summary>
+    [Required]
+    [StringLength(450)]
+    public string AvaliadorUserId { get; set; } = string.Empty;
+
+    [Range(1, 5)]
+    public int Nota { get; set; }
+
+    [StringLength(1000)]
+    public string? Comentario { get; set; }
+
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+
+    public bool Publica { get; set; } = true;
+}
+
+public enum TipoAlvoAvaliacao
+{
+    Psicologo = 1,
+    Paciente = 2
 }

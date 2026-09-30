@@ -23,6 +23,15 @@
     </div>
 }
 
+@if (TempData["WarningMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        @TempData["WarningMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="gradient-text mb-0">
         <i class="bi bi-person-badge me-2"></i>
@@ -56,9 +65,9 @@
             <div class="col-md-3">
                 <label for="status" class="form-label">Status</label>
                 <select class="form-select" id="status" name="status">
-                    <option value="">Todos</option>
-                    <option value="true" selected="@(Model.StatusFiltro == true)">Ativo</option>
-                    <option value="false" selected="@(Model.StatusFiltro == false)">Inativo</option>
+                    <option value="true" selected="@(Model.StatusFiltro == true)">Ativos</option>
+                    <option value="false" selected="@(Model.StatusFiltro == false)">Inativos</option>
+                    <option value="all" selected="@(Model.StatusFiltro == null)">Todos</option>
                 </select>
             </div>
             <div class="col-md-2 d-flex align-items-end">
@@ -133,6 +142,13 @@
                                                     title="@(psicologo.Ativo ? "Desativar" : "Ativar")"
                                                     onclick="return confirm('@(psicologo.Ativo ? "Desativar este psicólogo?" : "Ativar este psicólogo?")')">
                                                 <i class="bi bi-@(psicologo.Ativo ? "pause" : "play")"></i>
+                                            </button>
+                                        </form>
+                                        <form method="post" asp-page-handler="Delete" asp-route-id="@psicologo.Id" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    title="Excluir"
+                                                    onclick="return confirm('Excluir este psicólogo? Os dados serão mantidos, mas ele deixará de aparecer na lista e não poderá mais atender.')">
+                                                <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
                                     </div>
