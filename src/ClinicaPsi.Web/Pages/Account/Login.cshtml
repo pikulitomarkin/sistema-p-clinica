@@ -255,7 +255,7 @@
                     </div>
 
                     <div class="login-body">
-                        <form method="post" asp-route-returnUrl="@ReturnUrl">
+                        <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
                             @if (!ViewData.ModelState.IsValid)
                             {
                                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
