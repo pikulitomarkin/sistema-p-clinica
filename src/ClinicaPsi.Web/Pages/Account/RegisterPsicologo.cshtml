@@ -1,0 +1,139 @@
+@page "/Account/RegisterPsicologo"
+@model ClinicaPsi.Web.Pages.Account.RegisterPsicologoModel
+@{
+    ViewData["Title"] = "Cadastro de Psicólogo - PsyAll";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="~/css/brand-theme.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+    <style>
+        body { font-family: var(--font-sans); background: var(--brand-gradient-hero); min-height: 100vh; padding: 5.5rem 1rem 2rem; }
+        .reg-card { max-width: 720px; margin: 0 auto; background: #fff; border: 1px solid var(--brand-border); border-radius: 18px; box-shadow: 0 18px 40px var(--brand-shadow); overflow: hidden; }
+        .reg-head { background: var(--brand-gradient-soft); padding: 1.5rem; border-bottom: 1px solid var(--brand-border); }
+        .reg-body { padding: 1.5rem; }
+        .contract-box { background: var(--brand-surface-soft); border: 1px solid var(--brand-border); border-radius: 12px; padding: 1rem; font-size: 0.92rem; max-height: 180px; overflow: auto; }
+        .top-nav { position: fixed; top: 0; left: 0; right: 0; background: var(--brand-gradient-nav); border-bottom: 1px solid var(--brand-border); z-index: 10; }
+    </style>
+</head>
+<body>
+    <nav class="navbar top-nav">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                <img src="~/images/psyall-logo.png" alt="PsyAll" width="36" height="40" />
+                <span><span class="psy-brand-psy">Psy</span><span class="psy-brand-all">All</span></span>
+            </a>
+            <a href="/Account/Login" class="btn btn-sm btn-outline-success">Já tenho conta</a>
+        </div>
+    </nav>
+
+    <div class="reg-card">
+        <div class="reg-head">
+            <h1 class="h4 mb-1" style="color:var(--brand-ink)">Cadastro de psicólogo</h1>
+            <p class="mb-0 text-muted small">Envie documentos, aceite o contrato (consultas a R$ 50,00) e aguarde validação do admin.</p>
+        </div>
+        <div class="reg-body">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <form method="post" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Input.Nome" class="form-label"></label>
+                        <input asp-for="Input.Nome" class="form-control" />
+                        <span asp-validation-for="Input.Nome" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Input.Email" class="form-label"></label>
+                        <input asp-for="Input.Email" class="form-control" type="email" />
+                        <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Input.CRP" class="form-label"></label>
+                        <input asp-for="Input.CRP" class="form-control" placeholder="Ex: 08/12345" />
+                        <span asp-validation-for="Input.CRP" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Input.Telefone" class="form-label"></label>
+                        <input asp-for="Input.Telefone" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Input.Especialidades" class="form-label"></label>
+                        <input asp-for="Input.Especialidades" class="form-control" placeholder="Ex: TCC, Clínica" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Input.Password" class="form-label"></label>
+                        <input asp-for="Input.Password" class="form-control" />
+                        <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Input.ConfirmPassword" class="form-label"></label>
+                        <input asp-for="Input.ConfirmPassword" class="form-control" />
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Input.DocumentoCnh" class="form-label">CNH digital (JPG/PNG/PDF)</label>
+                        <input asp-for="Input.DocumentoCnh" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp,.pdf" />
+                        <span asp-validation-for="Input.DocumentoCnh" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Input.DocumentoCrp" class="form-label">Carteira CRP (JPG/PNG/PDF)</label>
+                        <input asp-for="Input.DocumentoCrp" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp,.pdf" />
+                        <span asp-validation-for="Input.DocumentoCrp" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h2 class="h6">Contrato digital — valor das consultas</h2>
+                    <div class="contract-box mb-2">
+                        <p class="mb-2"><strong>Contrato de adesão PsyAll — Psicólogos</strong></p>
+                        <p class="mb-2">
+                            Ao aderir à plataforma digital PsyAll, o(a) psicólogo(a) declara ciência de que o
+                            <strong>valor das consultas intermediadas pela plataforma é de R$ @RegisterPsicologoModel.ValorConsultaContrato.ToString("N2")</strong>
+                            (cinquenta reais), salvo alteração contratual futura comunicada pela PsyAll.
+                        </p>
+                        <p class="mb-2">
+                            O atendimento só será liberado após validação pelo administrador da plataforma dos documentos
+                            enviados (CNH digital e carteira do CRP). O profissional permanece responsável ético e legal
+                            pelos atos clínicos, nos termos do CFP e da legislação vigente.
+                        </p>
+                        <p class="mb-0">
+                            Documento completo:
+                            <a href="/termos/contrato-psicologo" target="_blank" rel="noopener">Contrato Digital do Psicólogo</a>
+                            e
+                            <a href="/termos/psicologo" target="_blank" rel="noopener">Termos de Uso</a>.
+                        </p>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input asp-for="Input.AceiteTermos" class="form-check-input" />
+                        <label asp-for="Input.AceiteTermos" class="form-check-label">
+                            Li e aceito os <a href="/termos/psicologo" target="_blank">Termos de Uso</a> da plataforma
+                        </label>
+                        <span asp-validation-for="Input.AceiteTermos" class="text-danger small d-block"></span>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="Input.AceiteContrato" class="form-check-input" />
+                        <label asp-for="Input.AceiteContrato" class="form-check-label">
+                            Aceito o contrato digital com consultas a <strong>R$ 50,00</strong>
+                        </label>
+                        <span asp-validation-for="Input.AceiteContrato" class="text-danger small d-block"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-psy-primary w-100">Enviar cadastro para validação</button>
+                <p class="small text-muted text-center mt-3 mb-0">
+                    É paciente? <a href="/Account/Register">Criar conta de paciente</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

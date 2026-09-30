@@ -3,6 +3,7 @@
 @model ClinicaPsi.Web.Pages.Cliente.MinhasConsultasModel
 @{
     ViewData["Title"] = "Minhas Consultas";
+    Layout = "_AdminLayout";
 }
 
 <div class="container-fluid">
@@ -164,6 +165,12 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="col-12">
+                                            <span class="badge @(consulta.Formato == FormatoConsulta.Online ? "bg-info" : "bg-secondary")">
+                                                <i class="bi @(consulta.Formato == FormatoConsulta.Online ? "bi-camera-video" : "bi-building") me-1"></i>
+                                                @(consulta.Formato == FormatoConsulta.Online ? "Online" : "Presencial")
+                                            </span>
+                                        </div>
                                     </div>
 
                                     @if (!string.IsNullOrWhiteSpace(consulta.Observacoes))
@@ -184,6 +191,13 @@
                                 </div>
                                 <div class="card-footer bg-transparent border-0">
                                     <div class="btn-group w-100" role="group">
+                                        @if (consulta.Formato == FormatoConsulta.Online &&
+                                             (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                                        {
+                                            <a href="/consulta/@consulta.Id/video" class="btn btn-info btn-sm">
+                                                <i class="bi bi-camera-video me-1"></i>Entrar na videochamada
+                                            </a>
+                                        }
                                         @if (Model.PrecisaConfirmacao(consulta))
                                         {
                                             <form method="post" asp-page-handler="ConfirmarPresenca" class="d-inline">
@@ -279,6 +293,10 @@
                                                 @consulta.Tipo.GetDisplayName()
                                             </div>
                                             <div class="col-md-6">
+                                                <strong>Formato:</strong><br>
+                                                @(consulta.Formato == FormatoConsulta.Online ? "Online (videochamada)" : "Presencial")
+                                            </div>
+                                            <div class="col-md-6">
                                                 <strong>Valor:</strong><br>
                                                 @consulta.Valor.ToString("C")
                                             </div>
@@ -302,6 +320,13 @@
                                         </div>
                                     </div>
                                     <div class="modal-footer">
+                                        @if (consulta.Formato == FormatoConsulta.Online &&
+                                             (consulta.Status == StatusConsulta.Agendada || consulta.Status == StatusConsulta.Confirmada))
+                                        {
+                                            <a href="/consulta/@consulta.Id/video" class="btn btn-info">
+                                                <i class="bi bi-camera-video me-1"></i>Entrar na videochamada
+                                            </a>
+                                        }
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                             Fechar
                                         </button>

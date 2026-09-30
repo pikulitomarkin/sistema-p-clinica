@@ -8,27 +8,17 @@ public static class DbInitializer
 {
     public static async Task SeedAsync(AppDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
     {
-        // Aplicar migrações pendentes se necessário
+        await EnsureSchemaAsync(context);
+
         var connectionString = context.Database.GetConnectionString();
         if (connectionString?.Contains("Host=") == true) // PostgreSQL
         {
-            // APENAS criar se não existir (NÃO deletar em produção!)
-            var canConnect = await context.Database.CanConnectAsync();
-            if (!canConnect)
-            {
-                await context.Database.EnsureCreatedAsync();
-                Console.WriteLine("Database PostgreSQL criado com sucesso!");
-            }
-            else
-            {
-                // Aplicar migrações pendentes
-                await context.Database.MigrateAsync();
-                Console.WriteLine("Migrações aplicadas com sucesso!");
-            }
-            
             // Criar roles via Identity (não usa DateTime problemático)
             await CreateRolesAsync(roleManager);
-            
+
+            // Admin opcional via env (ADMIN_EMAIL / ADMIN_PASSWORD) — senha nao vai no git
+            await EnsureAdminFromEnvironmentAsync(userManager);
+
             // Criar usuário admin "marcos" usando UserManager
             var marcosUser = new ApplicationUser
             {
@@ -40,26 +30,34 @@ public static class DbInitializer
                 Ativo = true
             };
 
-            var result = await userManager.CreateAsync(marcosUser, "marcos123");
-            if (result.Succeeded)
+            var existing = await userManager.FindByEmailAsync(marcosUser.Email);
+            if (existing is null)
             {
-                await userManager.AddToRoleAsync(marcosUser, "Admin");
-                Console.WriteLine("Usuario admin marcos criado com sucesso!");
-            }
-            else
-            {
-                Console.WriteLine($"Erro ao criar usuario marcos: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                var result = await userManager.CreateAsync(marcosUser, "marcos123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(marcosUser, "Admin");
+                    Console.WriteLine("Usuario admin marcos criado com sucesso!");
+                }
+                else
+                {
+                    Console.WriteLine($"Erro ao criar usuario marcos: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
             }
             
-            Console.WriteLine("SEED COMPLETO - Somente usuario admin criado");
+            // Ligar psicólogos/usuários órfãos existentes (produção)
+            await AssociateUsersAsync(context, userManager);
+
+            // One-shot: demos João/Maria nunca devem reaparecer em produção
+            await MarcarDemosExcluidosAsync(context, userManager);
+
+            await context.SaveChangesAsync();
+
+            Console.WriteLine("SEED COMPLETO - Admin + associação usuários↔psicólogos");
             return;
         }
-        else
-        {
-            // SQLite - aplicar migrations normalmente
-            await context.Database.MigrateAsync();
-        }
 
+        // SQLite / demais provedores
         // Criar roles se não existirem
         await CreateRolesAsync(roleManager);
 
@@ -76,6 +74,140 @@ public static class DbInitializer
         await AssociateUsersAsync(context, userManager);
 
         await context.SaveChangesAsync();
+    }
+
+    private static async Task EnsureSchemaAsync(AppDbContext context)
+    {
+        var pending = (await context.Database.GetPendingMigrationsAsync()).ToList();
+        var applied = (await context.Database.GetAppliedMigrationsAsync()).ToList();
+
+        if (pending.Count > 0)
+        {
+            Console.WriteLine($"Aplicando {pending.Count} migration(s)...");
+            await context.Database.MigrateAsync();
+            return;
+        }
+
+        if (applied.Count > 0)
+        {
+            Console.WriteLine("Schema ja migrado.");
+            return;
+        }
+
+        // Sem migrations no assembly (ex.: pasta ignorada no git) — criar schema
+        Console.WriteLine("Nenhuma migration encontrada. Criando schema com EnsureCreated...");
+        await context.Database.EnsureCreatedAsync();
+    }
+
+    /// <summary>
+    /// Cria admin a partir de ADMIN_EMAIL / ADMIN_PASSWORD (/ ADMIN_NAME ou ADMIN_NOME).
+    /// Se ja existir: garante role Admin; so reseta senha com ADMIN_RESET_PASSWORD=true.
+    /// </summary>
+    private static async Task EnsureAdminFromEnvironmentAsync(UserManager<ApplicationUser> userManager)
+    {
+        var email = Environment.GetEnvironmentVariable("ADMIN_EMAIL")?.Trim();
+        var password = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
+        var nome = Environment.GetEnvironmentVariable("ADMIN_NAME")?.Trim()
+            ?? Environment.GetEnvironmentVariable("ADMIN_NOME")?.Trim()
+            ?? "Administrador";
+
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            return;
+        }
+
+        var existing = await userManager.FindByEmailAsync(email);
+        if (existing is not null)
+        {
+            if (!await userManager.IsInRoleAsync(existing, "Admin"))
+            {
+                await userManager.AddToRoleAsync(existing, "Admin");
+            }
+
+            existing.TipoUsuario = TipoUsuario.Admin;
+            existing.EmailConfirmed = true;
+            existing.Ativo = true;
+            if (!string.IsNullOrWhiteSpace(nome) && nome != "Administrador")
+            {
+                existing.NomeCompleto = nome;
+            }
+
+            await userManager.UpdateAsync(existing);
+
+            if (string.Equals(Environment.GetEnvironmentVariable("ADMIN_RESET_PASSWORD"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(existing);
+                var reset = await userManager.ResetPasswordAsync(existing, token, password);
+                Console.WriteLine(reset.Succeeded
+                    ? $"Senha do admin {email} atualizada."
+                    : $"Falha ao resetar senha de {email}: {string.Join(", ", reset.Errors.Select(e => e.Description))}");
+            }
+
+            Console.WriteLine($"Admin {email} ja existe.");
+            return;
+        }
+
+        var admin = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            NomeCompleto = nome,
+            TipoUsuario = TipoUsuario.Admin,
+            EmailConfirmed = true,
+            Ativo = true
+        };
+
+        var result = await userManager.CreateAsync(admin, password);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(admin, "Admin");
+            Console.WriteLine($"Admin {email} criado com sucesso!");
+        }
+        else
+        {
+            Console.WriteLine($"Erro ao criar admin {email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
+    }
+
+    /// <summary>
+    /// Soft-delete definitivo dos psicólogos demo (HasData antigo / seed) em produção.
+    /// </summary>
+    private static async Task MarcarDemosExcluidosAsync(AppDbContext context, UserManager<ApplicationUser> userManager)
+    {
+        string[] emailsDemo =
+        {
+            "joao.silva@clinicapsi.com",
+            "maria.santos@clinicapsi.com",
+            "joao.silva@psii.com",
+            "maria.santos@psii.com"
+        };
+
+        var demos = await context.Psicologos
+            .Where(p => p.ExcluidoEm == null && emailsDemo.Contains(p.Email))
+            .ToListAsync();
+
+        if (demos.Count == 0)
+            return;
+
+        var agora = DateTime.UtcNow;
+        foreach (var demo in demos)
+        {
+            demo.Ativo = false;
+            demo.ExcluidoEm = agora;
+            demo.DataAtualizacao = agora;
+            Console.WriteLine($"Demo psicólogo excluído (soft): {demo.Email}");
+
+            ApplicationUser? user = null;
+            if (!string.IsNullOrEmpty(demo.UserId))
+                user = await userManager.FindByIdAsync(demo.UserId);
+            user ??= await userManager.FindByEmailAsync(demo.Email);
+
+            if (user != null && user.TipoUsuario == TipoUsuario.Psicologo && user.Ativo)
+            {
+                user.Ativo = false;
+                await userManager.UpdateAsync(user);
+            }
+        }
     }
 
     private static async Task CreateRolesAsync(RoleManager<IdentityRole> roleManager)
@@ -159,58 +291,59 @@ public static class DbInitializer
 
     private static async Task CreateDefaultPsicologosAsync(AppDbContext context)
     {
-        if (!await context.Psicologos.AnyAsync())
-        {
-            var psicologos = new List<Psicologo>
-            {
-                new Psicologo
-                {
-                    Nome = "Dr. João Silva",
-                    Email = "joao.silva@psii.com",
-                    CRP = "06/123456",
-                    Telefone = "(11) 98765-4321",
-                    Especialidades = "TCC, Ansiedade, Depressão",
-                    ValorConsulta = 150m,
-                    HorarioInicioManha = new TimeSpan(8, 0, 0),
-                    HorarioFimManha = new TimeSpan(12, 0, 0),
-                    HorarioInicioTarde = new TimeSpan(14, 0, 0),
-                    HorarioFimTarde = new TimeSpan(18, 0, 0),
-                    AtendeSegunda = true,
-                    AtendeTerca = true,
-                    AtendeQuarta = true,
-                    AtendeQuinta = true,
-                    AtendeSexta = true,
-                    AtendeSabado = false,
-                    AtendeDomingo = false,
-                    DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-01"), DateTimeKind.Utc),
-                    Ativo = true
-                },
-                new Psicologo
-                {
-                    Nome = "Dra. Ana Santos",
-                    Email = "ana.santos@psii.com",
-                    CRP = "08/45168",
-                    Telefone = "(11) 98765-1234",
-                    Especialidades = "Psicanálise, Terapia de Casal, TCC",
-                    ValorConsulta = 180m,
-                    HorarioInicioManha = new TimeSpan(8, 0, 0),
-                    HorarioFimManha = new TimeSpan(12, 0, 0),
-                    HorarioInicioTarde = new TimeSpan(14, 0, 0),
-                    HorarioFimTarde = new TimeSpan(18, 0, 0),
-                    AtendeSegunda = true,
-                    AtendeTerca = true,
-                    AtendeQuarta = true,
-                    AtendeQuinta = true,
-                    AtendeSexta = true,
-                    AtendeSabado = false,
-                    AtendeDomingo = false,
-                    DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-01"), DateTimeKind.Utc),
-                    Ativo = true
-                }
-            };
+        // Dev local apenas. Se já existir qualquer registro (mesmo excluído), não recria demos.
+        if (await context.Psicologos.AnyAsync())
+            return;
 
-            context.Psicologos.AddRange(psicologos);
-        }
+        var psicologos = new List<Psicologo>
+        {
+            new Psicologo
+            {
+                Nome = "Dr. João Silva",
+                Email = "joao.silva@psii.com",
+                CRP = "06/123456",
+                Telefone = "(11) 98765-4321",
+                Especialidades = "TCC, Ansiedade, Depressão",
+                ValorConsulta = 150m,
+                HorarioInicioManha = new TimeSpan(8, 0, 0),
+                HorarioFimManha = new TimeSpan(12, 0, 0),
+                HorarioInicioTarde = new TimeSpan(14, 0, 0),
+                HorarioFimTarde = new TimeSpan(18, 0, 0),
+                AtendeSegunda = true,
+                AtendeTerca = true,
+                AtendeQuarta = true,
+                AtendeQuinta = true,
+                AtendeSexta = true,
+                AtendeSabado = false,
+                AtendeDomingo = false,
+                DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-01"), DateTimeKind.Utc),
+                Ativo = true
+            },
+            new Psicologo
+            {
+                Nome = "Dra. Ana Santos",
+                Email = "ana.santos@psii.com",
+                CRP = "08/45168",
+                Telefone = "(11) 98765-1234",
+                Especialidades = "Psicanálise, Terapia de Casal, TCC",
+                ValorConsulta = 180m,
+                HorarioInicioManha = new TimeSpan(8, 0, 0),
+                HorarioFimManha = new TimeSpan(12, 0, 0),
+                HorarioInicioTarde = new TimeSpan(14, 0, 0),
+                HorarioFimTarde = new TimeSpan(18, 0, 0),
+                AtendeSegunda = true,
+                AtendeTerca = true,
+                AtendeQuarta = true,
+                AtendeQuinta = true,
+                AtendeSexta = true,
+                AtendeSabado = false,
+                AtendeDomingo = false,
+                DataCadastro = DateTime.SpecifyKind(DateTime.Parse("2024-01-01"), DateTimeKind.Utc),
+                Ativo = true
+            }
+        };
+
+        context.Psicologos.AddRange(psicologos);
     }
 
     private static async Task CreateDefaultPacientesAsync(AppDbContext context)
@@ -259,7 +392,6 @@ public static class DbInitializer
 
     private static async Task AssociateUsersAsync(AppDbContext context, UserManager<ApplicationUser> userManager)
     {
-        // Associar todos os usuários psicólogos com suas entidades
         var psicologosUsers = await context.Users
             .Where(u => u.TipoUsuario == TipoUsuario.Psicologo && u.PsicologoId == null)
             .ToListAsync();
@@ -267,16 +399,51 @@ public static class DbInitializer
         foreach (var user in psicologosUsers)
         {
             var psicologo = await context.Psicologos
-                .FirstOrDefaultAsync(p => p.Email == user.Email || p.CRP == user.CRP);
-            
+                .FirstOrDefaultAsync(p =>
+                    p.ExcluidoEm == null &&
+                    (p.Email == user.Email || p.CRP == user.CRP));
+
             if (psicologo != null)
             {
                 user.PsicologoId = psicologo.Id;
+                if (string.IsNullOrEmpty(psicologo.UserId))
+                    psicologo.UserId = user.Id;
                 await userManager.UpdateAsync(user);
             }
         }
 
-        // Associar todos os usuários clientes com suas entidades
+        var psicologos = await context.Psicologos
+            .Where(p => p.ExcluidoEm == null && (p.UserId != null || p.Email != null))
+            .ToListAsync();
+
+        foreach (var psicologo in psicologos)
+        {
+            ApplicationUser? user = null;
+            if (!string.IsNullOrEmpty(psicologo.UserId))
+                user = await userManager.FindByIdAsync(psicologo.UserId);
+
+            user ??= !string.IsNullOrEmpty(psicologo.Email)
+                ? await userManager.FindByEmailAsync(psicologo.Email)
+                : null;
+
+            if (user == null)
+                continue;
+
+            if (user.TipoUsuario == TipoUsuario.Admin)
+                continue;
+
+            if (user.TipoUsuario != TipoUsuario.Psicologo)
+                user.TipoUsuario = TipoUsuario.Psicologo;
+
+            if (user.PsicologoId != psicologo.Id)
+                user.PsicologoId = psicologo.Id;
+            if (psicologo.UserId != user.Id)
+                psicologo.UserId = user.Id;
+            if (!await userManager.IsInRoleAsync(user, "Psicologo"))
+                await userManager.AddToRoleAsync(user, "Psicologo");
+            await userManager.UpdateAsync(user);
+        }
+
         var clientesUsers = await context.Users
             .Where(u => u.TipoUsuario == TipoUsuario.Cliente && u.PacienteId == null)
             .ToListAsync();
@@ -285,7 +452,7 @@ public static class DbInitializer
         {
             var paciente = await context.Pacientes
                 .FirstOrDefaultAsync(p => p.Email == user.Email || p.CPF == user.CPF);
-            
+
             if (paciente != null)
             {
                 user.PacienteId = paciente.Id;
