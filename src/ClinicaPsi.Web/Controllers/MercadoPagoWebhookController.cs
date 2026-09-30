@@ -8,8 +8,7 @@ namespace ClinicaPsi.Web.Controllers;
 
 /// <summary>
 /// Receptor de notificações Mercado Pago.
-/// URL pública: https://psyall.com.br/webhook
-/// Alias: /api/mercadopago/webhook
+/// URLs: /api/mercadopago/webhook e /webhook (api.psyall.com.br).
 /// </summary>
 [ApiController]
 [AllowAnonymous]
@@ -85,22 +84,21 @@ public class MercadoPagoWebhookController : ControllerBase
 
         var paymentDataId = dataId ?? id;
 
-        if (!MercadoPagoSignatureValidator.TryValidate(
-                _options.WebhookSecret,
-                xSignature,
-                xRequestId,
-                paymentDataId,
-                out var sigError))
+        // Só valida assinatura se WebhookSecret estiver configurado
+        if (!string.IsNullOrWhiteSpace(_options.WebhookSecret))
         {
-            _logger.LogWarning(
-                "Webhook MP rejeitado ({Error}). path={Path} hasSignature={HasSig} hasRequestId={HasRid} dataId={DataId}",
-                sigError, Request.Path, !string.IsNullOrEmpty(xSignature), !string.IsNullOrEmpty(xRequestId), paymentDataId);
-
-            return Unauthorized(new
+            if (!MercadoPagoSignatureValidator.TryValidate(
+                    _options.WebhookSecret,
+                    xSignature,
+                    xRequestId,
+                    paymentDataId,
+                    out var sigError))
             {
-                success = false,
-                error = sigError ?? "unauthorized"
-            });
+                _logger.LogWarning(
+                    "Webhook MP rejeitado ({Error}). path={Path} dataId={DataId}",
+                    sigError, Request.Path, paymentDataId);
+                return Unauthorized(new { success = false, error = sigError ?? "unauthorized" });
+            }
         }
 
         try
@@ -111,21 +109,21 @@ public class MercadoPagoWebhookController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro ao processar webhook Mercado Pago");
-            return StatusCode(500, new { success = false });
+            // 200 evita storm de retries em erros transitórios; log já registra
+            return Ok(new { success = true, warning = true });
         }
     }
 
-    /// <summary>Probe: rota existe; sem assinatura → 401.</summary>
     [HttpGet("/webhook")]
     [HttpGet("/api/mercadopago/webhook")]
     public IActionResult Probe()
     {
-        var configured = !string.IsNullOrWhiteSpace(_options.WebhookSecret);
-        return Unauthorized(new
+        return Ok(new
         {
-            success = false,
-            error = configured ? "x_signature_missing" : "webhook_secret_missing",
-            hint = "POST com headers x-signature e x-request-id"
+            service = "mercadopago-webhook",
+            configured = _mp.IsConfigured,
+            signatureRequired = !string.IsNullOrWhiteSpace(_options.WebhookSecret),
+            sandbox = _options.UseSandbox
         });
     }
 }

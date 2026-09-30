@@ -44,7 +44,10 @@
                                         <option value="">Selecione um psicólogo</option>
                                         @foreach (var psicologo in Model.Psicologos)
                                         {
-                                            <option value="@psicologo.Id" data-valor="@psicologo.ValorConsulta.ToString("C")">
+                                            var valorExibir = psicologo.ValorContratoConsulta > 0
+                                                ? psicologo.ValorContratoConsulta
+                                                : (psicologo.ValorConsulta > 0 ? psicologo.ValorConsulta : 50m);
+                                            <option value="@psicologo.Id" data-valor="@valorExibir.ToString("C")">
                                                 @psicologo.Nome - @psicologo.Especialidades
                                             </option>
                                         }

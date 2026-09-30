@@ -219,30 +219,6 @@ builder.Services.AddScoped<OpenAIService>();
 builder.Services.AddScoped<WhatsAppBotService>();
 builder.Services.AddScoped<WhatsAppNotificationService>();
 
-// Mercado Pago (checkout + webhook) — secrets só via env / .env da VPS
-builder.Services.Configure<ClinicaPsi.Application.Services.MercadoPago.MercadoPagoOptions>(options =>
-{
-    builder.Configuration.GetSection(ClinicaPsi.Application.Services.MercadoPago.MercadoPagoOptions.SectionName).Bind(options);
-    options.PublicKey ??= builder.Configuration["MercadoPago__PublicKey"]
-        ?? builder.Configuration["MERCADOPAGO_PUBLIC_KEY"];
-    options.AccessToken ??= builder.Configuration["MercadoPago__AccessToken"]
-        ?? builder.Configuration["MERCADOPAGO_ACCESS_TOKEN"];
-    options.WebhookSecret ??= builder.Configuration["MercadoPago__WebhookSecret"]
-        ?? builder.Configuration["MERCADOPAGO_WEBHOOK_SECRET"];
-    options.PublicAppUrl ??= builder.Configuration["PUBLIC_APP_URL"]
-        ?? builder.Configuration["WhatsApp:SiteUrl"]
-        ?? "https://psyall.com.br";
-    if (!options.UseSandbox &&
-        bool.TryParse(builder.Configuration["MercadoPago__UseSandbox"] ?? builder.Configuration["MERCADOPAGO_USE_SANDBOX"], out var sandbox))
-        options.UseSandbox = sandbox;
-});
-builder.Services.AddHttpClient("MercadoPago", client =>
-{
-    client.BaseAddress = new Uri("https://api.mercadopago.com/");
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
-builder.Services.AddScoped<ClinicaPsi.Application.Services.MercadoPago.MercadoPagoService>();
-
 // E-mail via Resend (API key só por env/secret — nunca no git)
 builder.Services.Configure<ClinicaPsi.Application.Services.Email.EmailOptions>(options =>
 {
@@ -263,20 +239,26 @@ builder.Services.AddHttpClient("Resend", client =>
 });
 builder.Services.AddScoped<ClinicaPsi.Application.Services.Email.IEmailService, ClinicaPsi.Application.Services.Email.ResendEmailService>();
 
-// Mercado Pago (pagamento de consultas) — credenciais só via env
+// Mercado Pago (pagamento de consultas) — secrets só via env / .env da VPS
 builder.Services.Configure<ClinicaPsi.Application.Services.MercadoPago.MercadoPagoOptions>(options =>
 {
     builder.Configuration.GetSection(ClinicaPsi.Application.Services.MercadoPago.MercadoPagoOptions.SectionName).Bind(options);
     options.AccessToken ??= builder.Configuration["MercadoPago:AccessToken"]
-        ?? builder.Configuration["MercadoPago__AccessToken"];
+        ?? builder.Configuration["MercadoPago__AccessToken"]
+        ?? builder.Configuration["MERCADOPAGO_ACCESS_TOKEN"];
     options.PublicKey ??= builder.Configuration["MercadoPago:PublicKey"]
-        ?? builder.Configuration["MercadoPago__PublicKey"];
+        ?? builder.Configuration["MercadoPago__PublicKey"]
+        ?? builder.Configuration["MERCADOPAGO_PUBLIC_KEY"];
     options.WebhookSecret ??= builder.Configuration["MercadoPago:WebhookSecret"]
-        ?? builder.Configuration["MercadoPago__WebhookSecret"];
+        ?? builder.Configuration["MercadoPago__WebhookSecret"]
+        ?? builder.Configuration["MERCADOPAGO_WEBHOOK_SECRET"];
     var sandboxRaw = builder.Configuration["MercadoPago:UseSandbox"]
-        ?? builder.Configuration["MercadoPago__UseSandbox"];
+        ?? builder.Configuration["MercadoPago__UseSandbox"]
+        ?? builder.Configuration["MERCADOPAGO_USE_SANDBOX"];
     if (bool.TryParse(sandboxRaw, out var sandbox))
         options.UseSandbox = sandbox;
+    else if (sandboxRaw is null)
+        options.UseSandbox = true; // padrão: teste
     options.PublicAppUrl ??= builder.Configuration["PUBLIC_APP_URL"]
         ?? builder.Configuration["WhatsApp:SiteUrl"]
         ?? "https://psyall.com.br";
@@ -352,7 +334,6 @@ using (var scope = app.Services.CreateScope())
         await GarantirSchemaAvaliacoesAsync(context, logger);
         await GarantirSchemaValidacaoPsicologoAsync(context, logger);
         await GarantirSchemaLgpdAsync(context, logger);
-        await GarantirSchemaPagamentoConsultaAsync(context, logger);
         await GarantirSchemaMercadoPagoAsync(context, logger);
     }
     catch (Exception ex)
@@ -588,7 +569,22 @@ static async Task GarantirSchemaMercadoPagoAsync(AppDbContext context, ILogger l
     }
     catch (Exception ex)
     {
-        logger.LogWarning(ex, "Não foi possível garantir schema Mercado Pago (pode ser SQLite local).");
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Consultas"" ADD COLUMN ""StatusPagamento"" INTEGER NOT NULL DEFAULT 0;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Consultas"" ADD COLUMN ""MercadoPagoPaymentId"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Consultas"" ADD COLUMN ""MercadoPagoPreferenceId"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Consultas"" ADD COLUMN ""PaidAt"" TEXT NULL;");
+            logger.LogInformation("Colunas de pagamento Mercado Pago adicionadas (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "Schema Mercado Pago já existe ou não aplicável. PG err={Pg}", ex.Message);
+        }
     }
 }
 

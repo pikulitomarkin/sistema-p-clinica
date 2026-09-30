@@ -7,23 +7,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicaPsi.Web.Controllers;
 
+/// <summary>API de pagamento (cliente autenticado). Webhook fica em MercadoPagoWebhookController.</summary>
 [ApiController]
 [Route("api/mercadopago")]
+[Authorize(Roles = "Cliente")]
 public class MercadoPagoController : ControllerBase
 {
     private readonly MercadoPagoService _mp;
     private readonly ILogger<MercadoPagoController> _logger;
 
-    public MercadoPagoController(
-        MercadoPagoService mp,
-        ILogger<MercadoPagoController> logger)
+    public MercadoPagoController(MercadoPagoService mp, ILogger<MercadoPagoController> logger)
     {
         _mp = mp;
         _logger = logger;
     }
 
-    /// <summary>Cria/atualiza preference e retorna dados para o Payment Brick (cliente dono da consulta).</summary>
-    [Authorize(Roles = "Cliente")]
     [HttpPost("preference/{consultaId:int}")]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> CreatePreference(int consultaId, CancellationToken ct)
@@ -66,8 +64,6 @@ public class MercadoPagoController : ControllerBase
         }
     }
 
-    /// <summary>Processa pagamento enviado pelo Payment Brick (PIX / cartão).</summary>
-    [Authorize(Roles = "Cliente")]
     [HttpPost("process-payment/{consultaId:int}")]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> ProcessPayment(int consultaId, CancellationToken ct)
@@ -114,5 +110,4 @@ public class MercadoPagoController : ControllerBase
             return BadRequest(new { error = "Falha ao processar pagamento.", detail = ex.Message });
         }
     }
-
 }
