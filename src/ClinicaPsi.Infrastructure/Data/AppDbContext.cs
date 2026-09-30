@@ -17,6 +17,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ConfiguracaoSistema> ConfiguracoesSistema => Set<ConfiguracaoSistema>();
     public DbSet<ProntuarioEletronico> ProntuariosEletronicos => Set<ProntuarioEletronico>();
     public DbSet<WhatsAppSession> WhatsAppSessions => Set<WhatsAppSession>();
+    public DbSet<Avaliacao> Avaliacoes => Set<Avaliacao>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -163,6 +164,32 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<Avaliacao>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ConsultaId, e.Alvo }).IsUnique();
+            entity.HasIndex(e => e.PsicologoId);
+            entity.HasIndex(e => e.PacienteId);
+            entity.Property(e => e.AvaliadorUserId).IsRequired().HasMaxLength(450);
+            entity.Property(e => e.Comentario).HasMaxLength(1000);
+            entity.Property(e => e.DataCriacao).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(e => e.Consulta)
+                .WithMany()
+                .HasForeignKey(e => e.ConsultaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Psicologo)
+                .WithMany()
+                .HasForeignKey(e => e.PsicologoId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Paciente)
+                .WithMany()
+                .HasForeignKey(e => e.PacienteId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

@@ -3,93 +3,68 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Psicóloga Ana Santos | Clínica de Psicologia</title>
+    <title>@(ViewData["Title"] ?? "PsyAll") — PsyAll | Plataforma digital de psicologia</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="~/images/favicon.svg" />
-    <link rel="icon" type="image/svg+xml" sizes="32x32" href="~/images/favicon-32.svg" />
-    <link rel="icon" type="image/svg+xml" sizes="192x192" href="~/images/favicon-192.svg" />
-    <link rel="apple-touch-icon" sizes="192x192" href="~/images/favicon-192.svg" />
-    <link rel="shortcut icon" href="~/images/favicon.svg" />
+    <link rel="icon" type="image/png" href="~/images/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="~/images/psyall-icon.png" />
     <link rel="manifest" href="~/manifest.json" />
-    <meta name="theme-color" content="#198754" />
+    <meta name="theme-color" content="#1F7A4D" />
 
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Psicóloga Ana Santos em Londrina - Especialista em Terapia Cognitivo-Comportamental. Atendimento presencial, online e por videochamada. Agende sua consulta." />
-    <meta name="keywords" content="psicóloga londrina, psicóloga ana, psicóloga ana santos, clínica de psicologia londrina, terapia cognitivo-comportamental londrina, terapia online londrina, psicoterapia londrina" />
-    <meta name="author" content="Psicóloga Ana Santos" />
+    @{
+        var metaDescription = ViewData["MetaDescription"] as string
+            ?? "PsyAll — plataforma digital que conecta pacientes a psicólogos com CRP ativo. Agende consultas online ou presenciais e avalie profissionais.";
+        var canonical = ViewData["Canonical"] as string ?? "https://www.psiianasantos.com.br/";
+    }
+    <meta name="description" content="@metaDescription" />
+    <meta name="keywords" content="PsyAll, psicologia online, psicólogo online, telepsicologia, agendar psicólogo, terapia online, plataforma psicologia, Londrina, CRP" />
+    <meta name="author" content="PsyAll" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow" />
-    <link rel="canonical" href="https://www.psiianasantos.com.br/" />
-    
-    <!-- Additional SEO Meta Tags -->
+    <link rel="canonical" href="@canonical" />
     <meta name="language" content="Portuguese (Brazilian)" />
-    <meta name="revisit-after" content="7 days" />
-    <meta name="distribution" content="global" />
 
-    <!-- Open Graph (Facebook, LinkedIn) -->
-    <meta property="og:title" content="Psicóloga Ana Santos - Clínica de Psicologia em Londrina" />
-    <meta property="og:description" content="Atendimento psicológico especializado em Terapia Cognitivo-Comportamental. Presencial, online e por videochamada. CRP: 08/45168" />
+    <meta property="og:title" content="@(ViewData["Title"] ?? "PsyAll") — Plataforma digital de psicologia" />
+    <meta property="og:description" content="@metaDescription" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.psiianasantos.com.br/" />
+    <meta property="og:url" content="@canonical" />
     <meta property="og:locale" content="pt_BR" />
-    <meta property="og:image" content="https://www.psiianasantos.com.br/images/ana-santos.jpg" />
+    <meta property="og:site_name" content="PsyAll" />
+    <meta property="og:image" content="https://www.psiianasantos.com.br/images/psyall-logo.png" />
 
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Psicóloga Ana Santos - Londrina" />
-    <meta name="twitter:description" content="Psicóloga especialista em Terapia Cognitivo-Comportamental. Agende sua consulta!" />
+    <meta name="twitter:title" content="PsyAll — Psicologia digital" />
+    <meta name="twitter:description" content="@metaDescription" />
+    <meta name="twitter:image" content="https://www.psiianasantos.com.br/images/psyall-logo.png" />
 
-    <!-- Schema.org LocalBusiness Structured Data -->
     <script type="application/ld+json">
     {
       "@@context": "https://schema.org",
-      "@@type": "LocalBusiness",
-      "name": "Psicóloga Ana Santos",
-      "image": "https://www.psiianasantos.com.br/images/ana-santos.jpg",
-      "description": "Clínica de Psicologia especializada em Terapia Cognitivo-Comportamental em Londrina",
+      "@@type": "Organization",
+      "name": "PsyAll",
+      "alternateName": "PsyAll Psicologia",
+      "url": "https://www.psiianasantos.com.br",
+      "logo": "https://www.psiianasantos.com.br/images/psyall-logo.png",
+      "description": "Plataforma digital que conecta pacientes e psicólogos para agendamento, teleconsulta e avaliações.",
       "address": {
         "@@type": "PostalAddress",
-        "streetAddress": "Rua Orlando Ferreina Neto, 39",
         "addressLocality": "Londrina",
         "addressRegion": "PR",
-        "postalCode": "86015-140",
         "addressCountry": "BR"
       },
-      "telephone": "+55 42 99936-9724",
+      "areaServed": "BR",
+      "sameAs": []
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "WebSite",
+      "name": "PsyAll",
       "url": "https://www.psiianasantos.com.br",
-      "priceRange": "R$ 100 - R$ 200",
-      "areaServed": ["Londrina", "Paraná", "Brasil"],
-      "sameAs": [
-        "https://www.facebook.com/psicologaanasantos",
-        "https://www.instagram.com/psicologaanasantos",
-        "https://www.whatsapp.com/message/?phone=5542999369724"
-      ],
-      "openingHoursSpecification": [
-        {
-          "@@type": "OpeningHoursSpecification",
-          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-          "opens": "09:00",
-          "closes": "18:00"
-        },
-        {
-          "@@type": "OpeningHoursSpecification",
-          "dayOfWeek": "Saturday",
-          "opens": "09:00",
-          "closes": "12:00"
-        }
-      ],
-      "knowsLanguage": ["pt-BR", "en"],
-      "offers": {
-        "@@type": "AggregateOffer",
-        "priceCurrency": "BRL",
-        "priceRange": "100-200"
-      },
-      "aggregateRating": {
-        "@@type": "AggregateRating",
-        "ratingValue": "5",
-        "bestRating": "5",
-        "worstRating": "1"
+      "potentialAction": {
+        "@@type": "SearchAction",
+        "target": "https://www.psiianasantos.com.br/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
       }
     }
     </script>
@@ -104,24 +79,30 @@
     <link href="ClinicaPsi.Web.styles.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
-    <!-- Header -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="/" aria-label="Psicóloga Ana Santos">
-                <span class="brand-name">Psicóloga Ana Santos</span>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/" aria-label="PsyAll Psicologia">
+                <img src="~/images/psyall-logo.png" alt="PsyAll" class="brand-logo-img" width="40" height="45" />
+                <span class="brand-name"><span class="psy-brand-psy">Psy</span><span class="psy-brand-all">All</span></span>
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">
-                            <i class="bi bi-house-door me-1"></i>
-                            Início
-                        </a>
+                        <a class="nav-link" href="/">Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#psicologos">Psicólogos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ranking">Ranking</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/agendamento">Agendar</a>
                     </li>
                 </ul>
 
@@ -133,35 +114,31 @@
                                 <i class="bi bi-person-circle me-1"></i>
                                 @User.Identity.Name
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu dropdown-menu-end">
                                 @if (User.IsInRole("Admin"))
                                 {
-                                    <li><a class="dropdown-item" href="/Admin">
-                                        <i class="bi bi-gear-fill me-2"></i>Área Admin</a></li>
+                                    <li><a class="dropdown-item" href="/Admin">Área Admin</a></li>
                                 }
                                 @if (User.IsInRole("Psicologo"))
                                 {
-                                    <li><a class="dropdown-item" href="/Psicologo">
-                                        <i class="bi bi-person-badge me-2"></i>Área Psicólogo</a></li>
+                                    <li><a class="dropdown-item" href="/Psicologo">Área Psicólogo</a></li>
                                 }
                                 @if (User.IsInRole("Cliente"))
                                 {
-                                    <li><a class="dropdown-item" href="/Cliente">
-                                        <i class="bi bi-person-heart me-2"></i>Minha Área</a></li>
+                                    <li><a class="dropdown-item" href="/Cliente">Minha Área</a></li>
                                 }
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="/Account/Logout">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                                <li><a class="dropdown-item" href="/Account/Logout">Sair</a></li>
                             </ul>
                         </li>
                     }
                     else
                     {
                         <li class="nav-item">
-                            <a class="nav-link" href="/Account/Login">
-                                <i class="bi bi-box-arrow-in-right me-1"></i>
-                                Login
-                            </a>
+                            <a class="nav-link" href="/Account/Login">Entrar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Account/Register">Criar conta</a>
                         </li>
                     }
                 </ul>
@@ -169,41 +146,41 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main>
         @RenderBody()
     </main>
 
-    <!-- Footer -->
-    <footer class="text-light py-4 mt-5">
+    <footer class="text-light py-5 mt-5">
         <div class="container">
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-md-4">
-                    <h6><i class="bi bi-heart-fill text-success me-2"></i>PsiiAnaSantos</h6>
-                    <p class="small mb-0">Psi. Ana Santos - CRP 08/45168</p>
-                    <p class="small mb-0">Psicologia Clínica e Terapia</p>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <img src="~/images/psyall-logo.png" alt="" width="36" height="40" class="brand-logo-img" />
+                        <h6 class="mb-0"><span class="psy-brand-psy text-white">Psy</span><span class="psy-brand-all">All</span></h6>
+                    </div>
+                    <p class="small mb-0 opacity-75">
+                        Plataforma digital para psicólogos e pacientes — agendamento, teleconsulta e avaliações.
+                    </p>
                 </div>
                 <div class="col-md-4">
-                    <h6 class="small"><i class="bi bi-geo-alt me-2"></i>Endereço</h6>
-                    <p class="small mb-0">Londrina - PR</p>
-                    <p class="small mb-0">Atendimento presencial e online</p>
+                    <h6 class="small text-uppercase opacity-75">Institucional</h6>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/termos/paciente">Termos — Pacientes</a></p>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/termos/psicologo">Termos — Psicólogos</a></p>
+                    <p class="small mb-0"><a class="link-light link-underline-opacity-0" href="/ranking">Ranking</a></p>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <h6 class="small"><i class="bi bi-chat-dots me-2"></i>Contato</h6>
-                    <p class="small mb-0">
-                        <i class="bi bi-whatsapp me-1"></i>(42) 98859-3775<br>
-                        <i class="bi bi-envelope me-1"></i>psiianasantos@psiianasantos.com.br
+                <div class="col-md-4">
+                    <h6 class="small text-uppercase opacity-75">Sede / suporte</h6>
+                    <p class="small mb-0 opacity-75">
+                        Londrina — PR<br />
+                        Endereço administrativo da plataforma digital.<br />
+                        Atendimento clínico conforme o profissional escolhido.
                     </p>
                 </div>
             </div>
-            <hr class="my-3 bg-light opacity-25">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <p class="small mb-0 text-muted">
-                        &copy; 2025 PsiiAnaSantos - Todos os direitos reservados
-                    </p>
-                </div>
-            </div>
+            <hr class="my-4 bg-light opacity-25">
+            <p class="small mb-0 text-center opacity-75">
+                &copy; @DateTime.Now.Year PsyAll — Todos os direitos reservados
+            </p>
         </div>
     </footer>
 

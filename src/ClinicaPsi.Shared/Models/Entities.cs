@@ -548,3 +548,45 @@ public class ProntuarioEletronico
     /// </summary>
     public bool Confidencial { get; set; } = true;
 }
+
+/// <summary>
+/// Avaliação mútua pós-consulta: paciente avalia psicólogo e psicólogo avalia paciente.
+/// </summary>
+public class Avaliacao
+{
+    public int Id { get; set; }
+
+    [Required]
+    public int ConsultaId { get; set; }
+    public virtual Consulta Consulta { get; set; } = null!;
+
+    public int? PsicologoId { get; set; }
+    public virtual Psicologo? Psicologo { get; set; }
+
+    public int? PacienteId { get; set; }
+    public virtual Paciente? Paciente { get; set; }
+
+    /// <summary>Quem está sendo avaliado.</summary>
+    public TipoAlvoAvaliacao Alvo { get; set; }
+
+    /// <summary>UserId (AspNetUsers) de quem enviou a avaliação.</summary>
+    [Required]
+    [StringLength(450)]
+    public string AvaliadorUserId { get; set; } = string.Empty;
+
+    [Range(1, 5)]
+    public int Nota { get; set; }
+
+    [StringLength(1000)]
+    public string? Comentario { get; set; }
+
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+
+    public bool Publica { get; set; } = true;
+}
+
+public enum TipoAlvoAvaliacao
+{
+    Psicologo = 1,
+    Paciente = 2
+}

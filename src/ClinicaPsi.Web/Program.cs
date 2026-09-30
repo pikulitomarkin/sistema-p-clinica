@@ -225,7 +225,7 @@ builder.Services.Configure<ClinicaPsi.Application.Services.Email.EmailOptions>(o
     if (string.IsNullOrWhiteSpace(options.From))
         options.From = builder.Configuration["Email:From"] ?? "noreply@psiianasantos.com.br";
     if (string.IsNullOrWhiteSpace(options.FromName))
-        options.FromName = builder.Configuration["Email:FromName"] ?? "Psicóloga Ana Santos";
+        options.FromName = builder.Configuration["Email:FromName"] ?? "PsyAll";
     options.PublicAppUrl ??= builder.Configuration["PUBLIC_APP_URL"]
         ?? builder.Configuration["WhatsApp:SiteUrl"]
         ?? "https://psiianasantos.com.br";
@@ -296,6 +296,7 @@ using (var scope = app.Services.CreateScope())
         await GarantirSchemaPsicologoExcluidoAsync(context, logger);
         await GarantirSchemaOnboardingAsync(context, logger);
         await GarantirSchemaFotoPerfilAsync(context, logger);
+        await GarantirSchemaAvaliacoesAsync(context, logger);
     }
     catch (Exception ex)
     {
@@ -654,6 +655,54 @@ static async Task GarantirSchemaFotoPerfilAsync(AppDbContext context, ILogger lo
         catch (Exception ex2)
         {
             logger.LogDebug(ex2, "FotoUrl já existe ou schema não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+
+static async Task GarantirSchemaAvaliacoesAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"CREATE TABLE IF NOT EXISTS ""Avaliacoes"" (
+                ""Id"" SERIAL PRIMARY KEY,
+                ""ConsultaId"" integer NOT NULL,
+                ""PsicologoId"" integer NULL,
+                ""PacienteId"" integer NULL,
+                ""Alvo"" integer NOT NULL,
+                ""AvaliadorUserId"" character varying(450) NOT NULL,
+                ""Nota"" integer NOT NULL,
+                ""Comentario"" character varying(1000) NULL,
+                ""DataCriacao"" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                ""Publica"" boolean NOT NULL DEFAULT TRUE
+              );
+              CREATE UNIQUE INDEX IF NOT EXISTS ""IX_Avaliacoes_ConsultaId_Alvo"" ON ""Avaliacoes"" (""ConsultaId"", ""Alvo"");
+              CREATE INDEX IF NOT EXISTS ""IX_Avaliacoes_PsicologoId"" ON ""Avaliacoes"" (""PsicologoId"");
+              CREATE INDEX IF NOT EXISTS ""IX_Avaliacoes_PacienteId"" ON ""Avaliacoes"" (""PacienteId"");");
+        logger.LogInformation("Schema de Avaliacoes verificado.");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"CREATE TABLE IF NOT EXISTS ""Avaliacoes"" (
+                    ""Id"" INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ""ConsultaId"" INTEGER NOT NULL,
+                    ""PsicologoId"" INTEGER NULL,
+                    ""PacienteId"" INTEGER NULL,
+                    ""Alvo"" INTEGER NOT NULL,
+                    ""AvaliadorUserId"" TEXT NOT NULL,
+                    ""Nota"" INTEGER NOT NULL,
+                    ""Comentario"" TEXT NULL,
+                    ""DataCriacao"" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    ""Publica"" INTEGER NOT NULL DEFAULT 1
+                  );");
+            logger.LogInformation("Tabela Avaliacoes criada (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "Avaliacoes já existe ou schema não aplicável. PG err={Pg}", ex.Message);
         }
     }
 }

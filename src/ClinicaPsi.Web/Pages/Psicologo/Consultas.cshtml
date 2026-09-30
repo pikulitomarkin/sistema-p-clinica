@@ -295,6 +295,14 @@
                                                     Iniciar
                                                 </button>
                                             }
+                                            @if (consulta.Status == StatusConsulta.Realizada)
+                                            {
+                                                <a class="btn btn-outline-warning btn-sm"
+                                                   href="/avaliacoes/avaliar?consultaId=@consulta.Id"
+                                                   title="Avaliar paciente">
+                                                    <i class="bi bi-star"></i>
+                                                </a>
+                                            }
                                         </div>
                                     </div>
                                 </div>

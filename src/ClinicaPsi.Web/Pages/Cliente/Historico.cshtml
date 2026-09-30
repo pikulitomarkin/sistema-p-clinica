@@ -144,11 +144,19 @@
                                                 </span>
                                             </td>
                                             <td class="fw-bold">@consulta.Valor.ToString("C")</td>
-                                            <td>
+                                            <td class="text-nowrap">
                                                 <button type="button" class="btn btn-sm btn-outline-primary"
                                                         data-bs-toggle="modal" data-bs-target="#detalhesModal@(consulta.Id)">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
+                                                @if (consulta.Status == StatusConsulta.Realizada)
+                                                {
+                                                    <a class="btn btn-sm btn-outline-warning"
+                                                       href="/avaliacoes/avaliar?consultaId=@consulta.Id"
+                                                       title="Avaliar psicólogo">
+                                                        <i class="bi bi-star"></i>
+                                                    </a>
+                                                }
                                             </td>
                                         </tr>
                                     }

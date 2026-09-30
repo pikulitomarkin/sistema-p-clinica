@@ -1,7 +1,7 @@
 @page "/Account/Register"
 @model RegisterModel
 @{
-    ViewData["Title"] = "Criar Conta - Psicóloga Ana Santos";
+    ViewData["Title"] = "Criar Conta - PsyAll";
     Layout = null;
 }
 
@@ -243,8 +243,9 @@
     <!-- Top Navigation -->
     <nav class="navbar top-navbar">
         <div class="container">
-            <a class="navbar-brand" href="/" aria-label="Psicóloga Ana Santos">
-                <span class="brand-name">Psicóloga Ana Santos</span>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/" aria-label="PsyAll">
+                <img src="~/images/psyall-logo.png" alt="PsyAll" width="36" height="40" style="object-fit:contain;" />
+                <span class="brand-name"><span style="color:#c8f0d8">Psy</span><span style="color:#7ee0d8">All</span></span>
             </a>
             <div>
                 <a href="/" class="btn btn-outline-light btn-sm">
@@ -323,6 +324,14 @@
                                 <label asp-for="Input.ConfirmPassword" class="form-label">Confirmar Senha</label>
                                 <input asp-for="Input.ConfirmPassword" class="form-control" type="password" placeholder="Repita sua senha" />
                                 <span asp-validation-for="Input.ConfirmPassword" class="error-message"></span>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input asp-for="Input.AceiteTermos" class="form-check-input" />
+                                <label asp-for="Input.AceiteTermos" class="form-check-label">
+                                    Li e aceito os <a href="/termos/paciente" target="_blank" rel="noopener">Termos de Uso para pacientes</a>
+                                </label>
+                                <span asp-validation-for="Input.AceiteTermos" class="error-message d-block"></span>
                             </div>
 
                             <button type="submit" class="register-btn">

@@ -56,6 +56,10 @@ namespace ClinicaPsi.Web.Pages.Account
             [Display(Name = "Confirmar Senha")]
             [Compare("Password", ErrorMessage = "As senhas não coincidem")]
             public string ConfirmPassword { get; set; } = string.Empty;
+
+            [Range(typeof(bool), "true", "true", ErrorMessage = "É necessário aceitar os Termos de Uso")]
+            [Display(Name = "Aceite dos Termos")]
+            public bool AceiteTermos { get; set; }
         }
 
         public async Task OnGetAsync()
