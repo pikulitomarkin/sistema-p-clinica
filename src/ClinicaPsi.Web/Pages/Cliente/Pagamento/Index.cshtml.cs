@@ -28,6 +28,7 @@ public class IndexModel : PageModel
     public decimal Amount { get; set; }
     public bool JaPago { get; set; }
     public bool MpDisponivel { get; set; }
+    public bool UseSandbox { get; set; }
     public string? Erro { get; set; }
 
     public async Task<IActionResult> OnGetAsync(int consultaId)
@@ -59,6 +60,7 @@ public class IndexModel : PageModel
         }
 
         MpDisponivel = _mp.IsConfigured;
+        UseSandbox = _mp.UseSandbox;
         if (!MpDisponivel)
         {
             Erro = "Pagamentos ainda não estão disponíveis. Tente novamente em instantes.";
@@ -72,7 +74,7 @@ public class IndexModel : PageModel
             PreferenceId = pref.PreferenceId;
             CheckoutUrl = pref.CheckoutUrl;
             Amount = pref.Amount;
-            PublicKey = _mp.PublicKey;
+            PublicKey = _mp.PublicKey; // sempre via env/config — nunca hardcode
         }
         catch (Exception ex)
         {

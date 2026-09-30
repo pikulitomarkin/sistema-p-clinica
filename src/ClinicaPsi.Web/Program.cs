@@ -252,6 +252,12 @@ builder.Services.Configure<ClinicaPsi.Application.Services.MercadoPago.MercadoPa
     options.WebhookSecret ??= builder.Configuration["MercadoPago:WebhookSecret"]
         ?? builder.Configuration["MercadoPago__WebhookSecret"]
         ?? builder.Configuration["MERCADOPAGO_WEBHOOK_SECRET"];
+    options.ClientId ??= builder.Configuration["MercadoPago:ClientId"]
+        ?? builder.Configuration["MercadoPago__ClientId"]
+        ?? builder.Configuration["MERCADOPAGO_CLIENT_ID"];
+    options.ClientSecret ??= builder.Configuration["MercadoPago:ClientSecret"]
+        ?? builder.Configuration["MercadoPago__ClientSecret"]
+        ?? builder.Configuration["MERCADOPAGO_CLIENT_SECRET"];
     var sandboxRaw = builder.Configuration["MercadoPago:UseSandbox"]
         ?? builder.Configuration["MercadoPago__UseSandbox"]
         ?? builder.Configuration["MERCADOPAGO_USE_SANDBOX"];
@@ -259,6 +265,15 @@ builder.Services.Configure<ClinicaPsi.Application.Services.MercadoPago.MercadoPa
         options.UseSandbox = sandbox;
     else if (sandboxRaw is null)
         options.UseSandbox = true; // padrão: teste
+    var isProdRaw = builder.Configuration["MercadoPago:IsProduction"]
+        ?? builder.Configuration["MercadoPago__IsProduction"]
+        ?? builder.Configuration["MERCADOPAGO_IS_PRODUCTION"];
+    if (bool.TryParse(isProdRaw, out var isProd))
+    {
+        options.IsProduction = isProd;
+        if (isProd)
+            options.UseSandbox = false;
+    }
     options.PublicAppUrl ??= builder.Configuration["PUBLIC_APP_URL"]
         ?? builder.Configuration["WhatsApp:SiteUrl"]
         ?? "https://psyall.com.br";

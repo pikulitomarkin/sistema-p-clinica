@@ -8,7 +8,7 @@ namespace ClinicaPsi.Web.Controllers;
 
 /// <summary>
 /// Receptor de notificações Mercado Pago.
-/// URLs: /api/mercadopago/webhook e /webhook (api.psyall.com.br).
+/// URL pública: https://psyall.com.br/webhook (alias: /api/mercadopago/webhook).
 /// </summary>
 [ApiController]
 [AllowAnonymous]

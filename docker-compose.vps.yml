@@ -54,7 +54,10 @@ services:
       MercadoPago__PublicKey: ${MercadoPago__PublicKey:-}
       MercadoPago__AccessToken: ${MercadoPago__AccessToken:-}
       MercadoPago__WebhookSecret: ${MercadoPago__WebhookSecret:-}
+      MercadoPago__ClientId: ${MercadoPago__ClientId:-}
+      MercadoPago__ClientSecret: ${MercadoPago__ClientSecret:-}
       MercadoPago__UseSandbox: ${MercadoPago__UseSandbox:-true}
+      MercadoPago__IsProduction: ${MercadoPago__IsProduction:-false}
       # Video (opcional — produção usa WebRTC/SignalR sem chave)
       DAILY_API_KEY: ${DAILY_API_KEY:-}
       LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}

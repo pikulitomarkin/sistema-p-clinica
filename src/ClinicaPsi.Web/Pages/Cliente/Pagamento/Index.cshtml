@@ -44,7 +44,7 @@
     <div class="pay-hero">
         <p class="mb-1 text-muted small">PsyAll · Pagamento seguro</p>
         <h1>Pagar consulta</h1>
-        <p class="mb-0 text-muted">PIX ou cartão de crédito — ambiente @(Model.MpDisponivel ? "de teste Mercado Pago" : "indisponível")</p>
+        <p class="mb-0 text-muted">PIX ou cartão de crédito — @(Model.MpDisponivel ? (Model.UseSandbox ? "ambiente de teste Mercado Pago" : "Mercado Pago (produção)") : "indisponível")</p>
     </div>
 
     @if (Model.JaPago)
@@ -94,7 +94,11 @@
                     {
                         <div id="paymentBrick_container"></div>
                         <p class="small text-muted mt-3 mb-0">
-                            Pagamento processado pelo Mercado Pago. Em modo teste, use cartões e PIX de sandbox.
+                            Pagamento processado pelo Mercado Pago.
+                            @if (Model.UseSandbox)
+                            {
+                                <text> Em modo teste, use cartões e PIX de sandbox.</text>
+                            }
                         </p>
                     }
                     else
