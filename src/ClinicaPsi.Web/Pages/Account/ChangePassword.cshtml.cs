@@ -41,10 +41,10 @@ public class ChangePasswordModel : PageModel
         _logger.LogInformation("Usuário {Email} alterou a senha", user.Email);
         return user.TipoUsuario switch
         {
-            TipoUsuario.Admin => RedirectToPage("/Admin/Index"),
-            TipoUsuario.Psicologo => RedirectToPage("/Psicologo/Index"),
-            TipoUsuario.Cliente => RedirectToPage("/Cliente/Index"),
-            _ => RedirectToPage("/Index")
+            TipoUsuario.Admin => LocalRedirect("/admin"),
+            TipoUsuario.Psicologo => LocalRedirect("/psicologo"),
+            TipoUsuario.Cliente => LocalRedirect("/cliente"), // Minha Área
+            _ => LocalRedirect("/cliente")
         };
     }
 }

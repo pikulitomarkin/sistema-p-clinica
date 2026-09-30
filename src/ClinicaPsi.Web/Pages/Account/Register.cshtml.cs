@@ -89,11 +89,10 @@ namespace ClinicaPsi.Web.Pages.Account
 
                     if (result.Succeeded)
                     {
-                        // Fazer login automático
+                        await _userManager.AddToRoleAsync(user, "Cliente");
+                        // Login automático → Minha Área
                         await _signInManager.SignInAsync(user, isPersistent: false);
-
-                        // Redirecionar para página de agendamento
-                        return RedirectToPage("/Agendamento");
+                        return LocalRedirect("/cliente");
                     }
 
                     // Se houver erros, adicionar à ModelState
