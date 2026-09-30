@@ -259,6 +259,10 @@ yarn-error.log*
 .idea/
 *.sln.iml
 
+# Uploads de foto de perfil (persistidos no volume /app/data em produção)
+**/data/uploads/
+src/ClinicaPsi.Web/wwwroot/uploads/
+
 # Visual Studio Code
 .vscode/
 

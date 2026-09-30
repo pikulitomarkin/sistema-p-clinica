@@ -209,6 +209,7 @@ builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<NotificacaoService>();
 builder.Services.AddScoped<PdfService>();
 builder.Services.AddScoped<ConfiguracaoService>();
+builder.Services.AddScoped<ClinicaPsi.Web.Services.FotoPerfilService>();
 builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<OpenAIService>();
 builder.Services.AddScoped<WhatsAppBotService>();
@@ -294,6 +295,7 @@ using (var scope = app.Services.CreateScope())
         await GarantirSchemaEmailAsync(context, logger);
         await GarantirSchemaPsicologoExcluidoAsync(context, logger);
         await GarantirSchemaOnboardingAsync(context, logger);
+        await GarantirSchemaFotoPerfilAsync(context, logger);
     }
     catch (Exception ex)
     {
@@ -357,6 +359,22 @@ if (!app.Environment.IsDevelopment())
 // COMENTADO: WhatsApp webhook precisa aceitar HTTP  
 // app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Fotos de perfil em volume persistente (/app/data/uploads) — URL pública /uploads/...
+{
+    var uploadsRoot = Path.Combine(app.Environment.ContentRootPath, "data", "uploads");
+    Directory.CreateDirectory(Path.Combine(uploadsRoot, "perfil"));
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsRoot),
+        RequestPath = "/uploads",
+        OnPrepareResponse = ctx =>
+        {
+            ctx.Context.Response.Headers.CacheControl = "public,max-age=3600";
+        }
+    });
+}
+
 app.UseRequestLocalization();
 app.UseRouting();
 
@@ -607,6 +625,35 @@ static async Task GarantirSchemaOnboardingAsync(AppDbContext context, ILogger lo
         catch (Exception ex2)
         {
             logger.LogDebug(ex2, "OnboardingCompleted já existe ou schema não aplicável. PG err={Pg}", ex.Message);
+        }
+    }
+}
+
+static async Task GarantirSchemaFotoPerfilAsync(AppDbContext context, ILogger logger)
+{
+    try
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            @"ALTER TABLE ""AspNetUsers"" ADD COLUMN IF NOT EXISTS ""FotoUrl"" character varying(300) NULL;
+              ALTER TABLE ""Pacientes"" ADD COLUMN IF NOT EXISTS ""FotoUrl"" character varying(300) NULL;
+              ALTER TABLE ""Psicologos"" ADD COLUMN IF NOT EXISTS ""FotoUrl"" character varying(300) NULL;");
+        logger.LogInformation("Schema de foto de perfil verificado (FotoUrl).");
+    }
+    catch (Exception ex)
+    {
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""AspNetUsers"" ADD COLUMN ""FotoUrl"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Pacientes"" ADD COLUMN ""FotoUrl"" TEXT NULL;");
+            await context.Database.ExecuteSqlRawAsync(
+                @"ALTER TABLE ""Psicologos"" ADD COLUMN ""FotoUrl"" TEXT NULL;");
+            logger.LogInformation("Colunas FotoUrl adicionadas (SQLite).");
+        }
+        catch (Exception ex2)
+        {
+            logger.LogDebug(ex2, "FotoUrl já existe ou schema não aplicável. PG err={Pg}", ex.Message);
         }
     }
 }

@@ -1,5 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+@using ClinicaPsi.Shared.Models
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@{
+    string? layoutFotoUrl = null;
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        var layoutUser = await UserManager.GetUserAsync(User);
+        layoutFotoUrl = layoutUser?.FotoUrl;
+    }
+}
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -222,8 +233,16 @@
                                 <div class="text-white fw-bold">@User.Identity?.Name</div>
                             </div>
                             <div class="dropdown">
-                                <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-person-circle"></i>
+                                <button class="btn btn-outline-light btn-sm dropdown-toggle d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @if (!string.IsNullOrWhiteSpace(layoutFotoUrl))
+                                    {
+                                        <img src="@layoutFotoUrl" alt="Foto" class="rounded-circle me-1"
+                                             style="width: 22px; height: 22px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-person-circle"></i>
+                                    }
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     @if (User.IsInRole("Admin"))

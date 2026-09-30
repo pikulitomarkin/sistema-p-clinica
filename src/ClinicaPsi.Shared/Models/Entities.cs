@@ -42,6 +42,10 @@ public class Paciente
     public string? MedicamentosUso { get; set; }
     public string? Observacoes { get; set; }
 
+    /// <summary>Caminho relativo da foto de perfil (ex.: /uploads/perfil/abc.jpg).</summary>
+    [StringLength(300)]
+    public string? FotoUrl { get; set; }
+
     // Sistema de pontos
     [Range(0, int.MaxValue, ErrorMessage = "PsicoPontos não pode ser negativo")]
     public int PsicoPontos { get; set; } = 0;
@@ -113,6 +117,10 @@ public class Psicologo
     public DateTime DataCriacao { get; set; }
     public DateTime? DataAtualizacao { get; set; }
     public bool Ativo { get; set; } = true;
+
+    /// <summary>Caminho relativo da foto de perfil (ex.: /uploads/perfil/abc.jpg).</summary>
+    [StringLength(300)]
+    public string? FotoUrl { get; set; }
 
     /// <summary>Soft-delete: quando preenchido, o psicólogo não reaparece na listagem nem no seed/sync.</summary>
     public DateTime? ExcluidoEm { get; set; }
