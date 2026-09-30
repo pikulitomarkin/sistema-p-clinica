@@ -196,9 +196,14 @@ TestResults/
 *.nunit.xml
 *.specflow*
 
-# Docker
-Dockerfile*
-.dockerignore
+# Docker — manter Dockerfiles de deploy versionados
+# (exceções explícitas abaixo)
+Dockerfile.local
+.dockerignore.local
+!Dockerfile
+!Dockerfile.railway
+!Dockerfile.*
+!.dockerignore
 
 # Backup
 *.bak
@@ -254,8 +259,13 @@ yarn-error.log*
 .idea/
 *.sln.iml
 
+# Uploads de foto de perfil (persistidos no volume /app/data em produção)
+**/data/uploads/
+src/ClinicaPsi.Web/wwwroot/uploads/
+
 # Visual Studio Code
 .vscode/
 
-# EF Core Migrations
-Migrations/
+# EF Core Migrations — versionar migrations de producao
+# Migrations/
+

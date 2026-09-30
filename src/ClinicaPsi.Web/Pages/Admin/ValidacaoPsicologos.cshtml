@@ -1,0 +1,170 @@
+@page "/admin/validacao-psicologos"
+@model ClinicaPsi.Web.Pages.Admin.ValidacaoPsicologosModel
+@using ClinicaPsi.Shared.Models
+@{
+    ViewData["Title"] = "Validação de Psicólogos";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-page-header mb-4">
+    <h1 class="admin-page-title"><i class="bi bi-shield-check me-2"></i>Validação de cadastros</h1>
+    <p class="admin-page-subtitle mb-0">Analise CNH, CRP, termos e contrato (R$ 50) antes de liberar o atendimento.</p>
+</div>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alert alert-success">@TempData["Sucesso"]</div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning">@TempData["Warning"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="admin-card mb-4">
+    <div class="admin-card-header"><strong>Pendentes (@Model.Pendentes.Count)</strong></div>
+    <div class="admin-card-body p-0">
+        @if (!Model.Pendentes.Any())
+        {
+            <p class="p-4 mb-0 text-muted">Nenhum cadastro aguardando validação.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Psicólogo</th>
+                            <th>CRP</th>
+                            <th>Contrato</th>
+                            <th>Documentos</th>
+                            <th>Aceites</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var p in Model.Pendentes)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@p.Nome</div>
+                                <small class="text-muted">@p.Email · @p.Telefone</small>
+                            </td>
+                            <td>@p.CRP</td>
+                            <td>R$ @p.ValorContratoConsulta.ToString("N2")</td>
+                            <td class="text-nowrap">
+                                @if (!string.IsNullOrEmpty(p.DocumentoCnhUrl))
+                                {
+                                    <a class="btn btn-sm btn-outline-secondary" href="@p.DocumentoCnhUrl" target="_blank" rel="noopener">CNH</a>
+                                }
+                                @if (!string.IsNullOrEmpty(p.DocumentoCrpUrl))
+                                {
+                                    <a class="btn btn-sm btn-outline-secondary" href="@p.DocumentoCrpUrl" target="_blank" rel="noopener">CRP</a>
+                                }
+                            </td>
+                            <td class="small">
+                                Termos: @(p.AceiteTermosEm?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")<br />
+                                Privacidade: @(p.AceitePrivacidadeEm?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")<br />
+                                Contrato: @(p.AceiteContratoEm?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <form method="post" asp-page-handler="Aprovar" class="d-inline">
+                                    <input type="hidden" name="id" value="@p.Id" />
+                                    <button type="submit" class="btn btn-sm btn-success"
+                                            onclick="return confirm('Aprovar e liberar @p.Nome para atender?')">
+                                        Aprovar
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal" data-bs-target="#recusarModal@(p.Id)">
+                                    Recusar
+                                </button>
+                            </td>
+                        </tr>
+
+                        <div class="modal fade" id="recusarModal@(p.Id)" tabindex="-1">
+                            <div class="modal-dialog">
+                                <form method="post" asp-page-handler="Recusar" class="modal-content">
+                                    <input type="hidden" name="id" value="@p.Id" />
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Recusar @p.Nome</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <label class="form-label">Motivo</label>
+                                        <textarea name="MotivoRecusa" class="form-control" rows="3" required
+                                                  placeholder="Informe o motivo da recusa"></textarea>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-danger">Confirmar recusa</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="admin-card-header"><strong>Histórico recente</strong></div>
+    <div class="admin-card-body p-0">
+        @if (!Model.Recentes.Any())
+        {
+            <p class="p-4 mb-0 text-muted">Sem validações recentes.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nome</th>
+                            <th>Status</th>
+                            <th>Valor</th>
+                            <th>Validado em</th>
+                            <th>Docs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var p in Model.Recentes)
+                    {
+                        <tr>
+                            <td>@p.Nome</td>
+                            <td>
+                                @if (p.StatusValidacao == StatusValidacaoPsicologo.Aprovado)
+                                {
+                                    <span class="badge bg-success">Aprovado</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Recusado</span>
+                                }
+                            </td>
+                            <td>R$ @p.ValorConsulta.ToString("N2")</td>
+                            <td>@(p.ValidadoEm?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(p.DocumentoCnhUrl))
+                                {
+                                    <a href="@p.DocumentoCnhUrl" target="_blank">CNH</a>
+                                }
+                                @if (!string.IsNullOrEmpty(p.DocumentoCrpUrl))
+                                {
+                                    <span> · </span><a href="@p.DocumentoCrpUrl" target="_blank">CRP</a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

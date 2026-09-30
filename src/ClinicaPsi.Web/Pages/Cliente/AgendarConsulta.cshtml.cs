@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
+using ClinicaPsi.Application.Services;
+using MercadoPago = ClinicaPsi.Application.Services.MercadoPago;
 using ClinicaPsi.Web.Extensions;
 using System.Security.Claims;
 
@@ -13,10 +15,20 @@ namespace ClinicaPsi.Web.Pages.Cliente
     public class AgendarConsultaModel : PageModel
     {
         private readonly AppDbContext _context;
+        private readonly ConfiguracaoService _configuracaoService;
+        private readonly VideoConsultaService _videoConsultaService;
+        private readonly CarteiraService _carteiraService;
 
-        public AgendarConsultaModel(AppDbContext context)
+        public AgendarConsultaModel(
+            AppDbContext context,
+            ConfiguracaoService configuracaoService,
+            VideoConsultaService videoConsultaService,
+            CarteiraService carteiraService)
         {
             _context = context;
+            _configuracaoService = configuracaoService;
+            _videoConsultaService = videoConsultaService;
+            _carteiraService = carteiraService;
         }
 
         public List<ClinicaPsi.Shared.Models.Psicologo> Psicologos { get; set; } = new();
@@ -33,7 +45,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
             public DateTime DataHorario { get; set; }
             public int DuracaoMinutos { get; set; } = 50;
             public TipoConsulta Tipo { get; set; } = TipoConsulta.Normal;
-            public FormatoConsulta Formato { get; set; } = FormatoConsulta.Presencial;
+            public FormatoConsulta Formato { get; set; } = FormatoConsulta.Online;
             public string? Observacoes { get; set; }
         }
 
@@ -91,7 +103,6 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     return Page();
                 }
 
-                // Verificar se o paciente tem consultas gratuitas disponíveis
                 var paciente = await _context.Pacientes.FindAsync(user.PacienteId.Value);
                 if (paciente == null)
                 {
@@ -108,17 +119,10 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     return Page();
                 }
 
-                // Determinar o tipo e valor da consulta
-                var tipoConsulta = Input.Tipo;
-                var valorConsulta = psicologo.ValorConsulta;
+                // Sem programa de pontos/brindes: sempre consulta padrão paga (plataforma R$ 50)
+                var tipoConsulta = TipoConsulta.Normal;
+                var valorConsulta = MercadoPago.MercadoPagoService.ResolveValorConsulta(psicologo);
 
-                if (paciente.ConsultasGratuitas > 0 && Input.Tipo == TipoConsulta.Gratuita)
-                {
-                    valorConsulta = 0;
-                    tipoConsulta = TipoConsulta.Gratuita;
-                }
-
-                // Criar nova consulta
                 var consulta = new Consulta
                 {
                     PacienteId = user.PacienteId.Value,
@@ -128,26 +132,31 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     Valor = valorConsulta,
                     Status = StatusConsulta.Agendada,
                     Tipo = tipoConsulta,
+                    Formato = FormatoConsulta.Online, // PsyAll: somente teleterapia
                     Observacoes = Input.Observacoes,
                     DataAgendamento = DateTime.Now,
                     DataCriacao = DateTime.Now,
                     NotificacaoEnviada = false,
-                    ConfirmacaoRecebida = false
+                    ConfirmacaoRecebida = false,
+                    StatusPagamento = StatusPagamento.Pendente
                 };
 
+                await _videoConsultaService.GarantirSalaAsync(consulta);
                 _context.Consultas.Add(consulta);
 
-                // Se for consulta gratuita, decrementar do paciente
-                if (tipoConsulta == TipoConsulta.Gratuita)
+                await _context.SaveChangesAsync();
+                await _videoConsultaService.FinalizarSalaAposCriacaoAsync(consulta);
+
+                // Se houver saldo suficiente, debita carteira e confirma como paga
+                var pagoComCarteira = await _carteiraService.TentarDebitarConsultaAsync(consulta);
+                if (pagoComCarteira)
                 {
-                    paciente.ConsultasGratuitas--;
-                    _context.Pacientes.Update(paciente);
+                    TempData["Success"] = "Consulta agendada e paga com o saldo da carteira.";
+                    return RedirectToPage("/Cliente/MinhasConsultas");
                 }
 
-                await _context.SaveChangesAsync();
-
-                TempData["Success"] = "Consulta agendada com sucesso!";
-                return RedirectToPage("MinhasConsultas");
+                TempData["Success"] = "Consulta reservada. Conclua o pagamento para confirmar.";
+                return RedirectToPage("/Cliente/Pagamento/Index", new { consultaId = consulta.Id });
             }
             catch (Exception ex)
             {
@@ -170,7 +179,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 .Select(c => c.DataHorario)
                 .ToListAsync();
 
-            var horariosDisponiveis = GerarHorariosDisponiveis(psicologo, data, consultasOcupadas);
+            var horariosDisponiveis = await GerarHorariosDisponiveisAsync(psicologo, data, consultasOcupadas);
 
             return new JsonResult(horariosDisponiveis.Select(h => new {
                 valor = h.ToString("yyyy-MM-ddTHH:mm"),
@@ -191,7 +200,7 @@ namespace ClinicaPsi.Web.Pages.Cliente
             }
 
             Psicologos = await _context.Psicologos
-                .Where(p => p.Ativo)
+                .Where(p => p.Ativo && p.ExcluidoEm == null && p.StatusValidacao == StatusValidacaoPsicologo.Aprovado)
                 .OrderBy(p => p.Nome)
                 .ToListAsync();
 
@@ -203,12 +212,18 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 .ToListAsync();
         }
 
-        private List<DateTime> GerarHorariosDisponiveis(ClinicaPsi.Shared.Models.Psicologo psicologo, DateTime data, List<DateTime> horariosOcupados)
+        private async Task<List<DateTime>> GerarHorariosDisponiveisAsync(ClinicaPsi.Shared.Models.Psicologo psicologo, DateTime data, List<DateTime> horariosOcupados)
         {
             var horarios = new List<DateTime>();
             var diaSemana = data.DayOfWeek;
+            var configConsultas = await _configuracaoService.ObterConfigConsultasAsync();
 
-            // Verificar se o psicólogo atende no dia da semana
+            if (diaSemana == DayOfWeek.Saturday && !configConsultas.PermitirSabado)
+                return horarios;
+
+            if (diaSemana == DayOfWeek.Sunday && !configConsultas.PermitirDomingo)
+                return horarios;
+
             bool atendeNoDia = diaSemana switch
             {
                 DayOfWeek.Monday => psicologo.AtendeSegunda,
@@ -223,13 +238,16 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
             if (!atendeNoDia) return horarios;
 
-            // Gerar horários da manhã
+            var duracao = configConsultas.DuracaoPadrao > 0 ? configConsultas.DuracaoPadrao : 50;
+            var intervalo = Math.Max(0, configConsultas.IntervaloMinimo);
+            var passo = duracao + intervalo;
+
             if (psicologo.AtendeManha)
             {
                 var inicioManha = data.Date.Add(psicologo.HorarioInicioManha);
                 var fimManha = data.Date.Add(psicologo.HorarioFimManha);
 
-                for (var hora = inicioManha; hora < fimManha; hora = hora.AddMinutes(50))
+                for (var hora = inicioManha; hora < fimManha; hora = hora.AddMinutes(passo))
                 {
                     if (!horariosOcupados.Contains(hora) && hora > DateTime.Now)
                     {
@@ -238,13 +256,12 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 }
             }
 
-            // Gerar horários da tarde
             if (psicologo.AtendeTarde)
             {
                 var inicioTarde = data.Date.Add(psicologo.HorarioInicioTarde);
                 var fimTarde = data.Date.Add(psicologo.HorarioFimTarde);
 
-                for (var hora = inicioTarde; hora < fimTarde; hora = hora.AddMinutes(50))
+                for (var hora = inicioTarde; hora < fimTarde; hora = hora.AddMinutes(passo))
                 {
                     if (!horariosOcupados.Contains(hora) && hora > DateTime.Now)
                     {

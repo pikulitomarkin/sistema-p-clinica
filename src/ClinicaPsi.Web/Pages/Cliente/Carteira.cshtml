@@ -1,0 +1,202 @@
+@page "/Cliente/Carteira"
+@model ClinicaPsi.Web.Pages.Cliente.CarteiraModel
+@using ClinicaPsi.Shared.Models
+@{
+    ViewData["Title"] = "Minha carteira";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .wallet-hero {
+        background:
+            radial-gradient(ellipse at 12% 0%, rgba(var(--brand-secondary-rgb, 26, 184, 176), 0.2), transparent 55%),
+            radial-gradient(ellipse at 88% 30%, rgba(var(--brand-primary-rgb, 31, 122, 77), 0.16), transparent 50%),
+            linear-gradient(165deg, #e8f6ef 0%, #f3faf7 45%, #eef8f5 100%);
+        border-radius: 1.25rem;
+        padding: 1.75rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .wallet-hero h1 {
+        font-family: var(--brand-font-display, "Plus Jakarta Sans", sans-serif);
+        font-size: clamp(1.6rem, 3vw, 2.15rem);
+        color: var(--brand-ink, #14352a);
+        margin: 0 0 0.25rem;
+        font-weight: 700;
+    }
+    .wallet-balance {
+        font-size: clamp(2rem, 4vw, 2.75rem);
+        font-weight: 700;
+        color: var(--brand-primary, #1f7a4d);
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+    }
+    .wallet-panel {
+        background: rgba(255,255,255,0.78);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(var(--brand-primary-rgb, 31, 122, 77), 0.12);
+        border-radius: 1.1rem;
+        padding: 1.35rem;
+    }
+    .wallet-pix-code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.78rem;
+        word-break: break-all;
+        background: #f4faf7;
+        border: 1px dashed rgba(31,122,77,0.25);
+        border-radius: 0.75rem;
+        padding: 0.85rem;
+        max-height: 120px;
+        overflow: auto;
+    }
+    .mov-credito { color: #1f7a4d; }
+    .mov-debito { color: #9a3412; }
+</style>
+
+<div class="container-fluid py-2">
+    <div class="wallet-hero">
+        <p class="mb-1 text-muted small">PsyAll · Carteira</p>
+        <h1>Minha carteira</h1>
+        <p class="mb-3 text-muted">Deposite via PIX e pague consultas automaticamente no agendamento.</p>
+        <div class="wallet-balance">@Model.Saldo.ToString("C")</div>
+        <p class="mb-0 small text-muted mt-1">Saldo disponível</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Sucesso))
+    {
+        <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>@Model.Sucesso</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Erro))
+    {
+        <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>@Model.Erro</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="wallet-panel h-100">
+                <h2 class="h5 mb-3" style="color:var(--brand-ink,#14352a)">Depositar via PIX</h2>
+                @if (!Model.MpDisponivel)
+                {
+                    <div class="alert alert-warning mb-0">Depósitos PIX temporariamente indisponíveis.</div>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Depositar">
+                        <div class="mb-3">
+                            <label asp-for="Input.Valor" class="form-label">Valor do depósito</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input asp-for="Input.Valor" type="number" step="0.01" min="5" max="5000" class="form-control" />
+                            </div>
+                            <span asp-validation-for="Input.Valor" class="text-danger small"></span>
+                            <div class="form-text">Mínimo R$ 5,00 · consulta social R$ 50,00</div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <button type="button" class="btn btn-sm btn-outline-success" onclick="document.getElementById('Input_Valor').value='50'">R$ 50</button>
+                            <button type="button" class="btn btn-sm btn-outline-success" onclick="document.getElementById('Input_Valor').value='100'">R$ 100</button>
+                            <button type="button" class="btn btn-sm btn-outline-success" onclick="document.getElementById('Input_Valor').value='200'">R$ 200</button>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-qr-code me-1"></i> Gerar PIX
+                        </button>
+                        @if (Model.UseSandbox)
+                        {
+                            <p class="small text-muted mt-2 mb-0">Ambiente de teste Mercado Pago.</p>
+                        }
+                    </form>
+                }
+
+                @if (Model.PixPendente is { } pix && pix.Status == StatusMovimentacaoCarteira.Pendente)
+                {
+                    <hr class="my-4" />
+                    <h3 class="h6 mb-2">PIX pendente — @pix.Valor.ToString("C")</h3>
+                    @if (!string.IsNullOrWhiteSpace(pix.PixQrCodeBase64))
+                    {
+                        <div class="text-center mb-3">
+                            <img src="data:image/png;base64,@pix.PixQrCodeBase64"
+                                 alt="QR Code PIX"
+                                 width="220" height="220"
+                                 class="img-fluid rounded border" />
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(pix.PixCopiaECola))
+                    {
+                        <label class="form-label small">Copia e cola</label>
+                        <div class="wallet-pix-code mb-2" id="pixCopiaECola">@pix.PixCopiaECola</div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm mb-3" onclick="navigator.clipboard.writeText(document.getElementById('pixCopiaECola').innerText)">
+                            <i class="bi bi-clipboard"></i> Copiar código
+                        </button>
+                    }
+                    @if (pix.PixExpiraEm.HasValue)
+                    {
+                        <p class="small text-muted">Expira em @pix.PixExpiraEm.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                    }
+                    <form method="post" asp-page-handler="Verificar">
+                        <input type="hidden" name="movimentacaoId" value="@pix.Id" />
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-arrow-repeat me-1"></i> Já paguei — verificar
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="wallet-panel">
+                <h2 class="h5 mb-3" style="color:var(--brand-ink,#14352a)">Histórico</h2>
+                @if (Model.Movimentacoes.Count == 0)
+                {
+                    <p class="text-muted mb-0">Nenhuma movimentação ainda. Faça um depósito para começar.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Valor</th>
+                                    <th class="text-end">Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var m in Model.Movimentacoes)
+                            {
+                                var isCredito = m.Tipo == TipoMovimentacaoCarteira.Credito;
+                                var statusTxt = m.Status switch
+                                {
+                                    StatusMovimentacaoCarteira.Confirmada => "Confirmada",
+                                    StatusMovimentacaoCarteira.Pendente => "Pendente",
+                                    StatusMovimentacaoCarteira.Falhou => "Falhou",
+                                    StatusMovimentacaoCarteira.Cancelada => "Cancelada",
+                                    _ => m.Status.ToString()
+                                };
+                                <tr>
+                                    <td class="small text-nowrap">@m.DataCriacao.ToString("dd/MM/yy HH:mm")</td>
+                                    <td>@m.Descricao</td>
+                                    <td>
+                                        <span class="badge @(m.Status == StatusMovimentacaoCarteira.Confirmada ? "bg-success" : m.Status == StatusMovimentacaoCarteira.Pendente ? "bg-warning text-dark" : "bg-secondary")">
+                                            @statusTxt
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-semibold @(isCredito ? "mov-credito" : "mov-debito")">
+                                        @(isCredito ? "+" : "-")@m.Valor.ToString("C")
+                                    </td>
+                                    <td class="text-end small">
+                                        @(m.Status == StatusMovimentacaoCarteira.Confirmada ? m.SaldoApos.ToString("C") : "—")
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                <div class="mt-3">
+                    <a href="/Cliente/AgendarConsulta" class="btn btn-outline-success btn-sm">Agendar consulta</a>
+                    <a href="/Cliente/MinhasConsultas" class="btn btn-link btn-sm">Minhas consultas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

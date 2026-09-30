@@ -257,6 +257,7 @@ public class ConsultaService : IConsultaService
             DuracaoMinutos = agendarDto.DuracaoMinutos,
             Valor = agendarDto.ConsultaGratuita ? 0 : psicologo.ValorConsulta,
             Tipo = agendarDto.ConsultaGratuita ? TipoConsulta.Gratuita : TipoConsulta.Normal,
+            Formato = FormatoConsulta.Online,
             Status = StatusConsulta.Agendada,
             Observacoes = agendarDto.Observacoes,
             DataAgendamento = DateTime.Now
@@ -428,61 +429,21 @@ public class PsicoPontosService : IPsicoPontosService
         };
     }
 
-    public async Task AdicionarPontosAsync(int pacienteId, int pontos, string motivo, int? consultaId = null)
+    public Task AdicionarPontosAsync(int pacienteId, int pontos, string motivo, int? consultaId = null)
     {
-        var paciente = await _pacienteRepository.GetByIdAsync(pacienteId);
-        if (paciente == null)
-        {
-            throw new ArgumentException("Paciente não encontrado.");
-        }
-
-        paciente.PsicoPontos += pontos;
-        await _pacienteRepository.UpdateAsync(paciente);
-
-        var historico = new HistoricoPontos
-        {
-            PacienteId = pacienteId,
-            PontosAlterados = pontos,
-            Motivo = motivo,
-            ConsultaId = consultaId,
-            DataMovimentacao = DateTime.Now
-        };
-
-        await _historicoPontosRepository.AddAsync(historico);
+        // PsicoPontos removido por compliance (proibido serviço de brindes a psicólogos no Brasil).
+        return Task.CompletedTask;
     }
 
-    public async Task DescontarPontosAsync(int pacienteId, int pontos, string motivo, int? consultaId = null)
+    public Task DescontarPontosAsync(int pacienteId, int pontos, string motivo, int? consultaId = null)
     {
-        var paciente = await _pacienteRepository.GetByIdAsync(pacienteId);
-        if (paciente == null)
-        {
-            throw new ArgumentException("Paciente não encontrado.");
-        }
-
-        if (paciente.PsicoPontos < pontos)
-        {
-            throw new InvalidOperationException("Paciente não possui pontos suficientes.");
-        }
-
-        paciente.PsicoPontos -= pontos;
-        await _pacienteRepository.UpdateAsync(paciente);
-
-        var historico = new HistoricoPontos
-        {
-            PacienteId = pacienteId,
-            PontosAlterados = -pontos,
-            Motivo = motivo,
-            ConsultaId = consultaId,
-            DataMovimentacao = DateTime.Now
-        };
-
-        await _historicoPontosRepository.AddAsync(historico);
+        // PsicoPontos removido por compliance.
+        return Task.CompletedTask;
     }
 
-    public async Task<bool> PodeResgatarConsultaGratuitaAsync(int pacienteId)
+    public Task<bool> PodeResgatarConsultaGratuitaAsync(int pacienteId)
     {
-        var paciente = await _pacienteRepository.GetByIdAsync(pacienteId);
-        return paciente != null && paciente.PsicoPontos >= 10;
+        return Task.FromResult(false);
     }
 
     public async Task<IEnumerable<HistoricoPontos>> GetHistoricoAsync(int pacienteId)

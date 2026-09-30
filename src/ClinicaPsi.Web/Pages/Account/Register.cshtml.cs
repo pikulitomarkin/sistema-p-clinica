@@ -56,6 +56,18 @@ namespace ClinicaPsi.Web.Pages.Account
             [Display(Name = "Confirmar Senha")]
             [Compare("Password", ErrorMessage = "As senhas não coincidem")]
             public string ConfirmPassword { get; set; } = string.Empty;
+
+            [Range(typeof(bool), "true", "true", ErrorMessage = "É necessário aceitar os Termos de Uso")]
+            [Display(Name = "Aceite dos Termos")]
+            public bool AceiteTermos { get; set; }
+
+            [Range(typeof(bool), "true", "true", ErrorMessage = "É necessário aceitar a Política de Privacidade")]
+            [Display(Name = "Aceite da Privacidade")]
+            public bool AceitePrivacidade { get; set; }
+
+            [Range(typeof(bool), "true", "true", ErrorMessage = "É necessário consentir o tratamento de dados de saúde")]
+            [Display(Name = "Consentimento dados de saúde")]
+            public bool ConsentimentoDadosSaude { get; set; }
         }
 
         public async Task OnGetAsync()
@@ -73,6 +85,7 @@ namespace ClinicaPsi.Web.Pages.Account
             {
                 try
                 {
+                    var agora = DateTime.UtcNow;
                     var user = new ApplicationUser
                     {
                         UserName = Input?.Email ?? string.Empty,
@@ -80,20 +93,22 @@ namespace ClinicaPsi.Web.Pages.Account
                         PhoneNumber = Input?.PhoneNumber,
                         NomeCompleto = Input?.Nome ?? string.Empty,
                         CPF = Input?.CPF ?? string.Empty,
-                        DataCadastro = DateTime.Now,
+                        DataCadastro = agora,
                         Ativo = true,
-                        TipoUsuario = TipoUsuario.Cliente
+                        TipoUsuario = TipoUsuario.Cliente,
+                        AceiteTermosEm = agora,
+                        AceitePrivacidadeEm = agora,
+                        ConsentimentoDadosSaudeEm = agora
                     };
 
                     var result = await _userManager.CreateAsync(user, Input?.Password ?? string.Empty);
 
                     if (result.Succeeded)
                     {
-                        // Fazer login automático
+                        await _userManager.AddToRoleAsync(user, "Cliente");
+                        // Login automático → Minha Área
                         await _signInManager.SignInAsync(user, isPersistent: false);
-
-                        // Redirecionar para página de agendamento
-                        return RedirectToPage("/Agendamento");
+                        return LocalRedirect("/cliente");
                     }
 
                     // Se houver erros, adicionar à ModelState

@@ -42,6 +42,10 @@ public class Paciente
     public string? MedicamentosUso { get; set; }
     public string? Observacoes { get; set; }
 
+    /// <summary>Caminho relativo da foto de perfil (ex.: /uploads/perfil/abc.jpg).</summary>
+    [StringLength(300)]
+    public string? FotoUrl { get; set; }
+
     // Sistema de pontos
     [Range(0, int.MaxValue, ErrorMessage = "PsicoPontos não pode ser negativo")]
     public int PsicoPontos { get; set; } = 0;
@@ -58,9 +62,19 @@ public class Paciente
     public DateTime? DataAtualizacao { get; set; }
     public bool Ativo { get; set; } = true;
 
+    /// <summary>Aceite dos Termos de Uso (UTC).</summary>
+    public DateTime? AceiteTermosEm { get; set; }
+
+    /// <summary>Aceite da Política de Privacidade (UTC).</summary>
+    public DateTime? AceitePrivacidadeEm { get; set; }
+
+    /// <summary>Consentimento para tratamento de dados de saúde / sensíveis (UTC).</summary>
+    public DateTime? ConsentimentoDadosSaudeEm { get; set; }
+
     // Relacionamentos
     public virtual ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
     public virtual ICollection<HistoricoPontos> HistoricoPontos { get; set; } = new List<HistoricoPontos>();
+    public virtual CarteiraCliente? Carteira { get; set; }
 }
 
 public class Psicologo
@@ -114,8 +128,52 @@ public class Psicologo
     public DateTime? DataAtualizacao { get; set; }
     public bool Ativo { get; set; } = true;
 
+    /// <summary>Caminho relativo da foto de perfil (ex.: /uploads/perfil/abc.jpg).</summary>
+    [StringLength(300)]
+    public string? FotoUrl { get; set; }
+
+    /// <summary>Soft-delete: quando preenchido, o psicólogo não reaparece na listagem nem no seed/sync.</summary>
+    public DateTime? ExcluidoEm { get; set; }
+
+    /// <summary>Validação do cadastro pelo admin (documentos CNH/CRP + contrato).</summary>
+    public StatusValidacaoPsicologo StatusValidacao { get; set; } = StatusValidacaoPsicologo.Pendente;
+
+    public DateTime? AceiteTermosEm { get; set; }
+    public DateTime? AceiteContratoEm { get; set; }
+
+    /// <summary>Aceite da Política de Privacidade (UTC).</summary>
+    public DateTime? AceitePrivacidadeEm { get; set; }
+
+    /// <summary>Valor da consulta previsto no contrato digital (padrão R$ 50).</summary>
+    [Range(0, double.MaxValue)]
+    public decimal ValorContratoConsulta { get; set; } = 50m;
+
+    [StringLength(400)]
+    public string? DocumentoCnhUrl { get; set; }
+
+    [StringLength(400)]
+    public string? DocumentoCrpUrl { get; set; }
+
+    public DateTime? ValidadoEm { get; set; }
+
+    [StringLength(450)]
+    public string? ValidadoPorUserId { get; set; }
+
+    [StringLength(1000)]
+    public string? MotivoRecusa { get; set; }
+
+    public bool PodeAtender =>
+        Ativo && ExcluidoEm == null && StatusValidacao == StatusValidacaoPsicologo.Aprovado;
+
     // Relacionamentos
     public virtual ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
+}
+
+public enum StatusValidacaoPsicologo
+{
+    Pendente = 1,
+    Aprovado = 2,
+    Recusado = 3
 }
 
 public class Consulta
@@ -141,7 +199,17 @@ public class Consulta
 
     public StatusConsulta Status { get; set; } = StatusConsulta.Agendada;
     public TipoConsulta Tipo { get; set; } = TipoConsulta.Normal;
-    public FormatoConsulta Formato { get; set; } = FormatoConsulta.Presencial;
+    /// <summary>PsyAll opera somente com teleterapia; novas consultas usam Online.</summary>
+    public FormatoConsulta Formato { get; set; } = FormatoConsulta.Online;
+
+    [StringLength(100)]
+    public string? VideoRoomName { get; set; }
+
+    [StringLength(500)]
+    public string? VideoRoomUrl { get; set; }
+
+    /// <summary>Quando o psicólogo inicia "Chamar paciente"; usado para notificação in-app / polling.</summary>
+    public DateTime? VideoChamadaAtivaEm { get; set; }
 
     [StringLength(1000, ErrorMessage = "Observações deve ter no máximo 1000 caracteres")]
     public string? Observacoes { get; set; }
@@ -159,6 +227,18 @@ public class Consulta
 
     public bool NotificacaoEnviada { get; set; } = false;
     public bool ConfirmacaoRecebida { get; set; } = false;
+
+    /// <summary>Status do pagamento da consulta (Mercado Pago).</summary>
+    public StatusPagamento StatusPagamento { get; set; } = StatusPagamento.Pendente;
+
+    /// <summary>Quando o pagamento foi confirmado (UTC/local conforme app).</summary>
+    public DateTime? PaidAt { get; set; }
+
+    [StringLength(100)]
+    public string? MercadoPagoPreferenceId { get; set; }
+
+    [StringLength(100)]
+    public string? MercadoPagoPaymentId { get; set; }
 
     // Relacionamentos
     public virtual ICollection<NotificacaoConsulta> Notificacoes { get; set; } = new List<NotificacaoConsulta>();
@@ -232,6 +312,16 @@ public enum StatusConsulta
     Reagendada = 6
 }
 
+public enum StatusPagamento
+{
+    Pendente = 0,
+    Aguardando = 1,
+    Pago = 2,
+    Falhou = 3,
+    Reembolsado = 4,
+    Cancelado = 5
+}
+
 public enum TipoConsulta
 {
     Normal = 1,
@@ -240,8 +330,13 @@ public enum TipoConsulta
     Avaliacao = 4
 }
 
+/// <summary>
+/// Formato da consulta. Presencial permanece no enum apenas para linhas históricas no banco;
+/// a plataforma não oferece mais atendimento presencial — somente teleterapia (Online).
+/// </summary>
 public enum FormatoConsulta
 {
+    /// <summary>Legado — não ofertar em novas agendas.</summary>
     Presencial = 1,
     Online = 2
 }
@@ -527,4 +622,175 @@ public class ProntuarioEletronico
     /// Confidencial - acesso restrito
     /// </summary>
     public bool Confidencial { get; set; } = true;
+}
+
+/// <summary>
+/// Avaliação mútua pós-consulta: paciente avalia psicólogo e psicólogo avalia paciente.
+/// </summary>
+public class Avaliacao
+{
+    public int Id { get; set; }
+
+    [Required]
+    public int ConsultaId { get; set; }
+    public virtual Consulta Consulta { get; set; } = null!;
+
+    public int? PsicologoId { get; set; }
+    public virtual Psicologo? Psicologo { get; set; }
+
+    public int? PacienteId { get; set; }
+    public virtual Paciente? Paciente { get; set; }
+
+    /// <summary>Quem está sendo avaliado.</summary>
+    public TipoAlvoAvaliacao Alvo { get; set; }
+
+    /// <summary>UserId (AspNetUsers) de quem enviou a avaliação.</summary>
+    [Required]
+    [StringLength(450)]
+    public string AvaliadorUserId { get; set; } = string.Empty;
+
+    [Range(1, 5)]
+    public int Nota { get; set; }
+
+    [StringLength(1000)]
+    public string? Comentario { get; set; }
+
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+
+    public bool Publica { get; set; } = true;
+}
+
+public enum TipoAlvoAvaliacao
+{
+    Psicologo = 1,
+    Paciente = 2
+}
+
+/// <summary>Tipo de solicitação de direitos do titular (LGPD arts. 18 e ss.).</summary>
+public enum TipoSolicitacaoPrivacidade
+{
+    Acesso = 1,
+    Exportacao = 2,
+    Correcao = 3,
+    Eliminacao = 4,
+    Outro = 5
+}
+
+public enum StatusSolicitacaoPrivacidade
+{
+    Pendente = 1,
+    EmAnalise = 2,
+    Concluida = 3,
+    Recusada = 4
+}
+
+/// <summary>Solicitação de exercício de direitos do titular de dados pessoais.</summary>
+public class SolicitacaoPrivacidade
+{
+    public int Id { get; set; }
+
+    [Required]
+    [StringLength(450)]
+    public string UserId { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(200)]
+    public string NomeTitular { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    [StringLength(200)]
+    public string EmailTitular { get; set; } = string.Empty;
+
+    public TipoSolicitacaoPrivacidade Tipo { get; set; }
+
+    public StatusSolicitacaoPrivacidade Status { get; set; } = StatusSolicitacaoPrivacidade.Pendente;
+
+    [StringLength(2000)]
+    public string? Detalhes { get; set; }
+
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+
+    public DateTime? DataAtualizacao { get; set; }
+
+    [StringLength(2000)]
+    public string? ObservacaoAdmin { get; set; }
+
+    [StringLength(450)]
+    public string? RespondidoPorUserId { get; set; }
+}
+
+/// <summary>Carteira digital do paciente (saldo para pagar consultas).</summary>
+public class CarteiraCliente
+{
+    public int Id { get; set; }
+
+    [Required]
+    public int PacienteId { get; set; }
+    public virtual Paciente Paciente { get; set; } = null!;
+
+    [Range(0, double.MaxValue)]
+    public decimal Saldo { get; set; }
+
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+    public DateTime? DataAtualizacao { get; set; }
+
+    public virtual ICollection<MovimentacaoCarteira> Movimentacoes { get; set; } = new List<MovimentacaoCarteira>();
+}
+
+/// <summary>Crédito (depósito PIX) ou débito (pagamento de consulta) na carteira.</summary>
+public class MovimentacaoCarteira
+{
+    public int Id { get; set; }
+
+    [Required]
+    public int CarteiraClienteId { get; set; }
+    public virtual CarteiraCliente CarteiraCliente { get; set; } = null!;
+
+    public TipoMovimentacaoCarteira Tipo { get; set; }
+
+    [Range(0.01, double.MaxValue)]
+    public decimal Valor { get; set; }
+
+    public decimal SaldoApos { get; set; }
+
+    [StringLength(300)]
+    public string Descricao { get; set; } = string.Empty;
+
+    public StatusMovimentacaoCarteira Status { get; set; } = StatusMovimentacaoCarteira.Pendente;
+
+    public int? ConsultaId { get; set; }
+    public virtual Consulta? Consulta { get; set; }
+
+    [StringLength(100)]
+    public string? MercadoPagoPaymentId { get; set; }
+
+    [StringLength(120)]
+    public string? ExternalReference { get; set; }
+
+    /// <summary>PIX copia-e-cola (qr_code do Mercado Pago).</summary>
+    [StringLength(8000)]
+    public string? PixCopiaECola { get; set; }
+
+    /// <summary>QR Code em base64 (sem prefixo data:).</summary>
+    public string? PixQrCodeBase64 { get; set; }
+
+    public DateTime? PixExpiraEm { get; set; }
+
+    public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+    public DateTime? DataConfirmacao { get; set; }
+}
+
+public enum TipoMovimentacaoCarteira
+{
+    Credito = 1,
+    Debito = 2
+}
+
+public enum StatusMovimentacaoCarteira
+{
+    Pendente = 0,
+    Confirmada = 1,
+    Cancelada = 2,
+    Falhou = 3
 }

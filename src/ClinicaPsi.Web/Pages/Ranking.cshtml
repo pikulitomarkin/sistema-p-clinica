@@ -1,0 +1,48 @@
+@page "/ranking"
+@model ClinicaPsi.Web.Pages.RankingModel
+@{
+    ViewData["Title"] = "Ranking de psicólogos | PsyAll";
+    ViewData["MetaDescription"] = "Ranking PsyAll dos psicólogos mais bem avaliados por pacientes após consultas realizadas.";
+    ViewData["Canonical"] = "https://psyall.com.br/ranking";
+    ViewData["OgTitle"] = "Ranking de psicólogos | PsyAll";
+}
+
+<section class="container py-5">
+    <header class="psy-section-head text-start mb-4">
+        <p class="psy-eyebrow">PsyAll</p>
+        <h1>Ranking de psicólogos</h1>
+        <p>Ordenado pela média de avaliações públicas de pacientes (consultas realizadas).</p>
+    </header>
+
+    @if (!Model.Itens.Any())
+    {
+        <div class="psy-empty">
+            <p class="mb-0">Ainda não há avaliações suficientes para montar o ranking.</p>
+        </div>
+    }
+    else
+    {
+        <ol class="psy-rank-list">
+            @for (var i = 0; i < Model.Itens.Count; i++)
+            {
+                var psi = Model.Itens[i];
+                <li class="psy-rank-item">
+                    <span class="psy-rank-pos">@(i + 1)</span>
+                    <div class="psy-rank-info">
+                        <strong>@psi.Nome</strong>
+                        <span>CRP @psi.CRP · @(psi.Especialidades ?? "Psicologia clínica")</span>
+                    </div>
+                    <div class="psy-rank-score">
+                        <i class="bi bi-star-fill"></i>
+                        @psi.Media.ToString("0.0")
+                        <small>(@psi.Total)</small>
+                    </div>
+                    <a class="btn btn-sm btn-psy-primary"
+                       href="@(User.Identity?.IsAuthenticated == true ? $"/Cliente/AgendarConsulta?psicologoId={psi.Id}" : "/Account/Login")">
+                        Agendar
+                    </a>
+                </li>
+            }
+        </ol>
+    }
+</section>
