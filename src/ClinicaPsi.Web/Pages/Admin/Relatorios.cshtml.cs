@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using ClinicaPsi.Application.Services;
+using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
 
 namespace ClinicaPsi.Web.Pages.Admin
@@ -13,6 +15,7 @@ namespace ClinicaPsi.Web.Pages.Admin
         private readonly PacienteService _pacienteService;
         private readonly PsicologoService _psicologoService;
         private readonly PdfService _pdfService;
+        private readonly AppDbContext _db;
         private readonly ILogger<RelatoriosModel> _logger;
 
         public RelatoriosModel(
@@ -20,12 +23,14 @@ namespace ClinicaPsi.Web.Pages.Admin
             PacienteService pacienteService,
             PsicologoService psicologoService,
             PdfService pdfService,
+            AppDbContext db,
             ILogger<RelatoriosModel> logger)
         {
             _consultaService = consultaService;
             _pacienteService = pacienteService;
             _psicologoService = psicologoService;
             _pdfService = pdfService;
+            _db = db;
             _logger = logger;
         }
 
@@ -172,6 +177,11 @@ namespace ClinicaPsi.Web.Pages.Admin
         {
             var consultas = await _consultaService.GetConsultasByPeriodAsync(DataInicio!.Value, DataFim!.Value);
             var psicologos = await _psicologoService.GetAllAsync();
+            var medias = await _db.Avaliacoes.AsNoTracking()
+                .Where(a => a.Alvo == TipoAlvoAvaliacao.Psicologo && a.Publica && a.PsicologoId != null)
+                .GroupBy(a => a.PsicologoId!.Value)
+                .Select(g => new { Id = g.Key, Media = (decimal)g.Average(x => x.Nota) })
+                .ToDictionaryAsync(x => x.Id, x => x.Media);
 
             PerformancePsicologos = psicologos.Select(p =>
             {
@@ -185,7 +195,7 @@ namespace ClinicaPsi.Web.Pages.Admin
                     Ativo = p.Ativo,
                     ConsultasRealizadas = consultasPsicologo.Count(c => c.Status == StatusConsulta.Realizada),
                     TaxaCancelamento = totalConsultas > 0 ? (decimal)consultasCanceladas / totalConsultas * 100 : 0,
-                    AvaliacaoMedia = 4.5m, // Placeholder - implementar sistema de avaliação
+                    AvaliacaoMedia = medias.TryGetValue(p.Id, out var m) ? m : 0m,
                     ReceitaGerada = consultasPsicologo.Where(c => c.Status == StatusConsulta.Realizada).Sum(c => c.Valor)
                 };
             }).OrderByDescending(x => x.ConsultasRealizadas).ToList();

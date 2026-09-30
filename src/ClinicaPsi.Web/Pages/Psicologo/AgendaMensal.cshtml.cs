@@ -70,8 +70,10 @@ namespace ClinicaPsi.Web.Pages.Psicologo
             var inicioMes = MesSelecionado;
             var fimMes = MesSelecionado.AddMonths(1).AddDays(-1);
 
-            // Buscar consultas do mês
-            ConsultasMes = await _context.Consultas
+            var agora = DateTime.Now;
+
+            // Todas do mês (para estatísticas / histórico no calendário mensal)
+            var todasDoMes = await _context.Consultas
                 .Include(c => c.Paciente)
                 .Where(c => c.PsicologoId == PsicologoId &&
                            c.DataHorario.Date >= inicioMes.Date &&
@@ -79,13 +81,21 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 .OrderBy(c => c.DataHorario)
                 .ToListAsync();
 
-            // Calcular estatísticas
-            TotalConsultasMes = ConsultasMes.Count;
-            ConsultasRealizadas = ConsultasMes.Count(c => c.Status == StatusConsulta.Realizada);
-            ConsultasAgendadas = ConsultasMes.Count(c => 
-                c.Status == StatusConsulta.Agendada || 
+            // Grade mensal: só ativas ainda não encerradas
+            ConsultasMes = todasDoMes
+                .Where(c => c.Status != StatusConsulta.Cancelada &&
+                            c.Status != StatusConsulta.Realizada &&
+                            c.Status != StatusConsulta.NoShow &&
+                            c.DataHorario.AddMinutes(c.DuracaoMinutos) >= agora)
+                .ToList();
+
+            // Calcular estatísticas com o mês completo
+            TotalConsultasMes = todasDoMes.Count;
+            ConsultasRealizadas = todasDoMes.Count(c => c.Status == StatusConsulta.Realizada);
+            ConsultasAgendadas = todasDoMes.Count(c =>
+                c.Status == StatusConsulta.Agendada ||
                 c.Status == StatusConsulta.Confirmada);
-            ConsultasCanceladas = ConsultasMes.Count(c => c.Status == StatusConsulta.Cancelada);
+            ConsultasCanceladas = todasDoMes.Count(c => c.Status == StatusConsulta.Cancelada);
 
                 return Page();
             }

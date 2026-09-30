@@ -92,8 +92,17 @@ namespace ClinicaPsi.Web.Pages.Admin.Usuarios
                 // Se for psicólogo, carregar dados do psicólogo
                 if (Usuario.TipoUsuario == TipoUsuario.Psicologo)
                 {
-                    Psicologo = await _context.Psicologos
+                    if (Usuario.PsicologoId.HasValue)
+                    {
+                        Psicologo = await _context.Psicologos
+                            .FirstOrDefaultAsync(p => p.Id == Usuario.PsicologoId.Value);
+                    }
+
+                    Psicologo ??= await _context.Psicologos
                         .FirstOrDefaultAsync(p => p.UserId == id);
+
+                    Psicologo ??= await _context.Psicologos
+                        .FirstOrDefaultAsync(p => p.Email == Usuario.Email);
 
                     if (Psicologo != null)
                     {

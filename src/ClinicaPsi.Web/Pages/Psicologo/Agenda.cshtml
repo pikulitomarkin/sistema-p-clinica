@@ -67,11 +67,9 @@
             <div class="col-md-3">
                 <label for="filtroStatus" class="form-label">Status</label>
                 <select class="form-select" id="filtroStatus" onchange="filterByStatus()">
-                    <option value="">Todos</option>
+                    <option value="">Todos (ativas)</option>
                     <option value="Agendada">Agendadas</option>
                     <option value="Confirmada">Confirmadas</option>
-                    <option value="Realizada">Realizadas</option>
-                    <option value="Cancelada">Canceladas</option>
                 </select>
             </div>
             <div class="col-md-3 d-flex align-items-end">
@@ -227,13 +225,13 @@
                     <div class="col-6">
                         <div class="stat-card text-center">
                             <div class="stat-number text-primary">@Model.ConsultasSemana.Count()</div>
-                            <div class="stat-label">Total</div>
+                            <div class="stat-label">Ativas na semana</div>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="stat-card text-center">
-                            <div class="stat-number text-success">@Model.ConsultasSemana.Count(c => c.Status == StatusConsulta.Realizada)</div>
-                            <div class="stat-label">Realizadas</div>
+                            <div class="stat-number text-success">@Model.ConsultasSemana.Count(c => c.Status == StatusConsulta.Confirmada)</div>
+                            <div class="stat-label">Confirmadas</div>
                         </div>
                     </div>
                     <div class="col-6">
@@ -244,8 +242,8 @@
                     </div>
                     <div class="col-6">
                         <div class="stat-card text-center">
-                            <div class="stat-number text-danger">@Model.ConsultasSemana.Count(c => c.Status == StatusConsulta.Cancelada)</div>
-                            <div class="stat-label">Canceladas</div>
+                            <div class="stat-number text-info">@Model.ProximasConsultas.Count()</div>
+                            <div class="stat-label">Próximas (7 dias)</div>
                         </div>
                     </div>
                 </div>
@@ -253,8 +251,10 @@
                 <hr>
                 
                 <div class="text-center">
-                    <div class="stat-number text-info">@Model.ConsultasSemana.Where(c => c.Status == StatusConsulta.Realizada).Sum(c => c.Valor).ToString("C")</div>
-                    <div class="stat-label">Receita da Semana</div>
+                    <p class="text-muted mb-0 small">
+                        Passadas e realizadas ficam em
+                        <a href="/psicologo/consultas?periodo=historico">Consultas → Histórico</a>.
+                    </p>
                 </div>
             </div>
         </div>
@@ -291,7 +291,13 @@
                                 <option value="Normal">Consulta Normal</option>
                                 <option value="Retorno">Retorno</option>
                                 <option value="Avaliacao">Avaliação</option>
-                                <option value="Gratuita">Gratuita (PsicoPontos)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="formatoConsulta" class="form-label">Formato</label>
+                            <select class="form-select" id="formatoConsulta" name="formatoConsulta" required>
+                                <option value="Presencial">Presencial</option>
+                                <option value="Online">Online (videochamada)</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -362,22 +368,31 @@
         }
 
         function changeView() {
-            const view = document.getElementById('visualizacao').value;
-            alert('Mudança de visualização para: ' + view + ' (em desenvolvimento)');
+            // Visualização controlada pelos links Dia / Semana / Mês
         }
 
         function filterByStatus() {
             const status = document.getElementById('filtroStatus').value;
-            // Implementar filtro
-            console.log('Filtrar por status:', status);
+            const cards = document.querySelectorAll('.consulta-card');
+            cards.forEach(card => {
+                const slot = card.closest('.time-slot');
+                if (!slot) return;
+                if (!status) {
+                    slot.style.display = '';
+                    return;
+                }
+                const badge = card.querySelector('.consulta-status .badge');
+                const match = badge && badge.classList.contains('status-' + status.toLowerCase());
+                slot.style.display = match ? '' : 'none';
+            });
         }
 
         function viewConsulta(id) {
-            alert('Ver consulta ID: ' + id + ' (em desenvolvimento)');
+            window.location.href = '/consulta/' + id + '/video';
         }
 
         function editConsulta(id) {
-            alert('Editar consulta ID: ' + id + ' (em desenvolvimento)');
+            window.location.href = '/consulta/' + id + '/video';
         }
 
         function newConsulta(datetime) {
@@ -410,7 +425,7 @@
         }
 
         function exportarAgenda() {
-            alert('Funcionalidade de exportação em desenvolvimento');
+            window.print();
         }
     </script>
 }

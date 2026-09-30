@@ -56,6 +56,10 @@ namespace ClinicaPsi.Web.Pages.Account
             [Display(Name = "Confirmar Senha")]
             [Compare("Password", ErrorMessage = "As senhas não coincidem")]
             public string ConfirmPassword { get; set; } = string.Empty;
+
+            [Range(typeof(bool), "true", "true", ErrorMessage = "É necessário aceitar os Termos de Uso")]
+            [Display(Name = "Aceite dos Termos")]
+            public bool AceiteTermos { get; set; }
         }
 
         public async Task OnGetAsync()
@@ -89,11 +93,10 @@ namespace ClinicaPsi.Web.Pages.Account
 
                     if (result.Succeeded)
                     {
-                        // Fazer login automático
+                        await _userManager.AddToRoleAsync(user, "Cliente");
+                        // Login automático → Minha Área
                         await _signInManager.SignInAsync(user, isPersistent: false);
-
-                        // Redirecionar para página de agendamento
-                        return RedirectToPage("/Agendamento");
+                        return LocalRedirect("/cliente");
                     }
 
                     // Se houver erros, adicionar à ModelState

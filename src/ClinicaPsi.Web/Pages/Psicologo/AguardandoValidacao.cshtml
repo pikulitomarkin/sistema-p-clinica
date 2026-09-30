@@ -1,0 +1,52 @@
+@page "/psicologo/aguardando-validacao"
+@model ClinicaPsi.Web.Pages.Psicologo.AguardandoValidacaoModel
+@using ClinicaPsi.Shared.Models
+@{
+    ViewData["Title"] = "Aguardando validação";
+    Layout = "_AdminLayout";
+    var p = Model.Psicologo!;
+}
+
+<div class="container-fluid py-4" style="max-width:720px">
+    <div class="admin-card">
+        <div class="admin-card-body text-center py-5">
+            @if (p.StatusValidacao == StatusValidacaoPsicologo.Recusado)
+            {
+                <div class="translucent-icon mx-auto mb-3" style="color:#b02a37">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <h1 class="h3 mb-2">Cadastro não aprovado</h1>
+                <p class="text-muted">
+                    Seu cadastro foi analisado e não foi liberado para atendimento.
+                </p>
+                @if (!string.IsNullOrWhiteSpace(p.MotivoRecusa))
+                {
+                    <div class="alert alert-warning text-start">
+                        <strong>Motivo:</strong> @p.MotivoRecusa
+                    </div>
+                }
+                <p class="small text-muted mb-0">Entre em contato com o suporte da PsyAll para reenvio de documentos.</p>
+            }
+            else
+            {
+                <div class="translucent-icon mx-auto mb-3">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <h1 class="h3 mb-2">Cadastro em análise</h1>
+                <p class="text-muted mb-3">
+                    Recebemos seus documentos (CNH e CRP) e o aceite do contrato com consultas a
+                    <strong>R$ @p.ValorContratoConsulta.ToString("N2")</strong>.
+                    Assim que o administrador validar, você poderá atender pela plataforma.
+                </p>
+                <ul class="list-unstyled text-start mx-auto" style="max-width:28rem">
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Termos aceitos</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Contrato digital aceito</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>CNH enviada</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-2"></i>Carteira CRP enviada</li>
+                    <li><i class="bi bi-clock text-warning me-2"></i>Aguardando validação do admin</li>
+                </ul>
+                <a class="btn btn-psy-ghost mt-3" href="/psicologo/aguardando-validacao">Atualizar status</a>
+            }
+        </div>
+    </div>
+</div>

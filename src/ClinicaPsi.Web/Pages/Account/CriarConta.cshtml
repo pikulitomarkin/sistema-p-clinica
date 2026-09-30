@@ -1,0 +1,99 @@
+@page "/Account/CriarConta"
+@{
+    ViewData["Title"] = "Criar conta - PsyAll";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="~/css/brand-theme.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+    <style>
+        body {
+            font-family: var(--font-sans);
+            background: var(--brand-gradient-hero);
+            min-height: 100vh;
+            padding: 5.5rem 1rem 2rem;
+        }
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: var(--brand-gradient-nav);
+            border-bottom: 1px solid var(--brand-border);
+            z-index: 10;
+        }
+        .choose-wrap { max-width: 880px; margin: 0 auto; }
+        .choose-card {
+            background: #fff;
+            border: 1px solid var(--brand-border);
+            border-radius: 18px;
+            padding: 1.75rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            transition: transform .2s ease, box-shadow .2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        .choose-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 36px var(--brand-shadow);
+            color: inherit;
+        }
+        .choose-icon {
+            width: 56px; height: 56px; border-radius: 14px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--brand-gradient-chip);
+            color: var(--brand-primary);
+            font-size: 1.5rem;
+        }
+        .choose-card h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--brand-ink); }
+        .choose-card p { color: var(--brand-muted); margin: 0; flex: 1; }
+    </style>
+</head>
+<body>
+    <nav class="navbar top-nav">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+                <img src="~/images/psyall-logo.png" alt="PsyAll" width="36" height="40" />
+                <span><span class="psy-brand-psy">Psy</span><span class="psy-brand-all">All</span></span>
+            </a>
+            <a href="/Account/Login" class="btn btn-sm btn-outline-success">Já tenho conta</a>
+        </div>
+    </nav>
+
+    <div class="choose-wrap">
+        <header class="text-center mb-4">
+            <p class="psy-eyebrow mb-2">PsyAll</p>
+            <h1 class="h2 fw-bold mb-2" style="color:var(--brand-ink)">Criar conta</h1>
+            <p class="text-muted mb-0">Selecione o perfil para continuar o cadastro.</p>
+        </header>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <a class="choose-card" href="/Account/Register">
+                    <div class="choose-icon"><i class="bi bi-person-heart"></i></div>
+                    <h2>Paciente / Cliente</h2>
+                    <p>Agende consultas, acompanhe histórico e entre na sala online com psicólogos da plataforma.</p>
+                    <span class="btn btn-psy-primary align-self-start">Continuar como paciente</span>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a class="choose-card" href="/Account/RegisterPsicologo">
+                    <div class="choose-icon"><i class="bi bi-person-badge"></i></div>
+                    <h2>Psicólogo</h2>
+                    <p>Cadastre CRP, aceite o contrato (consultas a R$ 50), envie CNH e carteira CRP para validação do admin.</p>
+                    <span class="btn btn-psy-primary align-self-start">Continuar como psicólogo</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

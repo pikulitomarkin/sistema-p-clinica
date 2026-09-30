@@ -17,6 +17,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ConfiguracaoSistema> ConfiguracoesSistema => Set<ConfiguracaoSistema>();
     public DbSet<ProntuarioEletronico> ProntuariosEletronicos => Set<ProntuarioEletronico>();
     public DbSet<WhatsAppSession> WhatsAppSessions => Set<WhatsAppSession>();
+    public DbSet<Avaliacao> Avaliacoes => Set<Avaliacao>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -104,41 +105,12 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Dados iniciais para teste
-        SeedData(modelBuilder);
+        // Sem HasData de psicólogos demo — evita fantasmas (João/Maria) em produção.
+        ConfigureSupportingEntities(modelBuilder);
     }
 
-    private void SeedData(ModelBuilder modelBuilder)
+    private static void ConfigureSupportingEntities(ModelBuilder modelBuilder)
     {
-        var dataAtual = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        
-        modelBuilder.Entity<Psicologo>().HasData(
-            new Psicologo
-            {
-                Id = 1,
-                Nome = "Dr. João Silva",
-                Email = "joao.silva@clinicapsi.com",
-                CRP = "06/123456",
-                Telefone = "(11) 98765-4321",
-                Especialidades = "TCC, Ansiedade, Depressão",
-                ValorConsulta = 150.00m,
-                DataCadastro = dataAtual,
-                Ativo = true
-            },
-            new Psicologo
-            {
-                Id = 2,
-                Nome = "Dra. Maria Santos",
-                Email = "maria.santos@clinicapsi.com",
-                CRP = "06/654321",
-                Telefone = "(11) 98765-1234",
-                Especialidades = "Psicanálise, Terapia de Casal",
-                ValorConsulta = 180.00m,
-                DataCadastro = dataAtual,
-                Ativo = true
-            }
-        );
-
         modelBuilder.Entity<AuditoriaUsuario>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -192,6 +164,32 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        modelBuilder.Entity<Avaliacao>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ConsultaId, e.Alvo }).IsUnique();
+            entity.HasIndex(e => e.PsicologoId);
+            entity.HasIndex(e => e.PacienteId);
+            entity.Property(e => e.AvaliadorUserId).IsRequired().HasMaxLength(450);
+            entity.Property(e => e.Comentario).HasMaxLength(1000);
+            entity.Property(e => e.DataCriacao).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(e => e.Consulta)
+                .WithMany()
+                .HasForeignKey(e => e.ConsultaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Psicologo)
+                .WithMany()
+                .HasForeignKey(e => e.PsicologoId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Paciente)
+                .WithMany()
+                .HasForeignKey(e => e.PacienteId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

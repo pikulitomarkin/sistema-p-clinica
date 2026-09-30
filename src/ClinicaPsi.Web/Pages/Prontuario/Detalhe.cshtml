@@ -3,6 +3,7 @@
 @model DetalheModel
 @{
     ViewData["Title"] = "Detalhes do Prontuário";
+    Layout = "~/Pages/Shared/_AdminLayout.cshtml";
 }
 <h1>Detalhes do Prontuário</h1>
 
@@ -13,15 +14,31 @@
 else
 {
     <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-start">
+        <div class="card-header d-flex justify-content-between align-items-start flex-wrap gap-2">
             <div>
-                <strong>Paciente:</strong> @Model.Prontuario.Paciente?.Nome <br />
-                <strong>Psicólogo:</strong> @Model.Prontuario.Psicologo?.Nome <br />
+                <strong>Paciente:</strong> @(Model.Paciente?.Nome ?? Model.Prontuario.Paciente?.Nome) <br />
+                <strong>Psicólogo:</strong> @(Model.Psicologo?.Nome ?? Model.Prontuario.Psicologo?.Nome) <br />
                 <strong>Data da Sessão:</strong> @Model.Prontuario.DataSessao.ToString("dd/MM/yyyy") <br />
                 <strong>Status:</strong> @(Model.Prontuario.Finalizado ? "Finalizado" : "Em andamento")
+                @if (Model.Prontuario.ConsultaId.HasValue)
+                {
+                    <br /><strong>Consulta:</strong> @($"#{Model.Prontuario.ConsultaId}")
+                }
             </div>
-            <div>
-                <a asp-page-handler="DownloadPdf" asp-route-id="@Model.Prontuario.Id" 
+            <div class="d-flex gap-2 flex-wrap">
+                @if (!Model.Prontuario.Finalizado)
+                {
+                    <a href="/prontuario/cadastro/@Model.Prontuario.Id" class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                    </a>
+                    <form method="post" asp-page-handler="Finalizar" asp-route-id="@Model.Prontuario.Id" class="d-inline">
+                        <button type="submit" class="btn btn-warning btn-sm"
+                                onclick="return confirm('Finalizar este prontuário? Não será possível editar depois.');">
+                            <i class="bi bi-lock me-1"></i>Finalizar
+                        </button>
+                    </form>
+                }
+                <a asp-page-handler="DownloadPdf" asp-route-id="@Model.Prontuario.Id"
                    class="btn btn-success btn-sm">
                     <i class="bi bi-file-pdf me-1"></i>Baixar PDF
                 </a>
@@ -32,13 +49,13 @@ else
                 <dt class="col-sm-3">Queixa Principal</dt>
                 <dd class="col-sm-9">@Model.Prontuario.QueixaPrincipal</dd>
                 <dt class="col-sm-3">Observações</dt>
-                <dd class="col-sm-9">@Model.Prontuario.Observacoes</dd>
+                <dd class="col-sm-9" style="white-space: pre-wrap;">@Model.Prontuario.Observacoes</dd>
                 <dt class="col-sm-3">Evolução</dt>
-                <dd class="col-sm-9">@Model.Prontuario.Evolucao</dd>
+                <dd class="col-sm-9" style="white-space: pre-wrap;">@Model.Prontuario.Evolucao</dd>
                 <dt class="col-sm-3">Intervenções</dt>
-                <dd class="col-sm-9">@Model.Prontuario.Intervencoes</dd>
+                <dd class="col-sm-9" style="white-space: pre-wrap;">@Model.Prontuario.Intervencoes</dd>
                 <dt class="col-sm-3">Plano Terapêutico</dt>
-                <dd class="col-sm-9">@Model.Prontuario.PlanoTerapeutico</dd>
+                <dd class="col-sm-9" style="white-space: pre-wrap;">@Model.Prontuario.PlanoTerapeutico</dd>
                 <dt class="col-sm-3">Próxima Sessão</dt>
                 <dd class="col-sm-9">@Model.Prontuario.ProximaSessao</dd>
                 <dt class="col-sm-3">Estado Emocional</dt>
@@ -50,5 +67,22 @@ else
             </dl>
         </div>
     </div>
+
+    @if (!Model.Prontuario.Finalizado)
+    {
+        <div class="card mb-4">
+            <div class="card-header"><strong>Adicionar evolução / anotação</strong></div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="AdicionarEvolucao" asp-route-id="@Model.Prontuario.Id">
+                    <textarea asp-for="NovaEvolucao" class="form-control mb-3" rows="4"
+                              placeholder="Registre a evolução clínica desta sessão..." required></textarea>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Salvar evolução
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+
     <a class="btn btn-secondary" href="/prontuario">Voltar</a>
 }
