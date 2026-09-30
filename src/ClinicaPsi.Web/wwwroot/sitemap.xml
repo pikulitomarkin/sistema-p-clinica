@@ -37,6 +37,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.psiianasantos.com.br/Account/CriarConta</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.psiianasantos.com.br/Account/Register</loc>
     <lastmod>2026-09-30</lastmod>
     <changefreq>monthly</changefreq>
