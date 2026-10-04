@@ -1,0 +1,242 @@
+@page "/psicologia-londrina"
+@{
+    ViewData["Title"] = "Psicóloga online em Londrina | Teleterapia PsyAll";
+    ViewData["MetaDescription"] = "Psicóloga e psicólogo online em Londrina com a PsyAll: teleterapia digital a R$ 50, CRP validado e sala de vídeo na plataforma. Atendimento remoto para quem está em Londrina-PR.";
+    ViewData["Canonical"] = "https://psyall.com.br/psicologia-londrina";
+    ViewData["OgTitle"] = "Psicóloga online em Londrina | Teleterapia PsyAll";
+    ViewData["LocalCitySlug"] = "londrina";
+}
+
+@section JsonLd {
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "ProfessionalService",
+  "name": "PsyAll — Psicologia online em Londrina",
+  "url": "https://psyall.com.br/psicologia-londrina",
+  "image": "https://psyall.com.br/images/psyall-logo.png",
+  "description": "Plataforma digital de teleterapia PsyAll para pacientes em Londrina-PR. Consultas online a R$ 50 com psicólogos de CRP validado.",
+  "provider": {
+    "@@type": "Organization",
+    "name": "PsyAll",
+    "url": "https://psyall.com.br"
+  },
+  "areaServed": {
+    "@@type": "City",
+    "name": "Londrina",
+    "containedInPlace": {
+      "@@type": "State",
+      "name": "Paraná",
+      "containedInPlace": { "@@type": "Country", "name": "BR" }
+    }
+  },
+  "serviceType": "Teleterapia / psicologia online",
+  "priceRange": "R$50"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@@type": "ListItem", "position": 1, "name": "Início", "item": "https://psyall.com.br/" },
+    { "@@type": "ListItem", "position": 2, "name": "Psicologia no Paraná", "item": "https://psyall.com.br/psicologia-parana" },
+    { "@@type": "ListItem", "position": 3, "name": "Psicologia em Londrina", "item": "https://psyall.com.br/psicologia-londrina" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@@type": "Question",
+      "name": "Existe psicóloga online em Londrina pela PsyAll?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "Sim. A PsyAll oferece teleterapia digital para pacientes em Londrina-PR: você agenda com psicólogos de CRP validado e realiza a consulta por vídeo na plataforma, sem deslocamento até um consultório físico da marca."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "A PsyAll tem clínica física em Londrina?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "A sede administrativa da PsyAll fica em Londrina-PR. O atendimento clínico intermediado pela plataforma é exclusivamente online (teleterapia), com sala de vídeo integrada."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "Quanto custa a consulta online em Londrina?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "As consultas intermediadas pela PsyAll têm preço social padronizado de R$ 50,00."
+      }
+    }
+  ]
+}
+</script>
+}
+
+<section class="psy-hero psy-mkt-hero">
+    <div class="container psy-hero-inner">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8 psy-mkt-reveal">
+                <p class="psy-eyebrow">PsyAll · Londrina-PR</p>
+                <h1 class="psy-hero-title psy-mkt-title-sm">
+                    Psicóloga online em Londrina
+                </h1>
+                <p class="psy-hero-lead">
+                    Quem vive em <strong>Londrina</strong> pode cuidar da saúde mental com
+                    <strong>teleterapia digital</strong> na PsyAll: psicólogos com CRP validado,
+                    preço social de <strong>R$&nbsp;50</strong> e sala de vídeo na plataforma.
+                    A sede administrativa da PsyAll fica em Londrina — o atendimento clínico é online.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a href="/Account/CriarConta" class="btn btn-psy-primary btn-lg">Criar conta</a>
+                    <a href="/agendamento" class="btn btn-psy-ghost btn-lg">Agendar teleterapia</a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block psy-mkt-reveal psy-mkt-reveal-delay">
+                <div class="psy-price-anchor" aria-hidden="true">
+                    <span class="psy-price-anchor-label">Consulta online</span>
+                    <span class="psy-price-anchor-value">R$&nbsp;50</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section">
+    <div class="container">
+        <partial name="_LocalCityNav" />
+        <header class="psy-section-head psy-mkt-reveal mt-4">
+            <h2>Teleterapia para quem está em Londrina</h2>
+            <p>Plataforma digital — não é consultório presencial da marca em cada bairro.</p>
+        </header>
+        <div class="psy-benefit-list">
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-camera-video"></i></span>
+                <div>
+                    <h3>Psicologia online no ritmo da sua rotina</h3>
+                    <p>
+                        Em Londrina, entre trabalho, estudos e deslocamentos, a teleterapia
+                        elimina o tempo de deslocamento. Você entra na sala de vídeo pela PsyAll,
+                        no horário agendado, de onde estiver — em casa ou em um ambiente privado.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-shield-check"></i></span>
+                <div>
+                    <h3>Psicólogos com CRP validado</h3>
+                    <p>
+                        Antes de atender, o profissional passa por validação administrativa
+                        (documentos e carteira CRP). Em Londrina ou em qualquer cidade coberta,
+                        você escolhe perfis ativos com transparência.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-cash-coin"></i></span>
+                <div>
+                    <h3>Preço social de R$&nbsp;50</h3>
+                    <p>
+                        Consultas intermediadas pela plataforma custam R$&nbsp;50.
+                        <a href="/valor-social">Entenda o valor social</a> e o que esse valor sustenta.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-geo-alt"></i></span>
+                <div>
+                    <h3>Sede em Londrina, cuidado digital</h3>
+                    <p>
+                        A PsyAll tem sede administrativa em Londrina-PR. Isso não significa
+                        consultas presenciais da marca: o serviço clínico é <strong>somente teleterapia</strong>,
+                        disponível para pacientes londrinenses e de outras cidades.
+                    </p>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section psy-section-alt" id="como-funciona">
+    <div class="container">
+        <header class="psy-section-head psy-mkt-reveal">
+            <h2>Como agendar em Londrina</h2>
+            <p>Três passos para começar a terapia online.</p>
+        </header>
+        <div class="row g-4">
+            <div class="col-md-4 psy-mkt-reveal">
+                <div class="psy-step">
+                    <span class="psy-step-num">1</span>
+                    <h3>Crie sua conta</h3>
+                    <p>Cadastro gratuito como paciente — sem compromisso de agendar na hora.</p>
+                </div>
+            </div>
+            <div class="col-md-4 psy-mkt-reveal">
+                <div class="psy-step">
+                    <span class="psy-step-num">2</span>
+                    <h3>Escolha o profissional</h3>
+                    <p>Veja CRP, especialidades, avaliações e horários disponíveis.</p>
+                </div>
+            </div>
+            <div class="col-md-4 psy-mkt-reveal">
+                <div class="psy-step">
+                    <span class="psy-step-num">3</span>
+                    <h3>Entre na teleconsulta</h3>
+                    <p>No horário, acesse a sala de vídeo pela PsyAll e, depois, avalie.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section" id="faq">
+    <div class="container">
+        <header class="psy-section-head psy-mkt-reveal">
+            <h2>Perguntas frequentes — Londrina</h2>
+            <p>Respostas claras sobre psicologia online na região.</p>
+        </header>
+        <div class="psy-faq-list psy-mkt-reveal">
+            <details class="psy-faq-item" open>
+                <summary>A PsyAll substitui uma clínica psicológica presencial em Londrina?</summary>
+                <p>
+                    Não. A PsyAll é uma plataforma digital de teleterapia. Se você busca
+                    atendimento presencial em um consultório físico, escolha um profissional
+                    que ofereça esse formato fora da plataforma. Aqui, o foco é cuidado psicológico online.
+                </p>
+            </details>
+            <details class="psy-faq-item">
+                <summary>Posso fazer terapia online morando em Londrina?</summary>
+                <p>
+                    Sim. Pacientes em Londrina usam a PsyAll para agendar e realizar teleterapia
+                    com psicólogos ativos na plataforma, pelo preço social de R$&nbsp;50.
+                </p>
+            </details>
+            <details class="psy-faq-item">
+                <summary>Como escolher psicóloga ou psicólogo?</summary>
+                <p>
+                    Explore o <a href="/#psicologos">ranking e os perfis ativos</a>,
+                    confira especialidades e avaliações, e agende o horário que couber na sua rotina.
+                </p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section psy-cta">
+    <div class="container text-center psy-mkt-reveal">
+        <h2>Comece sua teleterapia em Londrina</h2>
+        <p>Crie conta gratuita ou vá direto ao agendamento.</p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <a href="/Account/CriarConta" class="btn btn-light btn-lg">Criar conta</a>
+            <a href="/agendamento" class="btn btn-outline-light btn-lg">Agendar</a>
+            <a href="/para-voce" class="btn btn-outline-light btn-lg">Benefícios</a>
+            <a href="/psicologia-parana" class="btn btn-outline-light btn-lg">Ver Paraná</a>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,225 @@
+@page "/psicologia-curitiba"
+@{
+    ViewData["Title"] = "Psicóloga online em Curitiba | Teleterapia PsyAll";
+    ViewData["MetaDescription"] = "Psicóloga e psicólogo online em Curitiba com a PsyAll: teleterapia digital a R$ 50, profissionais com CRP validado e consulta por vídeo. Atendimento remoto para Curitiba-PR.";
+    ViewData["Canonical"] = "https://psyall.com.br/psicologia-curitiba";
+    ViewData["OgTitle"] = "Psicóloga online em Curitiba | Teleterapia PsyAll";
+    ViewData["LocalCitySlug"] = "curitiba";
+}
+
+@section JsonLd {
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "ProfessionalService",
+  "name": "PsyAll — Psicologia online em Curitiba",
+  "url": "https://psyall.com.br/psicologia-curitiba",
+  "image": "https://psyall.com.br/images/psyall-logo.png",
+  "description": "Teleterapia digital PsyAll para pacientes em Curitiba-PR. Psicologia online a R$ 50 com psicólogos de CRP validado.",
+  "provider": {
+    "@@type": "Organization",
+    "name": "PsyAll",
+    "url": "https://psyall.com.br"
+  },
+  "areaServed": {
+    "@@type": "City",
+    "name": "Curitiba",
+    "containedInPlace": {
+      "@@type": "State",
+      "name": "Paraná",
+      "containedInPlace": { "@@type": "Country", "name": "BR" }
+    }
+  },
+  "serviceType": "Teleterapia / psicologia online",
+  "priceRange": "R$50"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@@type": "ListItem", "position": 1, "name": "Início", "item": "https://psyall.com.br/" },
+    { "@@type": "ListItem", "position": 2, "name": "Psicologia no Paraná", "item": "https://psyall.com.br/psicologia-parana" },
+    { "@@type": "ListItem", "position": 3, "name": "Psicologia em Curitiba", "item": "https://psyall.com.br/psicologia-curitiba" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@@type": "Question",
+      "name": "Como encontrar psicóloga online em Curitiba?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "Na PsyAll você cria conta, escolhe um psicólogo com CRP validado e agenda teleterapia. O atendimento é 100% online pela sala de vídeo da plataforma, disponível para quem está em Curitiba."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "A PsyAll tem consultório em Curitiba?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "Não. A PsyAll é uma plataforma digital de teleterapia. A sede administrativa fica em Londrina-PR; o atendimento clínico intermediado é remoto, para pacientes em Curitiba e outras cidades."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "Qual o valor da terapia online em Curitiba pela PsyAll?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "O preço social padronizado das consultas intermediadas pela PsyAll é de R$ 50,00."
+      }
+    }
+  ]
+}
+</script>
+}
+
+<section class="psy-hero psy-mkt-hero">
+    <div class="container psy-hero-inner">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8 psy-mkt-reveal">
+                <p class="psy-eyebrow">PsyAll · Curitiba-PR</p>
+                <h1 class="psy-hero-title psy-mkt-title-sm">
+                    Psicóloga online em Curitiba
+                </h1>
+                <p class="psy-hero-lead">
+                    Para quem está em <strong>Curitiba</strong>, a PsyAll oferece
+                    <strong>psicologia online</strong> com teleterapia integrada:
+                    escolha profissionais validados, pague o preço social de
+                    <strong>R$&nbsp;50</strong> e faça a sessão por vídeo — sem clínica física da marca na capital.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a href="/Account/CriarConta" class="btn btn-psy-primary btn-lg">Criar conta</a>
+                    <a href="/agendamento" class="btn btn-psy-ghost btn-lg">Agendar teleterapia</a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block psy-mkt-reveal psy-mkt-reveal-delay">
+                <div class="psy-price-anchor" aria-hidden="true">
+                    <span class="psy-price-anchor-label">Consulta online</span>
+                    <span class="psy-price-anchor-value">R$&nbsp;50</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section">
+    <div class="container">
+        <partial name="_LocalCityNav" />
+        <header class="psy-section-head psy-mkt-reveal mt-4">
+            <h2>Clínica psicológica digital para Curitiba</h2>
+            <p>Atendimento remoto com a estrutura de uma plataforma clínica completa.</p>
+        </header>
+        <div class="psy-benefit-list">
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-buildings"></i></span>
+                <div>
+                    <h3>Menos deslocamento na capital</h3>
+                    <p>
+                        O trânsito e a agenda apertada de Curitiba tornam a teleterapia
+                        uma opção prática: você mantém o acompanhamento psicológico sem
+                        precisar ir a um endereço físico da PsyAll (porque esse modelo não existe —
+                        o serviço é digital).
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-person-check"></i></span>
+                <div>
+                    <h3>Rede de psicólogos ativos</h3>
+                    <p>
+                        Pacientes curitibanos escolhem entre profissionais com perfil ativo,
+                        especialidades visíveis e avaliações após consultas realizadas.
+                        A validação de CRP acontece antes do atendimento na plataforma.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-laptop"></i></span>
+                <div>
+                    <h3>Sala de vídeo na própria PsyAll</h3>
+                    <p>
+                        Não depende de app externo obrigatório: a consulta online acontece
+                        na sala integrada. Ideal para quem quer previsibilidade e histórico
+                        na área do paciente.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-heart"></i></span>
+                <div>
+                    <h3>Preço social transparente</h3>
+                    <p>
+                        R$&nbsp;50 por consulta intermediada — valor pensado para ampliar acesso
+                        à terapia online. Detalhes em <a href="/valor-social">valor social</a>.
+                    </p>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section psy-section-alt" id="para-quem">
+    <div class="container">
+        <div class="psy-mkt-split psy-mkt-reveal">
+            <p class="psy-eyebrow mb-2">Transparência</p>
+            <h2>Serviço digital, não filial curitibana</h2>
+            <p>
+                Buscas por “clínica psicológica Curitiba” ou “psicóloga Curitiba” costumam
+                apontar para consultórios presenciais. A PsyAll é outra proposta: uma
+                <strong>plataforma de teleterapia</strong> que atende pacientes em Curitiba
+                e no Paraná, com sede administrativa em Londrina. Se você precisa de
+                atendimento online acessível e organizado, este é o caminho.
+            </p>
+            <a href="/para-voce" class="btn btn-psy-ghost mt-2">Ver benefícios para pacientes</a>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section" id="faq">
+    <div class="container">
+        <header class="psy-section-head psy-mkt-reveal">
+            <h2>Perguntas frequentes — Curitiba</h2>
+        </header>
+        <div class="psy-faq-list psy-mkt-reveal">
+            <details class="psy-faq-item" open>
+                <summary>A terapia online funciona bem em Curitiba?</summary>
+                <p>
+                    Sim, desde que você tenha conexão estável e um espaço privado.
+                    A PsyAll estrutura agenda, sala de vídeo e histórico para o acompanhamento contínuo.
+                </p>
+            </details>
+            <details class="psy-faq-item">
+                <summary>Preciso morar em Curitiba para usar a PsyAll?</summary>
+                <p>
+                    Não. A plataforma atende pacientes em várias cidades do Paraná e do Brasil.
+                    Esta página é para quem busca psicologia online com intenção local em Curitiba.
+                </p>
+            </details>
+            <details class="psy-faq-item">
+                <summary>Como começar hoje?</summary>
+                <p>
+                    <a href="/Account/CriarConta">Crie sua conta</a> ou
+                    <a href="/agendamento">vá ao agendamento</a> e escolha um psicólogo ativo.
+                </p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section psy-cta">
+    <div class="container text-center psy-mkt-reveal">
+        <h2>Teleterapia em Curitiba começa aqui</h2>
+        <p>Cadastre-se ou agende sua consulta online a R$&nbsp;50.</p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <a href="/Account/CriarConta" class="btn btn-light btn-lg">Criar conta</a>
+            <a href="/agendamento" class="btn btn-outline-light btn-lg">Agendar</a>
+            <a href="/psicologia-parana" class="btn btn-outline-light btn-lg">Ver Paraná</a>
+        </div>
+    </div>
+</section>

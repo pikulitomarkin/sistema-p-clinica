@@ -6,6 +6,11 @@ User-agent: *
 Allow: /
 Allow: /para-voce
 Allow: /valor-social
+Allow: /psicologia-parana
+Allow: /psicologia-londrina
+Allow: /psicologia-curitiba
+Allow: /psicologia-guarapuava
+Allow: /psicologia-cascavel
 Allow: /agendamento
 Allow: /Agendamento
 Allow: /ranking

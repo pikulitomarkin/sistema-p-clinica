@@ -1289,6 +1289,143 @@ html, body {
     }
 }
 
+/* ===== Local SEO city pages ===== */
+.psy-city-nav {
+    max-width: 720px;
+    margin: 0 auto 0.5rem;
+    text-align: center;
+}
+.psy-city-nav-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: var(--brand-muted);
+    margin-bottom: 0.65rem;
+}
+.psy-city-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+.psy-city-nav-link {
+    display: inline-block;
+    padding: 0.4rem 0.85rem;
+    border-radius: 10px;
+    border: 1px solid var(--brand-border);
+    color: var(--brand-ink);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.92rem;
+    background: rgba(255, 255, 255, 0.55);
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+a.psy-city-nav-link:hover {
+    border-color: var(--brand-secondary);
+    color: var(--brand-primary);
+    background: var(--brand-gradient-chip);
+}
+.psy-city-nav-link.is-active {
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+    background: var(--brand-gradient-chip);
+}
+
+.psy-city-home-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 720px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: center;
+}
+.psy-city-home-list a {
+    display: inline-block;
+    padding: 0.55rem 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--brand-border);
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--brand-ink);
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.psy-city-home-list a:hover {
+    border-color: var(--brand-secondary);
+    background: var(--brand-gradient-chip);
+    color: var(--brand-primary);
+    transform: translateY(-1px);
+}
+
+.psy-city-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    height: 100%;
+    padding: 1.25rem 1.1rem;
+    border-radius: 14px;
+    border: 1px solid var(--brand-border);
+    background: linear-gradient(160deg, rgba(255,255,255,0.9), var(--brand-gradient-chip));
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.psy-city-card:hover {
+    border-color: var(--brand-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(var(--brand-primary-rgb), 0.1);
+    color: inherit;
+}
+.psy-city-card-label {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--brand-ink);
+}
+.psy-city-card-meta {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+
+.psy-faq-list {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.psy-faq-item {
+    border: 1px solid var(--brand-border);
+    border-radius: 12px;
+    padding: 0.85rem 1.1rem;
+    background: rgba(255, 255, 255, 0.55);
+}
+.psy-faq-item summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--brand-ink);
+    list-style: none;
+}
+.psy-faq-item summary::-webkit-details-marker { display: none; }
+.psy-faq-item summary::after {
+    content: "+";
+    float: right;
+    color: var(--brand-secondary);
+    font-weight: 700;
+}
+.psy-faq-item[open] summary::after { content: "–"; }
+.psy-faq-item p {
+    margin: 0.75rem 0 0.15rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+}
+
 @media (max-width: 768px) {
     .psy-hero { padding: 2.5rem 0 3rem; text-align: center; }
     .psy-hero-lead { margin-inline: auto; }

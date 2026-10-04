@@ -36,6 +36,19 @@ Site canônico: https://psyall.com.br
 - Sitemap: https://psyall.com.br/sitemap.xml
 - Robots: https://psyall.com.br/robots.txt
 
+## SEO local — teleterapia no Paraná
+
+Importante: a PsyAll é teleterapia digital (sem clínicas físicas da marca em cada cidade).
+Sede administrativa em Londrina-PR; atendimento clínico online para pacientes nessas regiões.
+
+- Hub Paraná: https://psyall.com.br/psicologia-parana
+- Londrina: https://psyall.com.br/psicologia-londrina
+- Curitiba: https://psyall.com.br/psicologia-curitiba
+- Guarapuava: https://psyall.com.br/psicologia-guarapuava
+- Cascavel: https://psyall.com.br/psicologia-cascavel
+
+Palavras-chave locais relevantes (serviço online): psicologia / psicóloga / clínica psicológica + Londrina, Curitiba, Guarapuava, Cascavel, Paraná — sempre no contexto de teleterapia digital a R$ 50.
+
 ## Áreas privadas (não indexar / não citar dados sensíveis)
 
 - /Account/Login e recuperação de senha

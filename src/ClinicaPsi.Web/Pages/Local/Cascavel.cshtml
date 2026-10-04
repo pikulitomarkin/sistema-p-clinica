@@ -1,0 +1,241 @@
+@page "/psicologia-cascavel"
+@{
+    ViewData["Title"] = "Psicóloga online em Cascavel | Teleterapia PsyAll";
+    ViewData["MetaDescription"] = "Psicóloga e psicólogo online em Cascavel com a PsyAll: teleterapia digital a R$ 50, CRP validado e sala de vídeo. Atendimento remoto para Cascavel-PR.";
+    ViewData["Canonical"] = "https://psyall.com.br/psicologia-cascavel";
+    ViewData["OgTitle"] = "Psicóloga online em Cascavel | Teleterapia PsyAll";
+    ViewData["LocalCitySlug"] = "cascavel";
+}
+
+@section JsonLd {
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "ProfessionalService",
+  "name": "PsyAll — Psicologia online em Cascavel",
+  "url": "https://psyall.com.br/psicologia-cascavel",
+  "image": "https://psyall.com.br/images/psyall-logo.png",
+  "description": "Teleterapia digital PsyAll para pacientes em Cascavel-PR. Psicologia online a R$ 50 com psicólogos de CRP validado.",
+  "provider": {
+    "@@type": "Organization",
+    "name": "PsyAll",
+    "url": "https://psyall.com.br"
+  },
+  "areaServed": {
+    "@@type": "City",
+    "name": "Cascavel",
+    "containedInPlace": {
+      "@@type": "State",
+      "name": "Paraná",
+      "containedInPlace": { "@@type": "Country", "name": "BR" }
+    }
+  },
+  "serviceType": "Teleterapia / psicologia online",
+  "priceRange": "R$50"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@@type": "ListItem", "position": 1, "name": "Início", "item": "https://psyall.com.br/" },
+    { "@@type": "ListItem", "position": 2, "name": "Psicologia no Paraná", "item": "https://psyall.com.br/psicologia-parana" },
+    { "@@type": "ListItem", "position": 3, "name": "Psicologia em Cascavel", "item": "https://psyall.com.br/psicologia-cascavel" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@@type": "Question",
+      "name": "Como fazer terapia online em Cascavel com a PsyAll?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "Crie uma conta de paciente, escolha um psicólogo ativo com CRP validado, agende o horário e entre na sala de vídeo da PsyAll. O serviço cobre pacientes em Cascavel-PR de forma 100% digital."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "Existe unidade PsyAll em Cascavel?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "Não. A PsyAll não opera clínicas físicas por cidade. A sede administrativa fica em Londrina-PR e o atendimento clínico é teleterapia online."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "Qual o preço da consulta psicológica online em Cascavel?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "R$ 50,00 por consulta intermediada pela plataforma (preço social)."
+      }
+    }
+  ]
+}
+</script>
+}
+
+<section class="psy-hero psy-mkt-hero">
+    <div class="container psy-hero-inner">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8 psy-mkt-reveal">
+                <p class="psy-eyebrow">PsyAll · Cascavel-PR</p>
+                <h1 class="psy-hero-title psy-mkt-title-sm">
+                    Psicóloga online em Cascavel
+                </h1>
+                <p class="psy-hero-lead">
+                    Quem está em <strong>Cascavel</strong> encontra na PsyAll uma
+                    <strong>plataforma de teleterapia</strong> com psicólogos validados,
+                    consultas a <strong>R$&nbsp;50</strong> e sala de vídeo integrada —
+                    atendimento digital para a região Oeste do Paraná, sem filial física da marca.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a href="/Account/CriarConta" class="btn btn-psy-primary btn-lg">Criar conta</a>
+                    <a href="/agendamento" class="btn btn-psy-ghost btn-lg">Agendar teleterapia</a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block psy-mkt-reveal psy-mkt-reveal-delay">
+                <div class="psy-price-anchor" aria-hidden="true">
+                    <span class="psy-price-anchor-label">Consulta online</span>
+                    <span class="psy-price-anchor-value">R$&nbsp;50</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section">
+    <div class="container">
+        <partial name="_LocalCityNav" />
+        <header class="psy-section-head psy-mkt-reveal mt-4">
+            <h2>Psicologia online para Cascavel e região</h2>
+            <p>Cuidado mental remoto com estrutura de agenda, vídeo e avaliações.</p>
+        </header>
+        <div class="psy-benefit-list">
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-compass"></i></span>
+                <div>
+                    <h3>Oeste do Paraná com acesso digital</h3>
+                    <p>
+                        Cascavel concentra rotina intensa e demandas de saúde mental
+                        como qualquer grande centro. A teleterapia PsyAll permite
+                        começar (ou retomar) o acompanhamento sem depender de uma
+                        unidade presencial da plataforma na cidade.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-shield-lock"></i></span>
+                <div>
+                    <h3>Plataforma alinhada à privacidade</h3>
+                    <p>
+                        Conta do paciente, histórico e política de privacidade claros.
+                        Dados tratados com atenção à LGPD —
+                        <a href="/privacidade">veja a política</a>.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-star-half"></i></span>
+                <div>
+                    <h3>Avaliações após a consulta</h3>
+                    <p>
+                        Depois do atendimento realizado, você pode avaliar o profissional.
+                        O ranking público destaca experiências consistentes.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-piggy-bank"></i></span>
+                <div>
+                    <h3>Preço social de R$&nbsp;50</h3>
+                    <p>
+                        Valor padronizado nas consultas intermediadas pela PsyAll.
+                        Transparência em <a href="/valor-social">valor social</a>.
+                    </p>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section psy-section-alt" id="como-comecar">
+    <div class="container">
+        <header class="psy-section-head psy-mkt-reveal">
+            <h2>Como começar em Cascavel</h2>
+            <p>Do cadastro à primeira teleconsulta.</p>
+        </header>
+        <div class="row g-4">
+            <div class="col-md-4 psy-mkt-reveal">
+                <div class="psy-step">
+                    <span class="psy-step-num">1</span>
+                    <h3>Cadastre-se</h3>
+                    <p>Conta gratuita de paciente na PsyAll.</p>
+                </div>
+            </div>
+            <div class="col-md-4 psy-mkt-reveal">
+                <div class="psy-step">
+                    <span class="psy-step-num">2</span>
+                    <h3>Escolha o psicólogo</h3>
+                    <p>CRP, especialidades e avaliações à vista.</p>
+                </div>
+            </div>
+            <div class="col-md-4 psy-mkt-reveal">
+                <div class="psy-step">
+                    <span class="psy-step-num">3</span>
+                    <h3>Faça a sessão online</h3>
+                    <p>Entre na sala de vídeo no horário marcado.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section" id="faq">
+    <div class="container">
+        <header class="psy-section-head psy-mkt-reveal">
+            <h2>Perguntas frequentes — Cascavel</h2>
+        </header>
+        <div class="psy-faq-list psy-mkt-reveal">
+            <details class="psy-faq-item" open>
+                <summary>Busco “clínica psicológica Cascavel” — a PsyAll serve?</summary>
+                <p>
+                    Se você precisa de atendimento <strong>online</strong>, sim.
+                    Se busca exclusivamente um consultório físico na cidade, a PsyAll
+                    não substitui esse formato: somos teleterapia digital.
+                </p>
+            </details>
+            <details class="psy-faq-item">
+                <summary>Psicólogos de Cascavel atendem na plataforma?</summary>
+                <p>
+                    A rede inclui profissionais ativos validados pela PsyAll.
+                    Você escolhe pelo perfil e disponibilidade — o atendimento ocorre online,
+                    independentemente da cidade do paciente.
+                </p>
+            </details>
+            <details class="psy-faq-item">
+                <summary>Como falar com suporte?</summary>
+                <p>
+                    Use os canais da <a href="/#contato">home (seção contato)</a>.
+                    A sede administrativa fica em Londrina-PR.
+                </p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section psy-cta">
+    <div class="container text-center psy-mkt-reveal">
+        <h2>Teleterapia em Cascavel na PsyAll</h2>
+        <p>Crie conta ou agende sua consulta online a R$&nbsp;50.</p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <a href="/Account/CriarConta" class="btn btn-light btn-lg">Criar conta</a>
+            <a href="/agendamento" class="btn btn-outline-light btn-lg">Agendar</a>
+            <a href="/psicologia-parana" class="btn btn-outline-light btn-lg">Ver Paraná</a>
+        </div>
+    </div>
+</section>

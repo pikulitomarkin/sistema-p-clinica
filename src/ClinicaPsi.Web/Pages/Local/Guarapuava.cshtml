@@ -1,0 +1,222 @@
+@page "/psicologia-guarapuava"
+@{
+    ViewData["Title"] = "Psicóloga online em Guarapuava | Teleterapia PsyAll";
+    ViewData["MetaDescription"] = "Psicóloga e psicólogo online em Guarapuava com a PsyAll: teleterapia digital a R$ 50, CRP validado e consulta por vídeo. Atendimento remoto para Guarapuava-PR.";
+    ViewData["Canonical"] = "https://psyall.com.br/psicologia-guarapuava";
+    ViewData["OgTitle"] = "Psicóloga online em Guarapuava | Teleterapia PsyAll";
+    ViewData["LocalCitySlug"] = "guarapuava";
+}
+
+@section JsonLd {
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "ProfessionalService",
+  "name": "PsyAll — Psicologia online em Guarapuava",
+  "url": "https://psyall.com.br/psicologia-guarapuava",
+  "image": "https://psyall.com.br/images/psyall-logo.png",
+  "description": "Teleterapia digital PsyAll para pacientes em Guarapuava-PR. Psicologia online a R$ 50 com psicólogos de CRP validado.",
+  "provider": {
+    "@@type": "Organization",
+    "name": "PsyAll",
+    "url": "https://psyall.com.br"
+  },
+  "areaServed": {
+    "@@type": "City",
+    "name": "Guarapuava",
+    "containedInPlace": {
+      "@@type": "State",
+      "name": "Paraná",
+      "containedInPlace": { "@@type": "Country", "name": "BR" }
+    }
+  },
+  "serviceType": "Teleterapia / psicologia online",
+  "priceRange": "R$50"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@@type": "ListItem", "position": 1, "name": "Início", "item": "https://psyall.com.br/" },
+    { "@@type": "ListItem", "position": 2, "name": "Psicologia no Paraná", "item": "https://psyall.com.br/psicologia-parana" },
+    { "@@type": "ListItem", "position": 3, "name": "Psicologia em Guarapuava", "item": "https://psyall.com.br/psicologia-guarapuava" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@@type": "Question",
+      "name": "Tem psicóloga online em Guarapuava pela PsyAll?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "Sim. Pacientes em Guarapuava podem usar a PsyAll para agendar teleterapia com psicólogos de CRP validado. O atendimento é digital, pela sala de vídeo da plataforma."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "A PsyAll tem clínica em Guarapuava?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "Não há unidade física da PsyAll em Guarapuava. A sede administrativa fica em Londrina-PR e o serviço clínico é exclusivamente online."
+      }
+    },
+    {
+      "@@type": "Question",
+      "name": "Quanto custa a consulta psicológica online em Guarapuava?",
+      "acceptedAnswer": {
+        "@@type": "Answer",
+        "text": "Consultas intermediadas pela PsyAll custam R$ 50,00 (preço social padronizado)."
+      }
+    }
+  ]
+}
+</script>
+}
+
+<section class="psy-hero psy-mkt-hero">
+    <div class="container psy-hero-inner">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8 psy-mkt-reveal">
+                <p class="psy-eyebrow">PsyAll · Guarapuava-PR</p>
+                <h1 class="psy-hero-title psy-mkt-title-sm">
+                    Psicóloga online em Guarapuava
+                </h1>
+                <p class="psy-hero-lead">
+                    Em <strong>Guarapuava</strong>, a PsyAll amplia o acesso à
+                    <strong>psicologia online</strong>: teleterapia com profissionais validados,
+                    preço social de <strong>R$&nbsp;50</strong> e consulta por vídeo —
+                    sem depender de uma clínica física da marca na cidade.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a href="/Account/CriarConta" class="btn btn-psy-primary btn-lg">Criar conta</a>
+                    <a href="/agendamento" class="btn btn-psy-ghost btn-lg">Agendar teleterapia</a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block psy-mkt-reveal psy-mkt-reveal-delay">
+                <div class="psy-price-anchor" aria-hidden="true">
+                    <span class="psy-price-anchor-label">Consulta online</span>
+                    <span class="psy-price-anchor-value">R$&nbsp;50</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section">
+    <div class="container">
+        <partial name="_LocalCityNav" />
+        <header class="psy-section-head psy-mkt-reveal mt-4">
+            <h2>Por que teleterapia faz sentido em Guarapuava</h2>
+            <p>Cuidado psicológico digital com transparência e preço acessível.</p>
+        </header>
+        <div class="psy-benefit-list">
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-wifi"></i></span>
+                <div>
+                    <h3>Acesso sem barreira geográfica</h3>
+                    <p>
+                        Nem sempre a agenda local ou a distância até um consultório
+                        combinam com o momento em que você precisa de apoio.
+                        Com a PsyAll, quem está em Guarapuava agenda teleterapia
+                        e conversa com o psicólogo pela plataforma.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-clipboard2-check"></i></span>
+                <div>
+                    <h3>Profissionais com validação</h3>
+                    <p>
+                        CRP e documentos passam por checagem administrativa antes do atendimento.
+                        Você escolhe especialidades e vê avaliações de consultas reais.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-calendar2-week"></i></span>
+                <div>
+                    <h3>Agenda e histórico organizados</h3>
+                    <p>
+                        Marque horários, entre na sala no dia da sessão e acompanhe
+                        o histórico na área do paciente — tudo no mesmo ambiente digital.
+                    </p>
+                </div>
+            </article>
+            <article class="psy-benefit-row psy-mkt-reveal">
+                <span class="psy-benefit-icon" aria-hidden="true"><i class="bi bi-currency-dollar"></i></span>
+                <div>
+                    <h3>R$&nbsp;50 por sessão na plataforma</h3>
+                    <p>
+                        Preço social padronizado para consultas intermediadas.
+                        Saiba mais em <a href="/valor-social">valor social</a>.
+                    </p>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section psy-section-alt" id="honestidade">
+    <div class="container">
+        <div class="psy-mkt-split psy-mkt-reveal">
+            <p class="psy-eyebrow mb-2">Como funciona de verdade</p>
+            <h2>Plataforma digital cobrindo Guarapuava</h2>
+            <p>
+                Não inventamos um endereço de “clínica PsyAll Guarapuava”.
+                O que oferecemos é atendimento psicológico <strong>online</strong>
+                para pacientes da região, com sede administrativa em Londrina-PR.
+                Se a busca é por psicóloga ou clínica psicológica em Guarapuava
+                no formato digital, a PsyAll é a opção de teleterapia a preço social.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section" id="faq">
+    <div class="container">
+        <header class="psy-section-head psy-mkt-reveal">
+            <h2>Perguntas frequentes — Guarapuava</h2>
+        </header>
+        <div class="psy-faq-list psy-mkt-reveal">
+            <details class="psy-faq-item" open>
+                <summary>Preciso de computador ou celular?</summary>
+                <p>
+                    Um dispositivo com câmera, microfone e internet estável basta.
+                    A sala de teleconsulta fica na própria PsyAll.
+                </p>
+            </details>
+            <details class="psy-faq-item">
+                <summary>Posso avaliar o psicólogo depois?</summary>
+                <p>
+                    Sim. Após a consulta realizada, paciente e profissional podem avaliar —
+                    o ranking público ajuda outros pacientes a escolher.
+                </p>
+            </details>
+            <details class="psy-faq-item">
+                <summary>Onde ver mais cidades do Paraná?</summary>
+                <p>
+                    No hub <a href="/psicologia-parana">Psicologia no Paraná</a>
+                    você encontra Londrina, Curitiba, Cascavel e outras páginas locais.
+                </p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<section class="psy-section psy-cta">
+    <div class="container text-center psy-mkt-reveal">
+        <h2>Comece a terapia online em Guarapuava</h2>
+        <p>Conta gratuita e teleterapia a R$&nbsp;50 na PsyAll.</p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center">
+            <a href="/Account/CriarConta" class="btn btn-light btn-lg">Criar conta</a>
+            <a href="/agendamento" class="btn btn-outline-light btn-lg">Agendar</a>
+            <a href="/psicologia-parana" class="btn btn-outline-light btn-lg">Ver Paraná</a>
+        </div>
+    </div>
+</section>
