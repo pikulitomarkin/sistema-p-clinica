@@ -48,7 +48,7 @@
 
 ### Passo 3: Enviar Sitemap
 1. No Search Console, vá em "Sitemaps"
-2. Digite: `sitemap.xml`
+2. Digite exatamente: `sitemap.xml` (não envie `robots.txt` nem `/sitemaps`)
 3. Clique em "Enviar"
 4. Aguarde processamento (algumas horas)
 

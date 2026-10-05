@@ -4,6 +4,8 @@
 
 User-agent: *
 Allow: /
+Allow: /sitemap.xml
+Allow: /robots.txt
 Allow: /para-voce
 Allow: /valor-social
 Allow: /psicologia-parana
@@ -50,6 +52,8 @@ Disallow: /FixUserId
 # --- Busca ---
 User-agent: Googlebot
 Allow: /
+Allow: /sitemap.xml
+Allow: /robots.txt
 Allow: /Account/CriarConta
 Allow: /Account/Register
 Allow: /Account/RegisterPsicologo
@@ -75,6 +79,8 @@ Disallow: /test/
 
 User-agent: Bingbot
 Allow: /
+Allow: /sitemap.xml
+Allow: /robots.txt
 Allow: /Account/CriarConta
 Allow: /Account/Register
 Allow: /Account/RegisterPsicologo

@@ -415,6 +415,41 @@ if (!app.Environment.IsDevelopment())
 
 // COMENTADO: WhatsApp webhook precisa aceitar HTTP  
 // app.UseHttpsRedirection();
+
+// Sitemap/robots com Content-Type correto (Google Search Console / Googlebot).
+// Middleware antes de UseStaticFiles para não depender do MIME map padrão (text/xml).
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value ?? string.Empty;
+    if (path.Equals("/sitemap.xml", StringComparison.OrdinalIgnoreCase))
+    {
+        var file = Path.Combine(app.Environment.WebRootPath, "sitemap.xml");
+        if (System.IO.File.Exists(file))
+        {
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            context.Response.ContentType = "application/xml; charset=utf-8";
+            context.Response.Headers.CacheControl = "public,max-age=3600";
+            context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+            await context.Response.SendFileAsync(file);
+            return;
+        }
+    }
+    else if (path.Equals("/robots.txt", StringComparison.OrdinalIgnoreCase))
+    {
+        var file = Path.Combine(app.Environment.WebRootPath, "robots.txt");
+        if (System.IO.File.Exists(file))
+        {
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            context.Response.ContentType = "text/plain; charset=utf-8";
+            context.Response.Headers.CacheControl = "public,max-age=3600";
+            await context.Response.SendFileAsync(file);
+            return;
+        }
+    }
+
+    await next();
+});
+
 app.UseStaticFiles();
 
 // Fotos de perfil em volume persistente (/app/data/uploads) — URL pública /uploads/...
