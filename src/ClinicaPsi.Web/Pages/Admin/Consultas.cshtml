@@ -5,15 +5,7 @@
     Layout = "~/Pages/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-0">
-            <i class="bi bi-calendar-check text-primary me-2"></i>
-            Gestão de Consultas
-        </h1>
-        <p class="text-muted mb-0">Gerencie todas as consultas da clínica</p>
-    </div>
-</div>
+<page-header title="Gestão de consultas" subtitle="Acompanhe agendamentos, status e pagamentos da clínica." icon="bi-calendar-check" />
 
 @if (TempData["SuccessMessage"] != null)
 {

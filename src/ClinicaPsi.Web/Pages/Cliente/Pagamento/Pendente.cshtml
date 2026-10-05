@@ -5,15 +5,12 @@
     Layout = "_AdminLayout";
 }
 
-<div class="container py-5">
-    <div class="text-center mx-auto" style="max-width: 520px;">
-        <div class="mb-3" style="font-size: 3rem; color: var(--brand-secondary, #1ab8b0);">
-            <i class="bi bi-hourglass-split"></i>
-        </div>
-        <h1 class="h3 mb-2">Pagamento em análise</h1>
+<page-header title="Pagamento em análise" subtitle="Assim que o Mercado Pago confirmar, a consulta será marcada como paga." icon="bi-hourglass-split" />
+<div class="admin-card">
+    <div class="admin-card-body text-center py-5">
+        <div class="auth-icon mx-auto mb-3"><i class="bi bi-hourglass-split"></i></div>
         <p class="text-muted mb-4">
-            Recebemos sua solicitação (ex.: PIX aguardando confirmação). Assim que o Mercado Pago confirmar,
-            a consulta será marcada como paga automaticamente.
+            Recebemos sua solicitação. PIX e outros meios assíncronos podem levar alguns minutos.
         </p>
         <a href="/Cliente/MinhasConsultas" class="btn btn-primary">Minhas Consultas</a>
         @if (Model.Consulta is not null)

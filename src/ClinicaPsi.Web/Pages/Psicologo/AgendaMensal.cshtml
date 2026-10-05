@@ -6,29 +6,17 @@
     var culturaBR = new System.Globalization.CultureInfo("pt-BR");
 }
 
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="mb-1">
-                        <i class="bi bi-calendar3 me-2"></i>
-                        Agenda Mensal
-                    </h2>
-                    <p class="text-muted mb-0">@Model.MesSelecionado.ToString("MMMM 'de' yyyy", culturaBR).ToUpper()</p>
-                </div>
-                <div class="btn-group">
-                    <a href="/psicologo/agenda/diaria" class="btn btn-outline-primary">
-                        <i class="bi bi-calendar-day me-2"></i>Diária
-                    </a>
-                    <a href="/psicologo/agenda" class="btn btn-outline-primary">
-                        <i class="bi bi-calendar-week me-2"></i>Semanal
-                    </a>
-                </div>
-            </div>
+<div class="container-fluid py-2">
+    <page-header title="Agenda mensal" subtitle="@Model.MesSelecionado.ToString("MMMM 'de' yyyy", culturaBR)" icon="bi-calendar3">
+        <div class="btn-group">
+            <a href="/psicologo/agenda/diaria" class="btn btn-outline-primary">
+                <i class="bi bi-calendar-day me-2"></i>Diária
+            </a>
+            <a href="/psicologo/agenda" class="btn btn-outline-primary">
+                <i class="bi bi-calendar-week me-2"></i>Semanal
+            </a>
         </div>
-    </div>
+    </page-header>
 
     <!-- Navegação do Mês -->
     <div class="card shadow-sm mb-4">

@@ -6,6 +6,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @{
     ViewData["Title"] = "Gestão de Usuários - Admin";
+    Layout = "_AdminLayout";
 }
 
 <div class="container my-4">
@@ -17,22 +18,12 @@
         </ol>
     </nav>
 
-    <!-- Header da Página -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2 class="text-success fw-bold">
-                <i class="bi bi-people-fill me-2"></i>
-                Gestão de Usuários
-            </h2>
-            <p class="text-muted">Gerencie pacientes, psicólogos e administradores do sistema</p>
-        </div>
-        <div class="col-md-4 text-end">
-            <a href="/admin/usuarios/novo" class="btn btn-modern">
-                <i class="bi bi-person-plus me-2"></i>
-                Novo Usuário
-            </a>
-        </div>
-    </div>
+    <page-header title="Gestão de usuários" subtitle="Pacientes, psicólogos e administradores do sistema." icon="bi-people-fill">
+        <a href="/admin/usuarios/novo" class="btn btn-primary">
+            <i class="bi bi-person-plus me-2"></i>
+            Novo Usuário
+        </a>
+    </page-header>
 
     <!-- Filtros e Busca -->
     <div class="modern-card mb-4">

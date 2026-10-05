@@ -1,0 +1,14 @@
+@model ClinicaPsi.Web.Ui.AppPageHeaderModel
+<div class="admin-page-header">
+    <h1 class="admin-page-title mb-1">
+        @if (!string.IsNullOrWhiteSpace(Model.Icon))
+        {
+            <i class="bi @Model.Icon me-2"></i>
+        }
+        @Model.Title
+    </h1>
+    @if (!string.IsNullOrWhiteSpace(Model.Subtitle))
+    {
+        <p class="admin-page-subtitle mb-0">@Model.Subtitle</p>
+    }
+</div>

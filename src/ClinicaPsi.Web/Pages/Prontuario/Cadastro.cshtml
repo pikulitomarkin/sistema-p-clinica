@@ -5,7 +5,9 @@
     ViewData["Title"] = Model.Edicao ? "Editar Prontuário" : "Novo Prontuário";
     Layout = "~/Pages/Shared/_AdminLayout.cshtml";
 }
-<h1>@ViewData["Title"]</h1>
+<page-header title="@(Model.Edicao ? "Editar prontuário" : "Novo prontuário")" subtitle="Registro clínico da sessão." icon="bi-journal-plus">
+    <a class="btn btn-outline-secondary" href="/prontuario"><i class="bi bi-arrow-left me-1"></i>Voltar</a>
+</page-header>
 
 @if (TempData["SuccessMessage"] != null)
 {
