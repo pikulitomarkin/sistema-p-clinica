@@ -3,17 +3,25 @@
     ViewData["Robots"] = "noindex, nofollow";
 }
 
-<h1 class="text-danger">Erro.</h1>
-<h2 class="text-danger">Ocorreu um erro ao processar sua solicitação.</h2>
-
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
-
-<h3>Development Mode</h3>
-<p>
-    Trocar para <strong>Produção</strong> irá desabilitar informações detalhadas de erro.
-</p>
+<div class="public-band">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="auth-card">
+                    <div class="auth-card__header">
+                        <div class="auth-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                        <h1 class="auth-title">Não foi possível concluir</h1>
+                        <p class="auth-subtitle">Ocorreu um erro ao processar esta solicitação.</p>
+                    </div>
+                    <div class="auth-card__body text-center">
+                        @if (Model.ShowRequestId)
+                        {
+                            <p class="text-muted">Código de referência: <code>@Model.RequestId</code></p>
+                        }
+                        <a href="/" class="btn btn-primary">Voltar ao início</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

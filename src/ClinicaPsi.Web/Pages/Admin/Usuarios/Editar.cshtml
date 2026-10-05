@@ -4,6 +4,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @{
     ViewData["Title"] = "Editar Usuário - Admin";
+    Layout = "_AdminLayout";
 }
 
 <div class="container my-4">
@@ -16,16 +17,7 @@
         </ol>
     </nav>
 
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="text-success fw-bold">
-                <i class="bi bi-person-gear me-2"></i>
-                Editar Usuário
-            </h2>
-            <p class="text-muted">Altere as informações do usuário @Model.UsuarioAtual?.NomeCompleto</p>
-        </div>
-    </div>
+    <page-header title="Editar usuário" subtitle="@($"Altere as informações de {Model.UsuarioAtual?.NomeCompleto}")" icon="bi-person-gear" />
 
     @if (TempData["Success"] != null)
     {

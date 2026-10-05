@@ -5,31 +5,13 @@
     ViewData["MetaDescription"] = "Cadastre-se como paciente na PsyAll e agende teleterapia com psicólogos de CRP validado. Consultas a R$ 50.";
     ViewData["Canonical"] = "https://psyall.com.br/Account/Register";
     ViewData["OgTitle"] = "Cadastro de paciente — PsyAll";
-    Layout = null;
+    ViewData["AuthActionHref"] = "/Account/Login";
+    ViewData["AuthActionText"] = "Já tenho conta";
+    ViewData["AuthActionIcon"] = "bi-box-arrow-in-right";
+    Layout = "_AuthLayout";
 }
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <partial name="_PublicSeoMeta" />
-    <link rel="icon" type="image/png" href="~/images/favicon-32.png" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
-    <link href="~/css/site.css" rel="stylesheet" />
-    <style>
-        body {
-            background: var(--brand-gradient-hero);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding-top: 70px;
-            padding-bottom: 2rem;
-        }
+<style>
 
         .register-container {
             background: rgba(255, 255, 255, 0.95);
@@ -90,9 +72,7 @@
             z-index: 2;
         }
 
-        .register-body {
-            padding: 2rem;
-        }
+        .register-
 
         .form-control {
             border: 2px solid #e9ecef;
@@ -222,9 +202,7 @@
         }
 
         @@media (max-width: 768px) {
-            .register-body {
-                padding: 1.5rem;
-            }
+            .register-
         }
 
         @@media (max-width: 480px) {
@@ -238,30 +216,10 @@
                 font-size: 1.25rem;
             }
 
-            .register-body {
-                padding: 1.5rem 1rem;
-            }
+            .register-
         }
     </style>
-</head>
-<body>
-    <!-- Top Navigation -->
-    <nav class="navbar top-navbar">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="/" aria-label="PsyAll">
-                <img src="~/images/psyall-logo.png" alt="PsyAll" width="36" height="40" style="object-fit:contain;" />
-                <span class="brand-name"><span class="psy-brand-psy">Psy</span><span class="psy-brand-all">All</span></span>
-            </a>
-            <div>
-                <a href="/" class="btn btn-outline-success btn-sm">
-                    <i class="bi bi-house me-1"></i>
-                    Início
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container">
+<!-- Top Navigation --><div class="container">
         <div class="row justify-content-center">
             <div class="col-xl-5 col-lg-6 col-md-8">
                 <div class="register-container">
@@ -378,10 +336,7 @@
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <partial name="_CookieConsent" />
-    <script>
+<script>
         document.addEventListener('DOMContentLoaded', function() {
             const registerContainer = document.querySelector('.register-container');
             registerContainer.style.opacity = '0';
@@ -393,5 +348,3 @@
             }, 100);
         });
     </script>
-</body>
-</html>

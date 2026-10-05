@@ -5,14 +5,12 @@
     Layout = "_AdminLayout";
 }
 
-<div class="container py-5">
-    <div class="text-center mx-auto" style="max-width: 520px;">
-        <div class="mb-3" style="font-size: 3rem; color: #b45309;">
-            <i class="bi bi-x-circle-fill"></i>
-        </div>
-        <h1 class="h3 mb-2">Pagamento não concluído</h1>
+<page-header title="Pagamento não concluído" subtitle="A consulta permanece reservada para uma nova tentativa." icon="bi-x-circle" />
+<div class="admin-card">
+    <div class="admin-card-body text-center py-5">
+        <div class="auth-icon mx-auto mb-3"><i class="bi bi-x-circle-fill"></i></div>
         <p class="text-muted mb-4">
-            Não foi possível confirmar o pagamento. Você pode tentar novamente — a consulta permanece reservada.
+            Não foi possível confirmar o pagamento. Você pode tentar novamente.
         </p>
         @if (Model.Consulta is not null)
         {

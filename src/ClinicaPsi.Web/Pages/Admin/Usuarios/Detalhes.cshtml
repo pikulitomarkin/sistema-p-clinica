@@ -29,28 +29,14 @@
         </div>
     }
 
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="mb-1">
-                        <i class="bi bi-person-circle me-2"></i>
-                        Detalhes do Usuário
-                    </h2>
-                    <p class="text-muted">Informações completas do usuário</p>
-                </div>
-                <div>
-                    <a href="/admin/usuarios" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-2"></i>Voltar
-                    </a>
-                    <a href="/admin/usuarios/editar/@Model.Usuario.Id" class="btn btn-primary">
-                        <i class="bi bi-pencil me-2"></i>Editar
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <page-header title="Detalhes do usuário" subtitle="Informações completas da conta." icon="bi-person-circle">
+        <a href="/admin/usuarios" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Voltar
+        </a>
+        <a href="/admin/usuarios/editar/@Model.Usuario.Id" class="btn btn-primary">
+            <i class="bi bi-pencil me-2"></i>Editar
+        </a>
+    </page-header>
 
     <div class="row">
         <!-- Informações Principais -->

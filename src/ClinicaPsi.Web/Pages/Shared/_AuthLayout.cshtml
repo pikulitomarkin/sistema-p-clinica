@@ -1,0 +1,52 @@
+@{
+    var pageTitle = ViewData["Title"] as string ?? "PsyAll";
+    var documentTitle = pageTitle.Contains("PsyAll", StringComparison.OrdinalIgnoreCase)
+        ? pageTitle
+        : $"{pageTitle} — PsyAll";
+    var actionHref = ViewData["AuthActionHref"] as string ?? "/";
+    var actionText = ViewData["AuthActionText"] as string ?? "Início";
+    var actionIcon = ViewData["AuthActionIcon"] as string ?? "bi-house";
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@documentTitle</title>
+    <link rel="icon" type="image/png" href="~/images/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="~/images/psyall-icon.png" />
+    <meta name="theme-color" content="#1f7a4d" />
+    <partial name="_BrandTheme" />
+    <partial name="_PublicSeoMeta" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="~/css/brand-theme.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/auth.css" rel="stylesheet" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
+</head>
+<body class="auth-shell">
+    <nav class="auth-topbar">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/" aria-label="PsyAll">
+                <img src="~/images/psyall-logo.png" alt="PsyAll" width="36" height="40" />
+                <span class="brand-name"><span class="psy-brand-psy">Psy</span><span class="psy-brand-all">All</span></span>
+            </a>
+            <a href="@actionHref" class="btn btn-sm btn-outline-success">
+                <i class="bi @actionIcon me-1"></i>@actionText
+            </a>
+        </div>
+    </nav>
+
+    <main class="auth-main">
+        @RenderBody()
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <partial name="_CookieConsent" />
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

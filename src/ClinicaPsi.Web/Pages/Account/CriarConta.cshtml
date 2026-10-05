@@ -4,29 +4,13 @@
     ViewData["MetaDescription"] = "Crie sua conta gratuita na PsyAll: paciente ou psicólogo. Teleterapia online com profissionais de CRP validado e consultas a R$ 50.";
     ViewData["Canonical"] = "https://psyall.com.br/Account/CriarConta";
     ViewData["OgTitle"] = "Criar conta gratuita — PsyAll";
-    Layout = null;
+    ViewData["AuthActionHref"] = "/Account/Login";
+    ViewData["AuthActionText"] = "Já tenho conta";
+    ViewData["AuthActionIcon"] = "bi-box-arrow-in-right";
+    Layout = "_AuthLayout";
 }
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <partial name="_PublicSeoMeta" />
-    <link rel="icon" type="image/png" href="~/images/favicon-32.png" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="~/css/brand-theme.css" rel="stylesheet" asp-append-version="true" />
-    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
-    <style>
-        body {
-            font-family: var(--font-sans);
-            background: var(--brand-gradient-hero);
-            min-height: 100vh;
-            padding: 5.5rem 1rem 2rem;
-        }
+<style>
         .top-nav {
             position: fixed; top: 0; left: 0; right: 0;
             background: var(--brand-gradient-nav);
@@ -62,19 +46,7 @@
         .choose-card h2 { font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--brand-ink); }
         .choose-card p { color: var(--brand-muted); margin: 0; flex: 1; }
     </style>
-</head>
-<body>
-    <nav class="navbar top-nav">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-                <img src="~/images/psyall-logo.png" alt="PsyAll" width="36" height="40" />
-                <span><span class="psy-brand-psy">Psy</span><span class="psy-brand-all">All</span></span>
-            </a>
-            <a href="/Account/Login" class="btn btn-sm btn-outline-success">Já tenho conta</a>
-        </div>
-    </nav>
-
-    <div class="choose-wrap">
+<div class="choose-wrap">
         <header class="text-center mb-4">
             <p class="psy-eyebrow mb-2">PsyAll</p>
             <h1 class="h2 fw-bold mb-2" style="color:var(--brand-ink)">Criar conta</h1>
@@ -106,5 +78,3 @@
             </div>
         </div>
     </div>
-</body>
-</html>

@@ -6,16 +6,11 @@
     Layout = "_AdminLayout";
 }
 
-<div class="container-fluid">
+<page-header title="Agendar consulta" subtitle="Escolha o psicólogo, a data e o horário da teleterapia." icon="bi-calendar-plus" />
+
+<div class="container-fluid px-0">
     <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2><i class="bi bi-calendar-plus me-2"></i>Agendar Consulta</h2>
-                    <p class="text-muted mb-0">Selecione o psicólogo, data e horário para sua consulta</p>
-                </div>
-            </div>
-        </div>
+        <div class="col-12"></div>
     </div>
 
     @if (TempData["Error"] != null)
@@ -30,9 +25,9 @@
     <div class="row">
         <!-- Formulário de Agendamento -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-calendar2-check me-2"></i>Dados do Agendamento</h5>
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="mb-0"><i class="bi bi-calendar2-check me-2"></i>Dados do agendamento</h5>
                 </div>
                 <div class="card-body">
                     <form method="post">
@@ -123,7 +118,7 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary px-4">
+                            <button type="submit" class="admin-action-btn border-0">
                                 <i class="bi bi-check-circle me-2"></i>Agendar Consulta
                             </button>
                             <a href="/Cliente/MinhasConsultas" class="btn btn-outline-secondary">

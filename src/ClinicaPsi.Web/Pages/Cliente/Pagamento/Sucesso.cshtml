@@ -5,12 +5,10 @@
     Layout = "_AdminLayout";
 }
 
-<div class="container py-5">
-    <div class="text-center mx-auto" style="max-width: 520px;">
-        <div class="mb-3" style="font-size: 3rem; color: var(--brand-primary, #1f7a4d);">
-            <i class="bi bi-check-circle-fill"></i>
-        </div>
-        <h1 class="h3 mb-2">Pagamento confirmado</h1>
+<page-header title="Pagamento confirmado" subtitle="A consulta foi marcada como paga." icon="bi-check-circle" />
+<div class="admin-card">
+    <div class="admin-card-body text-center py-5">
+        <div class="auth-icon mx-auto mb-3"><i class="bi bi-check-circle-fill"></i></div>
         <p class="text-muted mb-4">
             Sua consulta @(Model.Consulta is not null ? $"com {Model.Consulta.Psicologo?.Nome} em {Model.Consulta.DataHorario:dd/MM/yyyy HH:mm}" : "") está paga.
         </p>

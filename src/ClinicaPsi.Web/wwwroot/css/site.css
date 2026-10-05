@@ -283,10 +283,46 @@ body {
     padding: 0.45rem 0.75rem !important;
 }
 
-.navbar .nav-link:hover {
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
     transform: none;
     color: var(--primary-green) !important;
     background: var(--brand-gradient-chip, var(--gradient-green-light));
+}
+
+.public-band {
+    background: var(--brand-gradient-page);
+}
+
+.public-hero {
+    text-align: center;
+    padding: 2.5rem 0 2rem;
+}
+
+.public-hero h1 {
+    color: var(--brand-ink);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.public-hero .lead {
+    color: var(--brand-muted);
+}
+
+.public-kicker {
+    color: var(--brand-primary);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+}
+
+.agenda-public .psy-card {
+    cursor: pointer;
+}
+
+.admin-page-title .bi {
+    color: var(--brand-primary);
 }
 
 .navbar-dark .navbar-toggler {
@@ -1433,4 +1469,75 @@ a.psy-city-nav-link:hover {
     .psy-rank-item { flex-wrap: wrap; }
     .psy-benefit-row { text-align: left; }
     .psy-mkt-title-sm { max-width: none; margin-inline: auto; }
+}
+
+/* Botões e cartões seguem a marca em todas as áreas */
+.btn-primary,
+.btn-success {
+    background: var(--brand-gradient);
+    border-color: transparent;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-success:hover,
+.btn-success:focus {
+    background: var(--brand-gradient);
+    border-color: transparent;
+    color: #fff;
+    filter: brightness(1.05);
+}
+
+.btn-outline-primary,
+.btn-outline-success {
+    color: var(--brand-primary);
+    border-color: rgba(var(--brand-primary-rgb), 0.45);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover {
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
+    color: #fff;
+}
+
+.badge.bg-primary,
+.bg-primary {
+    background-color: var(--brand-primary) !important;
+}
+
+.admin-main .card,
+.agenda-public .card {
+    border: 1px solid var(--brand-border);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px var(--brand-shadow);
+    overflow: hidden;
+}
+
+.card-header,
+.admin-main .card-header,
+.card-header.bg-primary,
+.card-header.bg-info,
+.card-header.bg-success,
+.card-header.bg-warning,
+.card-header.bg-secondary,
+.card-header.bg-light {
+    background: var(--brand-gradient-soft) !important;
+    color: var(--brand-ink) !important;
+    border-bottom: 1px solid var(--brand-border);
+}
+
+.card-header .text-white,
+.card-header.text-white {
+    color: var(--brand-ink) !important;
+}
+
+.admin-stats-card .stats-icon {
+    background: var(--brand-gradient) !important;
+}
+
+.admin-page-header .admin-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
