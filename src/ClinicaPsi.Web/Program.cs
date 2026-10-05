@@ -130,22 +130,10 @@ else
 var usePostgreSql = connectionString.Contains("Host=") || (connectionString.Contains("Server=") && connectionString.Contains("Database="));
 Console.WriteLine($"Usando PostgreSQL: {usePostgreSql}");
     
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    if (usePostgreSql)
-    {
-        options.UseNpgsql(connectionString)
-            .EnableSensitiveDataLogging() // Para debug
-            .LogTo(Console.WriteLine); // Log SQL commands
-    }
-    else
-    {
-        options.UseSqlite(connectionString);
-    }
-});
-
-// Adicionar DbContextFactory para uso em background services e webhooks
-builder.Services.AddDbContextFactory<AppDbContext>(options =>
+// Factory singleton para background services. O DbContext scoped sai da factory:
+// registrar os dois com AddDbContext + AddDbContextFactory quebra o boot em Development
+// (DbContextOptions scoped consumido por IDbContextFactory singleton).
+void ConfigureDatabase(DbContextOptionsBuilder options)
 {
     if (usePostgreSql)
     {
@@ -157,7 +145,11 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
     {
         options.UseSqlite(connectionString);
     }
-});
+}
+
+builder.Services.AddDbContextFactory<AppDbContext>(ConfigureDatabase);
+builder.Services.AddScoped(sp =>
+    sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext());
 
 // Configurar Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -415,7 +407,12 @@ if (!app.Environment.IsDevelopment())
 
 // COMENTADO: WhatsApp webhook precisa aceitar HTTP  
 // app.UseHttpsRedirection();
-app.UseStaticFiles();
+var staticContentTypes = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
+staticContentTypes.Mappings[".xml"] = "application/xml";
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = staticContentTypes
+});
 
 // Fotos de perfil em volume persistente (/app/data/uploads) — URL pública /uploads/...
 {
@@ -462,6 +459,13 @@ app.MapHub<ClinicaPsi.Web.Hubs.VideoConsultaHub>("/hubs/video-consulta");
 // Aliases amigáveis da sala de consulta
 app.MapGet("/Psicologo/SalaConsulta/{id:int}", (int id) => Results.Redirect($"/consulta/{id}/video"));
 app.MapGet("/Cliente/SalaConsulta/{id:int}", (int id) => Results.Redirect($"/consulta/{id}/video"));
+
+app.MapGet("/sitemaps", (IWebHostEnvironment env) => Results.File(
+    Path.Combine(env.WebRootPath, "sitemap.xml"),
+    "application/xml"));
+app.MapGet("/sitemaps.xml", (IWebHostEnvironment env) => Results.File(
+    Path.Combine(env.WebRootPath, "sitemap.xml"),
+    "application/xml"));
 
 app.MapRazorPages();
 
