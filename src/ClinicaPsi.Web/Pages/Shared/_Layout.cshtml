@@ -3,123 +3,142 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Psicóloga Ana Santos | Clínica de Psicologia</title>
+    @{
+        var pageTitle = ViewData["Title"] as string ?? "PsyAll";
+        var documentTitle = pageTitle.Contains("PsyAll", StringComparison.OrdinalIgnoreCase)
+            ? pageTitle
+            : $"{pageTitle} — PsyAll";
+        if (string.IsNullOrWhiteSpace(ViewData["OgTitle"] as string))
+        {
+            ViewData["OgTitle"] = documentTitle;
+        }
+    }
+    <title>@documentTitle</title>
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="~/images/favicon.svg" />
-    <link rel="icon" type="image/svg+xml" sizes="32x32" href="~/images/favicon-32.svg" />
-    <link rel="icon" type="image/svg+xml" sizes="192x192" href="~/images/favicon-192.svg" />
-    <link rel="apple-touch-icon" sizes="192x192" href="~/images/favicon-192.svg" />
-    <link rel="shortcut icon" href="~/images/favicon.svg" />
+    <link rel="icon" type="image/png" href="~/images/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="~/images/psyall-icon.png" />
     <link rel="manifest" href="~/manifest.json" />
-    <meta name="theme-color" content="#198754" />
+    <meta name="theme-color" content="#1f7a4d" />
+    <partial name="_BrandTheme" />
 
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Psicóloga Ana Santos em Londrina - Especialista em Terapia Cognitivo-Comportamental. Atendimento presencial, online e por videochamada. Agende sua consulta." />
-    <meta name="keywords" content="psicóloga londrina, psicóloga ana, psicóloga ana santos, clínica de psicologia londrina, terapia cognitivo-comportamental londrina, terapia online londrina, psicoterapia londrina" />
-    <meta name="author" content="Psicóloga Ana Santos" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    <meta name="googlebot" content="index, follow" />
-    <link rel="canonical" href="https://www.psiianasantos.com.br/" />
-    
-    <!-- Additional SEO Meta Tags -->
-    <meta name="language" content="Portuguese (Brazilian)" />
-    <meta name="revisit-after" content="7 days" />
-    <meta name="distribution" content="global" />
+    <meta name="keywords" content="PsyAll, psicologia online, psicólogo online, psicóloga online, telepsicologia, teleterapia, terapia online, preço social, plataforma psicologia, Londrina, Curitiba, Guarapuava, Cascavel, Paraná, CRP" />
+    <meta name="author" content="PsyAll" />
+    <partial name="_PublicSeoMeta" />
 
-    <!-- Open Graph (Facebook, LinkedIn) -->
-    <meta property="og:title" content="Psicóloga Ana Santos - Clínica de Psicologia em Londrina" />
-    <meta property="og:description" content="Atendimento psicológico especializado em Terapia Cognitivo-Comportamental. Presencial, online e por videochamada. CRP: 08/45168" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.psiianasantos.com.br/" />
-    <meta property="og:locale" content="pt_BR" />
-    <meta property="og:image" content="https://www.psiianasantos.com.br/images/ana-santos.jpg" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Psicóloga Ana Santos - Londrina" />
-    <meta name="twitter:description" content="Psicóloga especialista em Terapia Cognitivo-Comportamental. Agende sua consulta!" />
-
-    <!-- Schema.org LocalBusiness Structured Data -->
     <script type="application/ld+json">
     {
       "@@context": "https://schema.org",
-      "@@type": "LocalBusiness",
-      "name": "Psicóloga Ana Santos",
-      "image": "https://www.psiianasantos.com.br/images/ana-santos.jpg",
-      "description": "Clínica de Psicologia especializada em Terapia Cognitivo-Comportamental em Londrina",
+      "@@type": "Organization",
+      "name": "PsyAll",
+      "alternateName": "PsyAll Psicologia",
+      "url": "https://psyall.com.br",
+      "logo": "https://psyall.com.br/images/psyall-logo.png",
+      "image": "https://psyall.com.br/images/psyall-logo.png",
+      "description": "Plataforma digital que conecta pacientes e psicólogos para agendamento, teleterapia online a R$ 50 e avaliações. Sede administrativa em Londrina-PR; atendimento clínico 100% online.",
       "address": {
         "@@type": "PostalAddress",
-        "streetAddress": "Rua Orlando Ferreina Neto, 39",
         "addressLocality": "Londrina",
         "addressRegion": "PR",
-        "postalCode": "86015-140",
         "addressCountry": "BR"
       },
-      "telephone": "+55 42 99936-9724",
-      "url": "https://www.psiianasantos.com.br",
-      "priceRange": "R$ 100 - R$ 200",
-      "areaServed": ["Londrina", "Paraná", "Brasil"],
-      "sameAs": [
-        "https://www.facebook.com/psicologaanasantos",
-        "https://www.instagram.com/psicologaanasantos",
-        "https://www.whatsapp.com/message/?phone=5542999369724"
+      "areaServed": [
+        { "@@type": "Country", "name": "BR" },
+        { "@@type": "State", "name": "Paraná" },
+        { "@@type": "City", "name": "Londrina" },
+        { "@@type": "City", "name": "Curitiba" },
+        { "@@type": "City", "name": "Guarapuava" },
+        { "@@type": "City", "name": "Cascavel" }
       ],
-      "openingHoursSpecification": [
-        {
-          "@@type": "OpeningHoursSpecification",
-          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-          "opens": "09:00",
-          "closes": "18:00"
-        },
-        {
-          "@@type": "OpeningHoursSpecification",
-          "dayOfWeek": "Saturday",
-          "opens": "09:00",
-          "closes": "12:00"
-        }
-      ],
-      "knowsLanguage": ["pt-BR", "en"],
-      "offers": {
-        "@@type": "AggregateOffer",
-        "priceCurrency": "BRL",
-        "priceRange": "100-200"
+      "knowsAbout": ["psicologia", "teleterapia", "telepsicologia", "psicóloga online", "saúde mental", "Paraná"],
+      "sameAs": []
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "ProfessionalService",
+      "name": "PsyAll Teleterapia",
+      "url": "https://psyall.com.br",
+      "image": "https://psyall.com.br/images/psyall-logo.png",
+      "description": "Teleterapia digital a R$ 50 com psicólogos de CRP validado. Atendimento online para pacientes no Paraná (Londrina, Curitiba, Guarapuava, Cascavel) e no Brasil.",
+      "provider": {
+        "@@type": "Organization",
+        "name": "PsyAll",
+        "url": "https://psyall.com.br"
       },
-      "aggregateRating": {
-        "@@type": "AggregateRating",
-        "ratingValue": "5",
-        "bestRating": "5",
-        "worstRating": "1"
+      "areaServed": [
+        { "@@type": "State", "name": "Paraná" },
+        { "@@type": "City", "name": "Londrina" },
+        { "@@type": "City", "name": "Curitiba" },
+        { "@@type": "City", "name": "Guarapuava" },
+        { "@@type": "City", "name": "Cascavel" },
+        { "@@type": "Country", "name": "BR" }
+      ],
+      "serviceType": "Teleterapia / psicologia online",
+      "priceRange": "R$50"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "WebSite",
+      "name": "PsyAll",
+      "alternateName": "PsyAll Psicologia",
+      "url": "https://psyall.com.br",
+      "inLanguage": "pt-BR",
+      "publisher": {
+        "@@type": "Organization",
+        "name": "PsyAll",
+        "url": "https://psyall.com.br"
       }
     }
     </script>
+    @await RenderSectionAsync("JsonLd", required: false)
 
     <base href="~/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
-    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/brand-theme.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
     <link href="ClinicaPsi.Web.styles.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
-    <!-- Header -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-heart-fill me-2"></i>
-                Psicóloga Ana Santos
+            <a class="navbar-brand d-flex align-items-center gap-2" href="/" aria-label="PsyAll Psicologia">
+                <img src="~/images/psyall-logo.png" alt="PsyAll" class="brand-logo-img" width="40" height="45" />
+                <span class="brand-name"><span class="psy-brand-psy">Psy</span><span class="psy-brand-all">All</span></span>
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">
-                            <i class="bi bi-house-door me-1"></i>
-                            Início
-                        </a>
+                        <a class="nav-link" href="/">Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#psicologos">Psicólogos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/ranking">Ranking</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/agendamento">Agendar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/para-voce">Para você</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/valor-social">Valor social</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/privacidade">Privacidade</a>
                     </li>
                 </ul>
 
@@ -131,35 +150,32 @@
                                 <i class="bi bi-person-circle me-1"></i>
                                 @User.Identity.Name
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu dropdown-menu-end">
                                 @if (User.IsInRole("Admin"))
                                 {
-                                    <li><a class="dropdown-item" href="/Admin">
-                                        <i class="bi bi-gear-fill me-2"></i>Área Admin</a></li>
+                                    <li><a class="dropdown-item" href="/Admin">Área Admin</a></li>
                                 }
                                 @if (User.IsInRole("Psicologo"))
                                 {
-                                    <li><a class="dropdown-item" href="/Psicologo">
-                                        <i class="bi bi-person-badge me-2"></i>Área Psicólogo</a></li>
+                                    <li><a class="dropdown-item" href="/Psicologo">Área Psicólogo</a></li>
                                 }
                                 @if (User.IsInRole("Cliente"))
                                 {
-                                    <li><a class="dropdown-item" href="/Cliente">
-                                        <i class="bi bi-person-heart me-2"></i>Minha Área</a></li>
+                                    <li><a class="dropdown-item" href="/Cliente">Minha Área</a></li>
                                 }
+                                <li><a class="dropdown-item" href="/privacidade/meus-dados">Meus dados (LGPD)</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="/Account/Logout">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                                <li><a class="dropdown-item" href="/Account/Logout">Sair</a></li>
                             </ul>
                         </li>
                     }
                     else
                     {
                         <li class="nav-item">
-                            <a class="nav-link" href="/Account/Login">
-                                <i class="bi bi-box-arrow-in-right me-1"></i>
-                                Login
-                            </a>
+                            <a class="nav-link" href="/Account/Login">Entrar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Account/CriarConta">Criar conta</a>
                         </li>
                     }
                 </ul>
@@ -167,45 +183,60 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main>
         @RenderBody()
     </main>
 
-    <!-- Footer -->
-    <footer class="text-light py-4 mt-5">
+    <footer class="py-5 mt-5">
         <div class="container">
-            <div class="row">
+            <div class="row g-4">
                 <div class="col-md-4">
-                    <h6><i class="bi bi-heart-fill text-success me-2"></i>PsiiAnaSantos</h6>
-                    <p class="small mb-0">Psi. Ana Santos - CRP 08/45168</p>
-                    <p class="small mb-0">Psicologia Clínica e Terapia</p>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <img src="~/images/psyall-logo.png" alt="" width="36" height="40" class="brand-logo-img" />
+                        <h6 class="mb-0"><span class="psy-brand-psy">Psy</span><span class="psy-brand-all">All</span></h6>
+                    </div>
+                    <p class="small mb-0 opacity-75">
+                        Plataforma digital para psicólogos e pacientes — agendamento, teleconsulta e avaliações.
+                        Teleterapia a R$&nbsp;50 para pacientes no Paraná e no Brasil.
+                    </p>
                 </div>
-                <div class="col-md-4">
-                    <h6 class="small"><i class="bi bi-geo-alt me-2"></i>Endereço</h6>
-                    <p class="small mb-0">Londrina - PR</p>
-                    <p class="small mb-0">Atendimento presencial e online</p>
+                <div class="col-md-3">
+                    <h6 class="small text-uppercase opacity-75">Institucional</h6>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/para-voce">Para você (pacientes)</a></p>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/valor-social">Valor social (R$ 50)</a></p>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/privacidade">Política de Privacidade</a></p>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/termos/paciente">Termos — Pacientes</a></p>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/termos/psicologo">Termos — Psicólogos</a></p>
+                    <p class="small mb-0"><a class="link-light link-underline-opacity-0" href="/ranking">Ranking</a></p>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <h6 class="small"><i class="bi bi-chat-dots me-2"></i>Contato</h6>
-                    <p class="small mb-0">
-                        <i class="bi bi-whatsapp me-1"></i>(42) 98859-3775<br>
-                        <i class="bi bi-envelope me-1"></i>psiianasantos@psiianasantos.com.br
+                <div class="col-md-3">
+                    <h6 class="small text-uppercase opacity-75">Atendimento em</h6>
+                    <p class="small mb-1 opacity-75">Teleterapia digital no Paraná:</p>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/psicologia-parana">Paraná (hub)</a></p>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/psicologia-londrina">Londrina</a></p>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/psicologia-curitiba">Curitiba</a></p>
+                    <p class="small mb-1"><a class="link-light link-underline-opacity-0" href="/psicologia-guarapuava">Guarapuava</a></p>
+                    <p class="small mb-0"><a class="link-light link-underline-opacity-0" href="/psicologia-cascavel">Cascavel</a></p>
+                </div>
+                <div class="col-md-2">
+                    <h6 class="small text-uppercase opacity-75">Sede / suporte</h6>
+                    <p class="small mb-0 opacity-75">
+                        Londrina — PR<br />
+                        Endereço administrativo da plataforma digital.<br />
+                        Atendimento clínico online (teleterapia).
                     </p>
                 </div>
             </div>
-            <hr class="my-3 bg-light opacity-25">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <p class="small mb-0 text-muted">
-                        &copy; 2025 PsiiAnaSantos - Todos os direitos reservados
-                    </p>
-                </div>
-            </div>
+            <hr class="my-4 bg-light opacity-25">
+            <p class="small mb-0 text-center opacity-75">
+                &copy; @DateTime.Now.Year PsyAll — Todos os direitos reservados
+            </p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <partial name="_ClienteChamadaNotifier" />
+    <partial name="_CookieConsent" />
 </body>
 </html>

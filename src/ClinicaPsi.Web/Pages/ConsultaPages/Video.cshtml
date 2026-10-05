@@ -1,0 +1,516 @@
+@page "/consulta/{id:int}/video"
+@model ClinicaPsi.Web.Pages.ConsultaPages.VideoModel
+@{
+    ViewData["Title"] = "Videochamada";
+    Layout = "~/Pages/Shared/_VideoLayout.cshtml";
+    var voltarUrl = User.IsInRole("Cliente") ? "/Cliente/MinhasConsultas" : "/psicologo/consultas";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/video-consulta.css" asp-append-version="true" />
+}
+
+@if (!string.IsNullOrEmpty(Model.MensagemErro))
+{
+    <div class="meet-error-page">
+        <div class="alert alert-danger mb-0">@Model.MensagemErro</div>
+        <a class="meet-btn-ghost" href="@voltarUrl"><i class="bi bi-arrow-left"></i> Voltar</a>
+    </div>
+}
+else if (Model.Consulta != null && !string.IsNullOrWhiteSpace(Model.RoomName))
+{
+    <div class="meet-app @(Model.SouPsicologoOuAdmin ? "meet-app--psych" : "")" id="meetApp">
+        <header class="meet-topbar">
+            <div class="meet-topbar__info">
+                <p class="meet-topbar__title">
+                    <i class="bi bi-camera-video me-1"></i>
+                    Consulta online
+                </p>
+                <p class="meet-topbar__meta">
+                    @Model.Consulta.DataHorario.ToString("dd/MM/yyyy HH:mm") · @Model.Consulta.DuracaoMinutos min
+                    · @Model.Consulta.Psicologo?.Nome com @Model.Consulta.Paciente?.Nome
+                </p>
+            </div>
+            <div class="meet-topbar__actions">
+                @if (Model.SouPsicologoOuAdmin)
+                {
+                    <button type="button" class="meet-btn-ghost meet-btn-panel" id="btnTogglePanel" title="Prontuário e documentos">
+                        <i class="bi bi-journal-medical"></i>
+                        <span>Ferramentas</span>
+                    </button>
+                }
+                <a class="meet-btn-ghost" href="@voltarUrl">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Voltar</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="meet-body">
+            <div class="meet-stage" id="videoRoom">
+                <video id="remoteVideo" class="meet-stage__remote" autoplay playsinline></video>
+                <div id="remotePlaceholder" class="meet-stage__placeholder">
+                    <i class="bi bi-person-video3"></i>
+                    <span id="peerStatus">Aguardando…</span>
+                </div>
+                <div class="meet-label meet-label--remote" id="remoteNameLabel">@Model.NomeRemoto</div>
+
+                <div class="meet-pip" id="localPip">
+                    <video id="localVideo" autoplay playsinline muted></video>
+                    <div class="meet-label" id="localNameLabel">@Model.MeuNome</div>
+                </div>
+
+                <div id="videoStatus" class="meet-status" data-kind="info">
+                    Permita câmera e microfone para iniciar
+                </div>
+
+                <div class="meet-controls">
+                    <button type="button" class="meet-ctrl meet-ctrl--start" id="btnIniciar" title="Iniciar">
+                        <i class="bi bi-play-fill"></i>
+                        <span>Iniciar</span>
+                    </button>
+                    @if (Model.SouPsicologoOuAdmin)
+                    {
+                        <button type="button" class="meet-ctrl meet-ctrl--call" id="btnChamar" disabled title="Chamar paciente">
+                            <i class="bi bi-telephone-outbound"></i>
+                            <span>Chamar</span>
+                        </button>
+                    }
+                    <button type="button" class="meet-ctrl" id="btnMute" disabled title="Microfone">
+                        <i class="bi bi-mic-fill"></i>
+                    </button>
+                    <button type="button" class="meet-ctrl" id="btnCamera" disabled title="Câmera">
+                        <i class="bi bi-camera-video-fill"></i>
+                    </button>
+                    <button type="button" class="meet-ctrl meet-ctrl--hang" id="btnHangup" disabled title="Encerrar">
+                        <i class="bi bi-telephone-x-fill"></i>
+                    </button>
+                </div>
+            </div>
+
+            @if (Model.SouPsicologoOuAdmin)
+            {
+                <aside class="meet-panel" id="meetPanel" aria-label="Ferramentas clínicas">
+                    <div class="meet-panel__header">
+                        <h2><i class="bi bi-journal-text me-1"></i> Sala clínica</h2>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnClosePanel" title="Recolher">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="meet-panel__tabs" role="tablist">
+                        <button type="button" class="meet-panel__tab active" data-pane="prontuario" role="tab">Prontuário</button>
+                        <button type="button" class="meet-panel__tab" data-pane="documentos" role="tab">Documentos</button>
+                    </div>
+                    <div class="meet-panel__body">
+                        <div class="meet-panel__pane active" id="paneProntuario" role="tabpanel">
+                            <form id="formProntuarioSala">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="ProntuarioId" value="@(Model.Prontuario?.Id ?? 0)" id="prontuarioId" />
+                                <input type="hidden" name="PacienteId" value="@Model.Consulta.PacienteId" />
+                                <input type="hidden" name="PsicologoId" value="@Model.Consulta.PsicologoId" />
+                                <input type="hidden" name="ConsultaId" value="@Model.Consulta.Id" />
+
+                                <div class="mb-2">
+                                    <label class="form-label">Paciente</label>
+                                    <input class="form-control" value="@Model.Consulta.Paciente?.Nome" readonly />
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Queixa principal *</label>
+                                    <input class="form-control" name="QueixaPrincipal" id="queixaPrincipal"
+                                           value="@Model.Prontuario?.QueixaPrincipal" required maxlength="500" />
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Observações *</label>
+                                    <textarea class="form-control" name="Observacoes" id="observacoes" rows="3" required>@Model.Prontuario?.Observacoes</textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Evolução</label>
+                                    <textarea class="form-control" name="Evolucao" id="evolucao" rows="2">@Model.Prontuario?.Evolucao</textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Intervenções</label>
+                                    <textarea class="form-control" name="Intervencoes" id="intervencoes" rows="2">@Model.Prontuario?.Intervencoes</textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Plano terapêutico</label>
+                                    <textarea class="form-control" name="PlanoTerapeutico" id="planoTerapeutico" rows="2">@Model.Prontuario?.PlanoTerapeutico</textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Estado emocional</label>
+                                    <input class="form-control" name="EstadoEmocional" id="estadoEmocional"
+                                           value="@Model.Prontuario?.EstadoEmocional" maxlength="100" />
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Medicamentos atuais</label>
+                                    <input class="form-control" name="MedicamentosAtuais" id="medicamentosAtuais"
+                                           value="@Model.Prontuario?.MedicamentosAtuais" />
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Objetivos / próxima sessão</label>
+                                    <textarea class="form-control" name="ProximaSessao" id="proximaSessao" rows="2">@Model.Prontuario?.ProximaSessao</textarea>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Tipo de atendimento</label>
+                                    @{
+                                        var tipo = Model.Prontuario?.TipoAtendimento ?? "Online";
+                                    }
+                                    <select class="form-select" name="TipoAtendimento" id="tipoAtendimento">
+                                        @if (tipo == "Online") { <option value="Online" selected>Online</option> } else { <option value="Online">Online</option> }
+                                        @if (tipo == "Individual") { <option value="Individual" selected>Individual</option> } else { <option value="Individual">Individual</option> }
+                                        @if (tipo == "Casal") { <option value="Casal" selected>Casal</option> } else { <option value="Casal">Casal</option> }
+                                        @if (tipo == "Grupo") { <option value="Grupo" selected>Grupo</option> } else { <option value="Grupo">Grupo</option> }
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="meet-panel__pane" id="paneDocumentos" role="tabpanel">
+                            <p class="text-muted small mb-3">
+                                Gere declaração de comparecimento ou atestado sem sair da chamada.
+                            </p>
+                            <div class="d-grid gap-2 mb-3">
+                                <button type="button" class="btn btn-success" id="btnGerarDeclaracao">
+                                    <i class="bi bi-file-earmark-text me-1"></i> Gerar declaração
+                                </button>
+                            </div>
+                            <hr />
+                            <h3 class="h6 mb-2">Atestado</h3>
+                            <div class="mb-2">
+                                <label class="form-label">CID (opcional)</label>
+                                <input class="form-control" id="atestadoCid" placeholder="Ex.: F41.1" />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Dias de afastamento</label>
+                                <input type="number" class="form-control" id="atestadoDias" value="1" min="1" max="30" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Observações</label>
+                                <textarea class="form-control" id="atestadoObs" rows="2"></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-primary" id="btnGerarAtestado">
+                                    <i class="bi bi-file-earmark-medical me-1"></i> Gerar atestado
+                                </button>
+                            </div>
+                            <div id="docsToast" class="meet-toast text-muted"></div>
+                        </div>
+                    </div>
+                    <div class="meet-panel__footer" id="prontuarioFooter">
+                        <button type="button" class="btn btn-success w-100" id="btnSalvarProntuario">
+                            <i class="bi bi-save me-1"></i> Salvar prontuário
+                        </button>
+                        <div id="prontuarioToast" class="meet-toast text-muted"></div>
+                    </div>
+                </aside>
+            }
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @if (Model.Consulta != null && !string.IsNullOrWhiteSpace(Model.RoomName))
+    {
+        <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+        <script src="~/js/video-consulta.js" asp-append-version="true"></script>
+        <script>
+            (function () {
+                const consultaId = @Model.Consulta.Id;
+                const client = new VideoConsultaClient({
+                    consultaId: consultaId,
+                    roomName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RoomName)),
+                    displayName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MeuNome)),
+                    role: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MeuPapel)),
+                    remoteNameDefault: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.NomeRemoto)),
+                    localVideo: document.getElementById('localVideo'),
+                    remoteVideo: document.getElementById('remoteVideo'),
+                    statusEl: document.getElementById('videoStatus'),
+                    localNameEl: document.getElementById('localNameLabel'),
+                    remoteNameEl: document.getElementById('remoteNameLabel'),
+                    peerStatusEl: document.getElementById('peerStatus')
+                });
+
+                const btnIniciar = document.getElementById('btnIniciar');
+                const btnChamar = document.getElementById('btnChamar');
+                const btnMute = document.getElementById('btnMute');
+                const btnCamera = document.getElementById('btnCamera');
+                const btnHangup = document.getElementById('btnHangup');
+                const placeholder = document.getElementById('remotePlaceholder');
+                const remoteVideo = document.getElementById('remoteVideo');
+
+                function setControlsActive(active) {
+                    btnIniciar.disabled = active;
+                    btnIniciar.style.display = active ? 'none' : '';
+                    if (btnChamar) btnChamar.disabled = !active;
+                    btnMute.disabled = !active;
+                    btnCamera.disabled = !active;
+                    btnHangup.disabled = !active;
+                }
+
+                remoteVideo.addEventListener('playing', function () {
+                    if (placeholder) placeholder.classList.add('hidden');
+                });
+
+                btnIniciar.addEventListener('click', async function () {
+                    btnIniciar.disabled = true;
+                    try {
+                        await client.start();
+                        setControlsActive(true);
+                    } catch (e) {
+                        btnIniciar.disabled = false;
+                    }
+                });
+
+                if (btnChamar) {
+                    btnChamar.addEventListener('click', async function () {
+                        try { await client.callPeer(); } catch (e) { console.error(e); }
+                    });
+                }
+
+                btnMute.addEventListener('click', function () {
+                    const muted = client.toggleMute();
+                    btnMute.classList.toggle('is-off', muted);
+                    btnMute.innerHTML = muted
+                        ? '<i class="bi bi-mic-mute-fill"></i>'
+                        : '<i class="bi bi-mic-fill"></i>';
+                    btnMute.title = muted ? 'Ativar microfone' : 'Microfone';
+                });
+
+                btnCamera.addEventListener('click', function () {
+                    const off = client.toggleCamera();
+                    btnCamera.classList.toggle('is-off', off);
+                    btnCamera.innerHTML = off
+                        ? '<i class="bi bi-camera-video-off-fill"></i>'
+                        : '<i class="bi bi-camera-video-fill"></i>';
+                    btnCamera.title = off ? 'Ligar câmera' : 'Câmera';
+                });
+
+                btnHangup.addEventListener('click', async function () {
+                    await client.hangUp();
+                    setControlsActive(false);
+                    btnIniciar.disabled = false;
+                    btnIniciar.style.display = '';
+                    if (placeholder) placeholder.classList.remove('hidden');
+                });
+
+                window.addEventListener('beforeunload', function () {
+                    try { client.hangUp(); } catch (e) {}
+                });
+
+                // Painel clínico (psicólogo)
+                const panel = document.getElementById('meetPanel');
+                const btnTogglePanel = document.getElementById('btnTogglePanel');
+                const btnClosePanel = document.getElementById('btnClosePanel');
+
+                if (btnTogglePanel && panel) {
+                    btnTogglePanel.addEventListener('click', function () {
+                        panel.classList.toggle('is-collapsed');
+                    });
+                }
+                if (btnClosePanel && panel) {
+                    btnClosePanel.addEventListener('click', function () {
+                        panel.classList.add('is-collapsed');
+                    });
+                }
+
+                document.querySelectorAll('.meet-panel__tab').forEach(function (tab) {
+                    tab.addEventListener('click', function () {
+                        document.querySelectorAll('.meet-panel__tab').forEach(function (t) { t.classList.remove('active'); });
+                        document.querySelectorAll('.meet-panel__pane').forEach(function (p) { p.classList.remove('active'); });
+                        tab.classList.add('active');
+                        const pane = tab.getAttribute('data-pane');
+                        const el = document.getElementById(pane === 'prontuario' ? 'paneProntuario' : 'paneDocumentos');
+                        if (el) el.classList.add('active');
+                        const footer = document.getElementById('prontuarioFooter');
+                        if (footer) footer.style.display = pane === 'prontuario' ? '' : 'none';
+                    });
+                });
+
+                function getAntiForgery() {
+                    const input = document.querySelector('#formProntuarioSala input[name="__RequestVerificationToken"]');
+                    return input ? input.value : '';
+                }
+
+                const btnSalvar = document.getElementById('btnSalvarProntuario');
+                if (btnSalvar) {
+                    btnSalvar.addEventListener('click', async function () {
+                        const toast = document.getElementById('prontuarioToast');
+                        const queixa = document.getElementById('queixaPrincipal').value.trim();
+                        const obs = document.getElementById('observacoes').value.trim();
+                        if (!queixa || !obs) {
+                            if (toast) {
+                                toast.textContent = 'Preencha queixa principal e observações.';
+                                toast.className = 'meet-toast text-danger';
+                            }
+                            return;
+                        }
+                        btnSalvar.disabled = true;
+                        if (toast) {
+                            toast.textContent = 'Salvando…';
+                            toast.className = 'meet-toast text-muted';
+                        }
+                        try {
+                            const body = new URLSearchParams();
+                            body.set('__RequestVerificationToken', getAntiForgery());
+                            body.set('ProntuarioId', document.getElementById('prontuarioId').value || '0');
+                            body.set('PacienteId', '@Model.Consulta.PacienteId');
+                            body.set('PsicologoId', '@Model.Consulta.PsicologoId');
+                            body.set('ConsultaId', String(consultaId));
+                            body.set('QueixaPrincipal', queixa);
+                            body.set('Observacoes', obs);
+                            body.set('Evolucao', document.getElementById('evolucao').value);
+                            body.set('Intervencoes', document.getElementById('intervencoes').value);
+                            body.set('PlanoTerapeutico', document.getElementById('planoTerapeutico').value);
+                            body.set('EstadoEmocional', document.getElementById('estadoEmocional').value);
+                            body.set('MedicamentosAtuais', document.getElementById('medicamentosAtuais').value);
+                            body.set('ProximaSessao', document.getElementById('proximaSessao').value);
+                            body.set('TipoAtendimento', document.getElementById('tipoAtendimento').value);
+
+                            const res = await fetch('/consulta/' + consultaId + '/video?handler=SalvarProntuario', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'RequestVerificationToken': getAntiForgery()
+                                },
+                                body: body.toString()
+                            });
+                            const data = await res.json();
+                            if (!res.ok || !data.ok) throw new Error(data.message || 'Falha ao salvar');
+                            if (data.prontuarioId) {
+                                document.getElementById('prontuarioId').value = data.prontuarioId;
+                            }
+                            if (toast) {
+                                toast.textContent = data.message || 'Prontuário salvo.';
+                                toast.className = 'meet-toast text-success';
+                            }
+                        } catch (err) {
+                            if (toast) {
+                                toast.textContent = err.message || 'Erro ao salvar.';
+                                toast.className = 'meet-toast text-danger';
+                            }
+                        } finally {
+                            btnSalvar.disabled = false;
+                        }
+                    });
+                }
+
+                async function downloadPdf(url, fallbackName) {
+                    const toast = document.getElementById('docsToast');
+                    if (toast) {
+                        toast.textContent = 'Gerando PDF…';
+                        toast.className = 'meet-toast text-muted';
+                    }
+                    const body = new URLSearchParams();
+                    body.set('__RequestVerificationToken', getAntiForgery());
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': getAntiForgery()
+                        },
+                        body: body.toString()
+                    });
+                    if (!res.ok) {
+                        let msg = 'Não foi possível gerar o documento.';
+                        try {
+                            const j = await res.json();
+                            if (j.message) msg = j.message;
+                        } catch (_) {}
+                        throw new Error(msg);
+                    }
+                    const blob = await res.blob();
+                    const cd = res.headers.get('Content-Disposition') || '';
+                    let name = fallbackName;
+                    const m = /filename\*?=(?:UTF-8'')?\"?([^\";]+)/i.exec(cd);
+                    if (m) name = decodeURIComponent(m[1].replace(/\"/g, ''));
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = name;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(a.href);
+                    if (toast) {
+                        toast.textContent = 'PDF baixado.';
+                        toast.className = 'meet-toast text-success';
+                    }
+                }
+
+                const btnDecl = document.getElementById('btnGerarDeclaracao');
+                if (btnDecl) {
+                    btnDecl.addEventListener('click', async function () {
+                        btnDecl.disabled = true;
+                        try {
+                            await downloadPdf(
+                                '/consulta/' + consultaId + '/video?handler=GerarDeclaracao',
+                                'Declaracao_' + consultaId + '.pdf'
+                            );
+                        } catch (err) {
+                            const toast = document.getElementById('docsToast');
+                            if (toast) {
+                                toast.textContent = err.message;
+                                toast.className = 'meet-toast text-danger';
+                            }
+                        } finally {
+                            btnDecl.disabled = false;
+                        }
+                    });
+                }
+
+                const btnAtest = document.getElementById('btnGerarAtestado');
+                if (btnAtest) {
+                    btnAtest.addEventListener('click', async function () {
+                        btnAtest.disabled = true;
+                        try {
+                            const body = new URLSearchParams();
+                            body.set('__RequestVerificationToken', getAntiForgery());
+                            body.set('cid', document.getElementById('atestadoCid').value || '');
+                            body.set('diasAfastamento', document.getElementById('atestadoDias').value || '1');
+                            body.set('observacoes', document.getElementById('atestadoObs').value || '');
+                            const toast = document.getElementById('docsToast');
+                            if (toast) {
+                                toast.textContent = 'Gerando PDF…';
+                                toast.className = 'meet-toast text-muted';
+                            }
+                            const res = await fetch('/consulta/' + consultaId + '/video?handler=GerarAtestado', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'RequestVerificationToken': getAntiForgery()
+                                },
+                                body: body.toString()
+                            });
+                            if (!res.ok) {
+                                let msg = 'Não foi possível gerar o documento.';
+                                try {
+                                    const j = await res.json();
+                                    if (j.message) msg = j.message;
+                                } catch (_) {}
+                                throw new Error(msg);
+                            }
+                            const blob = await res.blob();
+                            const a = document.createElement('a');
+                            a.href = URL.createObjectURL(blob);
+                            a.download = 'Atestado_' + consultaId + '.pdf';
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            URL.revokeObjectURL(a.href);
+                            if (toast) {
+                                toast.textContent = 'PDF baixado.';
+                                toast.className = 'meet-toast text-success';
+                            }
+                        } catch (err) {
+                            const toast = document.getElementById('docsToast');
+                            if (toast) {
+                                toast.textContent = err.message;
+                                toast.className = 'meet-toast text-danger';
+                            }
+                        } finally {
+                            btnAtest.disabled = false;
+                        }
+                    });
+                }
+            })();
+        </script>
+    }
+}

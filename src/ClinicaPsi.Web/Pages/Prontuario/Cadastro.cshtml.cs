@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+
+namespace ClinicaPsi.Web.Pages.Prontuario;
 
 [Authorize(Roles = "Admin,Psicologo")]
 public class CadastroModel : PageModel
@@ -14,20 +16,23 @@ public class CadastroModel : PageModel
     private readonly ProntuarioService _prontuarioService;
     private readonly PacienteService _pacienteService;
     private readonly PsicologoService _psicologoService;
-    private readonly ConsultaService _consultaService;
+    private readonly ConfiguracaoService _configuracaoService;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<CadastroModel> _logger;
 
     public CadastroModel(
         ProntuarioService prontuarioService,
         PacienteService pacienteService,
         PsicologoService psicologoService,
-        ConsultaService consultaService,
+        ConfiguracaoService configuracaoService,
+        UserManager<ApplicationUser> userManager,
         ILogger<CadastroModel> logger)
     {
         _prontuarioService = prontuarioService;
         _pacienteService = pacienteService;
         _psicologoService = psicologoService;
-        _consultaService = consultaService;
+        _configuracaoService = configuracaoService;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -35,8 +40,7 @@ public class CadastroModel : PageModel
     public ProntuarioEletronico Prontuario { get; set; } = new();
 
     public List<Paciente> Pacientes { get; set; } = new();
-    public List<Psicologo> Psicologos { get; set; } = new();
-    public List<Consulta> Consultas { get; set; } = new();
+    public List<Shared.Models.Psicologo> Psicologos { get; set; } = new();
 
     public bool Edicao => Prontuario.Id > 0;
     public string? MensagemErro { get; set; }
@@ -48,43 +52,79 @@ public class CadastroModel : PageModel
     [BindProperty]
     public string? NovaEvolucao { get; set; }
 
-    public async Task OnGetAsync(int? id)
+    private async Task<Shared.Models.Psicologo?> ObterPsicologoLogadoAsync()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        var todos = await _psicologoService.GetAllAsync();
+        return todos.FirstOrDefault(p => p.UserId == user?.Id)
+            ?? (user?.PsicologoId != null ? todos.FirstOrDefault(p => p.Id == user.PsicologoId) : null);
+    }
+
+    private async Task<bool> PodeAcessarAsync(ProntuarioEletronico prontuario)
+    {
+        if (User.IsInRole("Admin"))
+            return true;
+        var psicologo = await ObterPsicologoLogadoAsync();
+        return psicologo != null && prontuario.PsicologoId == psicologo.Id;
+    }
+
+    public async Task<IActionResult> OnGetAsync(int? id, int? pacienteId = null, int? consultaId = null)
     {
         try
         {
+            if (!await _configuracaoService.ObterValorBoolAsync("Prontuario.Habilitado", true))
+            {
+                MensagemErro = "O prontuário eletrônico está desabilitado nas configurações do sistema.";
+                return Page();
+            }
+
             Pacientes = await _pacienteService.GetAllAsync();
             Psicologos = await _psicologoService.GetAllAsync();
 
-            // Obter userId (GUID) do usuário logado
-            string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
             if (id.HasValue)
             {
                 var prontuario = await _prontuarioService.ObterPorIdAsync(id.Value);
-                if (prontuario != null)
-                {
-                    Prontuario = prontuario;
-                }
-                else
+                if (prontuario == null)
                 {
                     MensagemErro = "Prontuário não encontrado.";
+                    return Page();
                 }
-            }
-            else if (!string.IsNullOrEmpty(userId))
-            {
-                // Pré-selecionar o psicólogo logado para novo prontuário
-                var psicologoLogado = Psicologos.FirstOrDefault(p => p.UserId == userId);
-                if (psicologoLogado != null)
+                if (!await PodeAcessarAsync(prontuario))
+                    return Forbid();
+                if (prontuario.Finalizado)
                 {
-                    Prontuario.PsicologoId = psicologoLogado.Id;
-                    _logger.LogInformation($"Psicólogo pré-selecionado: {psicologoLogado.Nome} (ID: {psicologoLogado.Id})");
+                    TempData["ErrorMessage"] = "Prontuário finalizado não pode ser editado.";
+                    return RedirectToPage("Detalhe", new { id = prontuario.Id });
                 }
+                Prontuario = prontuario;
             }
+            else
+            {
+                var psicologoLogado = await ObterPsicologoLogadoAsync();
+                if (psicologoLogado != null)
+                    Prontuario.PsicologoId = psicologoLogado.Id;
+
+                if (pacienteId.HasValue)
+                    Prontuario.PacienteId = pacienteId.Value;
+
+                if (consultaId.HasValue)
+                {
+                    Prontuario.ConsultaId = consultaId.Value;
+                    var existente = await _prontuarioService.ObterPorConsultaAsync(consultaId.Value);
+                    if (existente != null)
+                        return RedirectToPage("Detalhe", new { id = existente.Id });
+                }
+
+                Prontuario.DataSessao = DateTime.Today;
+            }
+
+            return Page();
         }
         catch (Exception ex)
         {
             MensagemErro = "Erro ao carregar dados: " + ex.Message;
             _logger.LogError(ex, "Erro ao carregar dados do prontuário");
+            return Page();
         }
     }
 
@@ -92,17 +132,45 @@ public class CadastroModel : PageModel
     {
         try
         {
-            if (!ModelState.IsValid)
+            if (!await _configuracaoService.ObterValorBoolAsync("Prontuario.Habilitado", true))
             {
+                MensagemErro = "O prontuário eletrônico está desabilitado.";
                 Pacientes = await _pacienteService.GetAllAsync();
                 Psicologos = await _psicologoService.GetAllAsync();
                 return Page();
             }
 
-            // O PsicologoId já vem do formulário em Prontuario.PsicologoId
-            // Não precisamos pegar do usuário logado
-            
-            // Adicionar nova evolução se fornecida
+            Pacientes = await _pacienteService.GetAllAsync();
+            Psicologos = await _psicologoService.GetAllAsync();
+
+            if (!ModelState.IsValid)
+                return Page();
+
+            var psicologoLogado = await ObterPsicologoLogadoAsync();
+            if (!User.IsInRole("Admin"))
+            {
+                if (psicologoLogado == null)
+                {
+                    MensagemErro = "Psicólogo não identificado.";
+                    return Page();
+                }
+                Prontuario.PsicologoId = psicologoLogado.Id;
+            }
+
+            if (Prontuario.Id > 0)
+            {
+                var existente = await _prontuarioService.ObterPorIdAsync(Prontuario.Id);
+                if (existente == null)
+                    return NotFound();
+                if (!await PodeAcessarAsync(existente))
+                    return Forbid();
+                if (existente.Finalizado)
+                {
+                    MensagemErro = "Prontuário finalizado não pode ser editado.";
+                    return Page();
+                }
+            }
+
             if (!string.IsNullOrEmpty(NovaEvolucao))
             {
                 if (string.IsNullOrEmpty(Prontuario.Evolucao))
@@ -111,40 +179,25 @@ public class CadastroModel : PageModel
                     Prontuario.Evolucao += "\n---\n" + NovaEvolucao;
             }
 
-            // Processar anexos
             if (ArquivoAnexo != null && ArquivoAnexo.Any())
             {
-                var anexos = new List<string>();
-                foreach (var arquivo in ArquivoAnexo)
-                {
-                    if (arquivo.Length > 0)
-                    {
-                        var nomeArquivo = Path.GetFileName(arquivo.FileName);
-                        anexos.Add(nomeArquivo);
-                        _logger.LogInformation($"Arquivo anexado: {nomeArquivo}");
-                    }
-                }
+                var anexos = ArquivoAnexo.Where(a => a.Length > 0).Select(a => Path.GetFileName(a.FileName)).ToList();
                 if (anexos.Any())
-                {
                     Prontuario.Anexos = string.Join(", ", anexos);
-                }
             }
 
-            // Definir dados automáticos
             if (Prontuario.Id == 0)
             {
-                // O PsicologoId já está definido no formulário
                 Prontuario.DataCriacao = DateTime.Now;
+                Prontuario.DataAtualizacao = DateTime.Now;
                 await _prontuarioService.CriarProntuarioAsync(Prontuario);
                 TempData["SuccessMessage"] = "Prontuário criado com sucesso!";
-                _logger.LogInformation($"Prontuário criado com sucesso - ID: {Prontuario.Id}");
             }
             else
             {
                 Prontuario.DataAtualizacao = DateTime.Now;
                 await _prontuarioService.AtualizarProntuarioAsync(Prontuario);
                 TempData["SuccessMessage"] = "Prontuário atualizado com sucesso!";
-                _logger.LogInformation($"Prontuário {Prontuario.Id} atualizado com sucesso");
             }
 
             return RedirectToPage("Index");
@@ -156,36 +209,6 @@ public class CadastroModel : PageModel
             Pacientes = await _pacienteService.GetAllAsync();
             Psicologos = await _psicologoService.GetAllAsync();
             MensagemErro = TempData["ErrorMessage"]?.ToString();
-            return Page();
-        }
-    }
-
-    public async Task<IActionResult> OnPostAdicionarEvolucaoAsync(int id)
-    {
-        try
-        {
-            var prontuario = await _prontuarioService.ObterPorIdAsync(id);
-            if (prontuario == null)
-                return NotFound();
-
-            if (!string.IsNullOrEmpty(NovaEvolucao))
-            {
-                if (string.IsNullOrEmpty(prontuario.Evolucao))
-                    prontuario.Evolucao = NovaEvolucao;
-                else
-                    prontuario.Evolucao += "\n---\n" + NovaEvolucao;
-
-                prontuario.DataAtualizacao = DateTime.Now;
-                await _prontuarioService.AtualizarProntuarioAsync(prontuario);
-                MensagemSucesso = "Evolução adicionada com sucesso!";
-            }
-
-            return RedirectToPage("Detalhe", new { id });
-        }
-        catch (Exception ex)
-        {
-            MensagemErro = "Erro ao adicionar evolução: " + ex.Message;
-            _logger.LogError(ex, "Erro ao adicionar evolução");
             return Page();
         }
     }

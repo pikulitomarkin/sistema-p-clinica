@@ -1,32 +1,135 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <!-- Página Principal - Psicóloga Ana Santos Londrina -->
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://www.psiianasantos.com.br/</loc>
-    <lastmod>2025-12-13</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://psyall.com.br/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/" />
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://www.psiianasantos.com.br/images/ana-santos.jpg</image:loc>
-      <image:title>Psicóloga Ana Santos - Londrina</image:title>
-      <image:caption>Psicóloga Clínica especializada em Terapia Cognitivo-Comportamental</image:caption>
+      <image:loc>https://psyall.com.br/images/psyall-logo.png</image:loc>
+      <image:title>PsyAll Psicologia</image:title>
+      <image:caption>Plataforma digital que conecta pacientes e psicólogos com teleterapia a preço social</image:caption>
     </image:image>
   </url>
-
-  <!-- Área de Login -->
   <url>
-    <loc>https://www.psiianasantos.com.br/Account/Login</loc>
-    <lastmod>2025-12-13</lastmod>
+    <loc>https://psyall.com.br/para-voce</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/para-voce" />
+    <lastmod>2026-10-05</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.9</priority>
   </url>
-
-  <!-- Agendamento de Consultas -->
   <url>
-    <loc>https://www.psiianasantos.com.br/Agendamento</loc>
-    <lastmod>2025-12-13</lastmod>
+    <loc>https://psyall.com.br/psicologia-parana</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/psicologia-parana" />
+    <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/psicologia-londrina</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/psicologia-londrina" />
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/psicologia-curitiba</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/psicologia-curitiba" />
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/psicologia-guarapuava</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/psicologia-guarapuava" />
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/psicologia-cascavel</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/psicologia-cascavel" />
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/valor-social</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/valor-social" />
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/agendamento</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/agendamento" />
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/ranking</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/ranking" />
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/Account/CriarConta</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/Account/CriarConta" />
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/Account/Register</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/Account/Register" />
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/Account/RegisterPsicologo</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/Account/RegisterPsicologo" />
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/privacidade</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/privacidade" />
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/termos/paciente</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/termos/paciente" />
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/termos/psicologo</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/termos/psicologo" />
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/termos/contrato-psicologo</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://psyall.com.br/termos/contrato-psicologo" />
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.55</priority>
+  </url>
+  <url>
+    <loc>https://psyall.com.br/llms.txt</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
   </url>
 </urlset>

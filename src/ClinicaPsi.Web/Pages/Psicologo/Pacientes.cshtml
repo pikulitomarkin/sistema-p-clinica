@@ -8,9 +8,25 @@
 
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <i class="bi bi-exclamation-triangle me-2"></i>
         @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        @TempData["Warning"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        @TempData["Success"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
@@ -47,7 +63,6 @@
                     <option value="nome" selected="@(Model.Ordenacao == "nome")">Nome</option>
                     <option value="ultimaConsulta" selected="@(Model.Ordenacao == "ultimaConsulta")">Última Consulta</option>
                     <option value="totalConsultas" selected="@(Model.Ordenacao == "totalConsultas")">Total de Consultas</option>
-                    <option value="pontos" selected="@(Model.Ordenacao == "pontos")">PsicoPontos</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -79,7 +94,7 @@
 
 <!-- Estatísticas Rápidas -->
 <div class="row mb-4">
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card card-modern stat-card">
             <div class="card-body text-center">
                 <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
@@ -88,7 +103,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card card-modern stat-card">
             <div class="card-body text-center">
                 <i class="bi bi-calendar-check text-success" style="font-size: 2rem;"></i>
@@ -97,21 +112,12 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card card-modern stat-card">
             <div class="card-body text-center">
                 <i class="bi bi-clock-history text-warning" style="font-size: 2rem;"></i>
                 <h3 class="mt-2 mb-1">@Model.PacientesInativos90Dias</h3>
                 <small class="text-muted">Inativos (90+ dias)</small>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card card-modern stat-card">
-            <div class="card-body text-center">
-                <i class="bi bi-star text-info" style="font-size: 2rem;"></i>
-                <h3 class="mt-2 mb-1">@Model.MediaPsicoPontos.ToString("N0")</h3>
-                <small class="text-muted">Média PsicoPontos</small>
             </div>
         </div>
     </div>
@@ -151,22 +157,13 @@
                                                 <small class="text-muted">@paciente.Email</small>
                                             </div>
                                         </div>
-                                        <div class="badge bg-primary">
-                                            @paciente.PsicoPontos pts
-                                        </div>
                                     </div>
                                     <div class="card-body">
                                         <div class="row g-2 mb-3">
-                                            <div class="col-6">
+                                            <div class="col-12">
                                                 <div class="text-center">
                                                     <div class="h5 mb-1 text-info">@totalConsultas</div>
                                                     <small class="text-muted">Consultas</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="text-center">
-                                                    <div class="h5 mb-1 text-success">@paciente.ConsultasGratuitas</div>
-                                                    <small class="text-muted">Gratuitas</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -211,6 +208,9 @@
                                             <button class="btn btn-outline-info btn-sm" onclick="agendarConsulta(@paciente.Id)">
                                                 <i class="bi bi-calendar-plus"></i>
                                             </button>
+                                            <a class="btn btn-outline-success btn-sm" href="/prontuario?pacienteId=@paciente.Id" title="Prontuário">
+                                                <i class="bi bi-journal-medical"></i>
+                                            </a>
                                             <button class="btn btn-outline-secondary btn-sm" onclick="historicoConsultas(@paciente.Id)">
                                                 <i class="bi bi-clock-history"></i>
                                             </button>
@@ -233,7 +233,6 @@
                                 <th>Contato</th>
                                 <th>Idade</th>
                                 <th>Consultas</th>
-                                <th>PsicoPontos</th>
                                 <th>Última Consulta</th>
                                 <th>Próxima Consulta</th>
                                 <th>Ações</th>
@@ -273,13 +272,6 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-info">@totalConsultas</span>
-                                        @if (paciente.ConsultasGratuitas > 0)
-                                        {
-                                            <small class="text-success d-block">@paciente.ConsultasGratuitas gratuitas</small>
-                                        }
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-primary">@paciente.PsicoPontos pts</span>
                                     </td>
                                     <td>
                                         @if (ultimaConsulta != null)
@@ -312,6 +304,9 @@
                                             <button class="btn btn-outline-info" onclick="agendarConsulta(@paciente.Id)" title="Agendar">
                                                 <i class="bi bi-calendar-plus"></i>
                                             </button>
+                                            <a class="btn btn-outline-success" href="/prontuario?pacienteId=@paciente.Id" title="Prontuário">
+                                                <i class="bi bi-journal-medical"></i>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>

@@ -1,0 +1,77 @@
+<div id="psy-cookie-banner" class="psy-cookie-banner" role="dialog" aria-live="polite" aria-label="Preferências de cookies" hidden>
+    <div class="psy-cookie-banner__inner">
+        <div class="psy-cookie-banner__text">
+            <strong>Cookies e privacidade</strong>
+            <p class="mb-0">
+                Usamos cookies essenciais para login e segurança.
+                Cookies analíticos são opcionais.
+                Veja a <a href="/privacidade">Política de Privacidade</a>.
+            </p>
+        </div>
+        <div class="psy-cookie-banner__actions">
+            <button type="button" class="btn btn-sm btn-outline-light" id="psyCookieReject">Só essenciais</button>
+            <button type="button" class="btn btn-sm btn-psy-primary" id="psyCookieAccept">Aceitar analíticos</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.psy-cookie-banner {
+    position: fixed;
+    z-index: 1080;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.85rem 1rem;
+    background: linear-gradient(135deg, rgba(15, 46, 34, 0.97), rgba(26, 90, 64, 0.96));
+    color: #f4faf7;
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.18);
+}
+.psy-cookie-banner__inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem 1.25rem;
+    align-items: center;
+    justify-content: space-between;
+}
+.psy-cookie-banner__text {
+    flex: 1 1 280px;
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+.psy-cookie-banner__text a { color: #b8f0d8; }
+.psy-cookie-banner__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+</style>
+
+<script>
+(function () {
+    var KEY = 'psyall_cookie_consent_v1';
+    var banner = document.getElementById('psy-cookie-banner');
+    if (!banner) return;
+
+    function read() {
+        try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; }
+    }
+    function write(analytics) {
+        var payload = { essential: true, analytics: !!analytics, at: new Date().toISOString() };
+        try { localStorage.setItem(KEY, JSON.stringify(payload)); } catch (e) {}
+        document.cookie = 'psyall_cookie_consent=' + encodeURIComponent(analytics ? 'all' : 'essential')
+            + '; path=/; max-age=31536000; SameSite=Lax';
+        banner.hidden = true;
+        window.dispatchEvent(new CustomEvent('psyall:cookie-consent', { detail: payload }));
+    }
+
+    if (!read()) banner.hidden = false;
+
+    var accept = document.getElementById('psyCookieAccept');
+    var reject = document.getElementById('psyCookieReject');
+    if (accept) accept.addEventListener('click', function () { write(true); });
+    if (reject) reject.addEventListener('click', function () { write(false); });
+})();
+</script>

@@ -1,5 +1,6 @@
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
+using MercadoPago = ClinicaPsi.Application.Services.MercadoPago;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClinicaPsi.Application.Services;
@@ -7,8 +8,13 @@ namespace ClinicaPsi.Application.Services;
 public class ConsultaService
 {
     private readonly AppDbContext _context;
+    private readonly VideoConsultaService _videoConsultaService;
 
-    public ConsultaService(AppDbContext context) => _context = context;
+    public ConsultaService(AppDbContext context, VideoConsultaService videoConsultaService)
+    {
+        _context = context;
+        _videoConsultaService = videoConsultaService;
+    }
 
     public async Task<List<Consulta>> GetAllAsync()
     {
@@ -38,24 +44,18 @@ public class ConsultaService
         if (psicologo == null || paciente == null)
             throw new Exception("Psicólogo ou paciente não encontrado");
 
-        // Verificar se é consulta gratuita
-        if (paciente.PsicoPontos >= 10 && consulta.Tipo == TipoConsulta.Gratuita)
-        {
-            consulta.Valor = 0;
-            paciente.PsicoPontos -= 10;
-            paciente.ConsultasGratuitas++;
-        }
-        else
-        {
-            consulta.Valor = psicologo.ValorConsulta;
-            consulta.Tipo = TipoConsulta.Normal;
-        }
+        consulta.Valor = MercadoPago.MercadoPagoService.ResolveValorConsulta(psicologo);
+        consulta.Tipo = TipoConsulta.Normal;
 
         consulta.DataAgendamento = DateTime.UtcNow;
         consulta.Status = StatusConsulta.Agendada;
+        if (consulta.StatusPagamento == default)
+            consulta.StatusPagamento = StatusPagamento.Pendente;
 
+        await _videoConsultaService.GarantirSalaAsync(consulta);
         _context.Consultas.Add(consulta);
         await _context.SaveChangesAsync();
+        await _videoConsultaService.FinalizarSalaAposCriacaoAsync(consulta);
 
         return consulta;
     }
@@ -83,22 +83,9 @@ public class ConsultaService
         consulta.Status = StatusConsulta.Realizada;
         consulta.RelatorioSessao = relatorio;
 
-        // Adicionar pontos ao paciente
-        if (consulta.Tipo != TipoConsulta.Gratuita)
+        if (consulta.Paciente != null)
         {
-            consulta.Paciente.PsicoPontos++;
             consulta.Paciente.ConsultasRealizadas++;
-
-            var historico = new HistoricoPontos
-            {
-                PacienteId = consulta.PacienteId,
-                ConsultaId = consulta.Id,
-                PontosAlterados = 1,
-                Motivo = "Consulta realizada",
-                DataMovimentacao = DateTime.UtcNow
-            };
-
-            _context.HistoricoPontos.Add(historico);
         }
 
         return await _context.SaveChangesAsync() > 0;

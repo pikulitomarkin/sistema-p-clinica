@@ -1,0 +1,24 @@
+@page "/Cliente/Pagamento/Pendente"
+@model ClinicaPsi.Web.Pages.Cliente.Pagamento.PendenteModel
+@{
+    ViewData["Title"] = "Pagamento em análise";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-5">
+    <div class="text-center mx-auto" style="max-width: 520px;">
+        <div class="mb-3" style="font-size: 3rem; color: var(--brand-secondary, #1ab8b0);">
+            <i class="bi bi-hourglass-split"></i>
+        </div>
+        <h1 class="h3 mb-2">Pagamento em análise</h1>
+        <p class="text-muted mb-4">
+            Recebemos sua solicitação (ex.: PIX aguardando confirmação). Assim que o Mercado Pago confirmar,
+            a consulta será marcada como paga automaticamente.
+        </p>
+        <a href="/Cliente/MinhasConsultas" class="btn btn-primary">Minhas Consultas</a>
+        @if (Model.Consulta is not null)
+        {
+            <a href="/Cliente/Pagamento?consultaId=@Model.Consulta.Id" class="btn btn-outline-secondary ms-2">Ver pagamento</a>
+        }
+    </div>
+</div>

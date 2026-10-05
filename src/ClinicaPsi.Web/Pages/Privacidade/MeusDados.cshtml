@@ -1,0 +1,118 @@
+@page "/privacidade/meus-dados"
+@model ClinicaPsi.Web.Pages.Privacidade.MeusDadosModel
+@using ClinicaPsi.Shared.Models
+@{
+    ViewData["Title"] = "Meus dados — Direitos do titular | PsyAll";
+    ViewData["MetaDescription"] = "Exercício de direitos LGPD: acesso, exportação, correção e eliminação de dados pessoais na PsyAll.";
+    ViewData["Robots"] = "noindex, nofollow";
+}
+
+<div class="container py-5 psy-legal" style="max-width: 720px;">
+    <header class="mb-4">
+        <p class="psy-eyebrow mb-2">LGPD · Direitos do titular</p>
+        <h1>Meus dados</h1>
+        <p class="text-muted mb-0">
+            Solicite acesso, correção, eliminação ou exportação dos seus dados pessoais
+            (arts. 18 e seguintes da Lei nº 13.709/2018).
+        </p>
+    </header>
+
+    @if (!string.IsNullOrEmpty(Model.MensagemSucesso))
+    {
+        <div class="alert alert-success">@Model.MensagemSucesso</div>
+    }
+
+    <section class="mb-5">
+        <h2 class="h5">Exportar meus dados</h2>
+        <p class="small text-muted">
+            Download imediato dos dados cadastrais e metadados de consultas vinculados à sua conta
+            (sem conteúdo clínico detalhado de prontuário de terceiros).
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-psy-primary" href="/privacidade/meus-dados?handler=ExportarJson">Baixar JSON</a>
+            <a class="btn btn-outline-secondary" href="/privacidade/meus-dados?handler=ExportarCsv">Baixar CSV</a>
+        </div>
+    </section>
+
+    <section class="mb-5">
+        <h2 class="h5">Nova solicitação</h2>
+        <form method="post" class="mt-3">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+            <div class="mb-3">
+                <label asp-for="Input.Tipo" class="form-label">Tipo</label>
+                <select asp-for="Input.Tipo" class="form-select">
+                    <option value="@((int)TipoSolicitacaoPrivacidade.Acesso)">Acesso / confirmação de tratamento</option>
+                    <option value="@((int)TipoSolicitacaoPrivacidade.Exportacao)">Portabilidade / exportação</option>
+                    <option value="@((int)TipoSolicitacaoPrivacidade.Correcao)">Correção de dados</option>
+                    <option value="@((int)TipoSolicitacaoPrivacidade.Eliminacao)">Eliminação / exclusão de conta</option>
+                    <option value="@((int)TipoSolicitacaoPrivacidade.Outro)">Outro</option>
+                </select>
+                <span asp-validation-for="Input.Tipo" class="text-danger small"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Input.Detalhes" class="form-label">Detalhes (opcional)</label>
+                <textarea asp-for="Input.Detalhes" class="form-control" rows="4"
+                          placeholder="Descreva o que precisa corrigir, excluir ou esclarecer."></textarea>
+                <span asp-validation-for="Input.Detalhes" class="text-danger small"></span>
+            </div>
+            <button type="submit" class="btn btn-psy-primary">Enviar solicitação</button>
+        </form>
+    </section>
+
+    <section>
+        <h2 class="h5">Minhas solicitações</h2>
+        @if (Model.MinhasSolicitacoes.Count == 0)
+        {
+            <p class="text-muted small mb-0">Nenhuma solicitação registrada ainda.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var s in Model.MinhasSolicitacoes)
+                    {
+                        <tr>
+                            <td>@s.DataCriacao.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@RotuloTipo(s.Tipo)</td>
+                            <td>@RotuloStatus(s.Status)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <p class="mt-4 small">
+        <a href="/privacidade">Política de Privacidade</a> ·
+        <a href="/">Home</a>
+    </p>
+</div>
+
+@functions {
+    static string RotuloTipo(TipoSolicitacaoPrivacidade t) => t switch
+    {
+        TipoSolicitacaoPrivacidade.Acesso => "Acesso",
+        TipoSolicitacaoPrivacidade.Exportacao => "Exportação",
+        TipoSolicitacaoPrivacidade.Correcao => "Correção",
+        TipoSolicitacaoPrivacidade.Eliminacao => "Eliminação",
+        _ => "Outro"
+    };
+
+    static string RotuloStatus(StatusSolicitacaoPrivacidade s) => s switch
+    {
+        StatusSolicitacaoPrivacidade.Pendente => "Pendente",
+        StatusSolicitacaoPrivacidade.EmAnalise => "Em análise",
+        StatusSolicitacaoPrivacidade.Concluida => "Concluída",
+        StatusSolicitacaoPrivacidade.Recusada => "Recusada",
+        _ => s.ToString()
+    };
+}

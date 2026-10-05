@@ -1,0 +1,29 @@
+@{
+    var current = ViewData["LocalCitySlug"] as string ?? "";
+    var cities = new (string Slug, string Label, string Path)[]
+    {
+        ("parana", "Paraná", "/psicologia-parana"),
+        ("londrina", "Londrina", "/psicologia-londrina"),
+        ("curitiba", "Curitiba", "/psicologia-curitiba"),
+        ("guarapuava", "Guarapuava", "/psicologia-guarapuava"),
+        ("cascavel", "Cascavel", "/psicologia-cascavel"),
+    };
+}
+<nav class="psy-city-nav" aria-label="Atendimento digital por região no Paraná">
+    <p class="psy-city-nav-label">Atendimento em</p>
+    <ul class="psy-city-nav-list">
+        @foreach (var city in cities)
+        {
+            <li>
+                @if (string.Equals(city.Slug, current, StringComparison.OrdinalIgnoreCase))
+                {
+                    <span class="psy-city-nav-link is-active" aria-current="page">@city.Label</span>
+                }
+                else
+                {
+                    <a class="psy-city-nav-link" href="@city.Path">@city.Label</a>
+                }
+            </li>
+        }
+    </ul>
+</nav>

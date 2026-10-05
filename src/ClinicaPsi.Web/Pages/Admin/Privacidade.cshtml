@@ -1,0 +1,110 @@
+@page "/admin/privacidade"
+@model ClinicaPsi.Web.Pages.Admin.PrivacidadeModel
+@using ClinicaPsi.Shared.Models
+@{
+    ViewData["Title"] = "Solicitações LGPD";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-1">
+                <i class="bi bi-shield-lock me-2"></i>
+                Solicitações de privacidade (LGPD)
+            </h1>
+            <p class="text-muted mb-0">Pedidos de acesso, correção, exportação e eliminação feitos pelos titulares.</p>
+        </div>
+        <span class="badge text-bg-warning">@Model.Pendentes em aberto</span>
+    </div>
+
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-success">@TempData["Sucesso"]</div>
+    }
+    @if (TempData["Erro"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Erro"]</div>
+    }
+
+    <form method="get" class="row g-2 mb-4">
+        <div class="col-auto">
+            <select name="FiltroStatus" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Todos os status</option>
+                @foreach (StatusSolicitacaoPrivacidade st in Enum.GetValues(typeof(StatusSolicitacaoPrivacidade)))
+                {
+                    <option value="@((int)st)" selected="@(Model.FiltroStatus == st)">@st</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <a class="btn btn-sm btn-outline-secondary" href="/privacidade" target="_blank">Ver Política</a>
+        </div>
+    </form>
+
+    @if (Model.Solicitacoes.Count == 0)
+    {
+        <p class="text-muted">Nenhuma solicitação encontrada.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle bg-white">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Data</th>
+                        <th>Titular</th>
+                        <th>Tipo</th>
+                        <th>Status</th>
+                        <th>Detalhes</th>
+                        <th style="min-width:220px">Atualizar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var s in Model.Solicitacoes)
+                {
+                    <tr>
+                        <td>@s.Id</td>
+                        <td>@s.DataCriacao.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <div>@s.NomeTitular</div>
+                            <small class="text-muted">@s.EmailTitular</small>
+                        </td>
+                        <td>@s.Tipo</td>
+                        <td>
+                            <span class="badge @(s.Status == StatusSolicitacaoPrivacidade.Pendente ? "text-bg-warning" :
+                                s.Status == StatusSolicitacaoPrivacidade.EmAnalise ? "text-bg-info" :
+                                s.Status == StatusSolicitacaoPrivacidade.Concluida ? "text-bg-success" : "text-bg-secondary")">
+                                @s.Status
+                            </span>
+                        </td>
+                        <td class="small" style="max-width:220px">@(s.Detalhes ?? "—")</td>
+                        <td>
+                            <form method="post" asp-page-handler="Atualizar" class="d-flex flex-column gap-1">
+                                <input type="hidden" name="id" value="@s.Id" />
+                                <select name="status" class="form-select form-select-sm">
+                                    @foreach (StatusSolicitacaoPrivacidade st in Enum.GetValues(typeof(StatusSolicitacaoPrivacidade)))
+                                    {
+                                        if (s.Status == st)
+                                        {
+                                            <option value="@((int)st)" selected>@st</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@((int)st)">@st</option>
+                                        }
+                                    }
+                                </select>
+                                <input type="text" name="observacao" class="form-control form-control-sm"
+                                       placeholder="Obs. admin" value="@(s.ObservacaoAdmin ?? "")" />
+                                <button type="submit" class="btn btn-sm btn-psy-primary">Salvar</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

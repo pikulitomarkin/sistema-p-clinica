@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using ClinicaPsi.Infrastructure.Data;
 using ClinicaPsi.Shared.Models;
-using ClinicaPsi.Web.Extensions;
+using ClinicaPsi.Web.Services;
 using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
 
@@ -16,20 +16,29 @@ namespace ClinicaPsi.Web.Pages.Cliente
     {
         private readonly AppDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly FotoPerfilService _fotoPerfilService;
 
-        public MeuPerfilModel(AppDbContext context, UserManager<ApplicationUser> userManager)
+        public MeuPerfilModel(
+            AppDbContext context,
+            UserManager<ApplicationUser> userManager,
+            FotoPerfilService fotoPerfilService)
         {
             _context = context;
             _userManager = userManager;
+            _fotoPerfilService = fotoPerfilService;
         }
 
         public Paciente? Paciente { get; set; }
+        public string? FotoUrl { get; set; }
 
         [BindProperty]
         public InputModel Input { get; set; } = new();
 
         [BindProperty]
         public SenhaModel InputSenha { get; set; } = new();
+
+        [BindProperty]
+        public IFormFile? FotoArquivo { get; set; }
 
         public class InputModel
         {
@@ -116,7 +125,6 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     return Page();
                 }
 
-                // Verificar se CPF já existe para outro paciente
                 var cpfExistente = await _context.Pacientes
                     .Where(p => p.CPF == Input.CPF && p.Id != paciente.Id)
                     .FirstOrDefaultAsync();
@@ -128,7 +136,6 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     return Page();
                 }
 
-                // Verificar se email já existe para outro usuário
                 var emailExistente = await _userManager.FindByEmailAsync(Input.Email);
                 if (emailExistente != null && emailExistente.Id != userId)
                 {
@@ -137,7 +144,6 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     return Page();
                 }
 
-                // Atualizar dados do paciente
                 paciente.Nome = Input.Nome;
                 paciente.Email = Input.Email;
                 paciente.Telefone = Input.Telefone;
@@ -151,7 +157,6 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 paciente.Observacoes = Input.Observacoes;
                 paciente.DataAtualizacao = DateTime.Now;
 
-                // Atualizar email do usuário Identity
                 var identityUser = await _userManager.FindByIdAsync(userId!);
                 if (identityUser != null && identityUser.Email != Input.Email)
                 {
@@ -159,7 +164,6 @@ namespace ClinicaPsi.Web.Pages.Cliente
                     identityUser.UserName = Input.Email;
                     identityUser.NormalizedEmail = Input.Email.ToUpper();
                     identityUser.NormalizedUserName = Input.Email.ToUpper();
-                    
                     await _userManager.UpdateAsync(identityUser);
                 }
 
@@ -179,9 +183,8 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
         public async Task<IActionResult> OnPostAlterarSenhaAsync()
         {
-            // Limpar erros do modelo de perfil para validar apenas senha
             ModelState.Clear();
-            
+
             if (!TryValidateModel(InputSenha, nameof(InputSenha)))
             {
                 await CarregarDadosAsync();
@@ -205,18 +208,13 @@ namespace ClinicaPsi.Web.Pages.Cliente
                 if (result.Succeeded)
                 {
                     TempData["Success"] = "Senha alterada com sucesso!";
-                    
-                    // Limpar campos de senha
                     InputSenha = new SenhaModel();
-                    
                     return RedirectToPage();
                 }
-                else
+
+                foreach (var error in result.Errors)
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        ModelState.AddModelError("", error.Description);
-                    }
+                    ModelState.AddModelError("", error.Description);
                 }
 
                 await CarregarDadosAsync();
@@ -230,11 +228,84 @@ namespace ClinicaPsi.Web.Pages.Cliente
             }
         }
 
+        public async Task<IActionResult> OnPostUploadFotoAsync()
+        {
+            ModelState.Clear();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId!);
+            if (user == null)
+            {
+                TempData["Error"] = "Usuário não encontrado.";
+                return RedirectToPage();
+            }
+
+            var (ok, url, erro) = await _fotoPerfilService.SalvarAsync(FotoArquivo!, user.FotoUrl);
+            if (!ok)
+            {
+                TempData["Error"] = erro ?? "Falha no upload da foto.";
+                return RedirectToPage();
+            }
+
+            user.FotoUrl = url;
+            await _userManager.UpdateAsync(user);
+
+            if (user.PacienteId.HasValue)
+            {
+                var paciente = await _context.Pacientes.FindAsync(user.PacienteId.Value);
+                if (paciente != null)
+                {
+                    paciente.FotoUrl = url;
+                    paciente.DataAtualizacao = DateTime.Now;
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            TempData["Success"] = "Foto de perfil atualizada com sucesso!";
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostRemoverFotoAsync()
+        {
+            ModelState.Clear();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId!);
+            if (user == null)
+            {
+                TempData["Error"] = "Usuário não encontrado.";
+                return RedirectToPage();
+            }
+
+            var urlAnterior = user.FotoUrl;
+            _fotoPerfilService.RemoverArquivoFisico(urlAnterior);
+            user.FotoUrl = null;
+            await _userManager.UpdateAsync(user);
+
+            if (user.PacienteId.HasValue)
+            {
+                var paciente = await _context.Pacientes.FindAsync(user.PacienteId.Value);
+                if (paciente != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(paciente.FotoUrl) && paciente.FotoUrl != urlAnterior)
+                        _fotoPerfilService.RemoverArquivoFisico(paciente.FotoUrl);
+                    paciente.FotoUrl = null;
+                    paciente.DataAtualizacao = DateTime.Now;
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            TempData["Success"] = "Foto de perfil removida.";
+            return RedirectToPage();
+        }
+
         private async Task CarregarDadosAsync()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == userId);
+
+            FotoUrl = user?.FotoUrl;
 
             if (user?.PacienteId != null)
             {
@@ -243,6 +314,9 @@ namespace ClinicaPsi.Web.Pages.Cliente
 
                 if (Paciente != null)
                 {
+                    if (string.IsNullOrWhiteSpace(FotoUrl))
+                        FotoUrl = Paciente.FotoUrl;
+
                     Input.Nome = Paciente.Nome;
                     Input.Email = Paciente.Email;
                     Input.Telefone = Paciente.Telefone;
@@ -261,13 +335,13 @@ namespace ClinicaPsi.Web.Pages.Cliente
         public int CalcularIdade()
         {
             if (Paciente == null) return 0;
-            
+
             var hoje = DateTime.Today;
             var idade = hoje.Year - Paciente.DataNascimento.Year;
-            
+
             if (Paciente.DataNascimento.Date > hoje.AddYears(-idade))
                 idade--;
-                
+
             return idade;
         }
     }

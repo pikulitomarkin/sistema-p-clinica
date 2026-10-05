@@ -81,7 +81,7 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                 // Se ainda não tem PsicologoId, criar valores padrão
                 if (usuario.PsicologoId == null)
                 {
-                    ValorConsulta = 150m;
+                    ValorConsulta = 50m;
                     CRP = "Não informado";
                     AtendeManha = true;
                     AtendeTarde = true;
