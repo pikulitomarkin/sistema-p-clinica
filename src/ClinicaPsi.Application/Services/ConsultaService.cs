@@ -1,4 +1,5 @@
 using ClinicaPsi.Infrastructure.Data;
+using ClinicaPsi.Shared;
 using ClinicaPsi.Shared.Models;
 using MercadoPago = ClinicaPsi.Application.Services.MercadoPago;
 using Microsoft.EntityFrameworkCore;
@@ -27,11 +28,14 @@ public class ConsultaService
 
     public async Task<List<Consulta>> GetProximasConsultasAsync(int dias = 7)
     {
-        var dataFim = DateTime.UtcNow.AddDays(dias);
+        var agora = HorarioBrasil.Agora;
+        var dataFim = agora.AddDays(dias);
         return await _context.Consultas
             .Include(c => c.Paciente)
             .Include(c => c.Psicologo)
-            .Where(c => c.DataHorario <= dataFim && c.Status == StatusConsulta.Agendada)
+            .Where(c => c.DataHorario >= agora
+                     && c.DataHorario <= dataFim
+                     && c.Status == StatusConsulta.Agendada)
             .OrderBy(c => c.DataHorario)
             .ToListAsync();
     }
@@ -93,7 +97,7 @@ public class ConsultaService
 
     public async Task<int> GetConsultasHojeAsync()
     {
-        var hoje = DateTime.Today;
+        var hoje = HorarioBrasil.Hoje;
         var amanha = hoje.AddDays(1);
         
         return await _context.Consultas
@@ -103,7 +107,7 @@ public class ConsultaService
 
     public async Task<List<Consulta>> GetConsultasHojeListAsync()
     {
-        var hoje = DateTime.Today;
+        var hoje = HorarioBrasil.Hoje;
         var amanha = hoje.AddDays(1);
         
         return await _context.Consultas
@@ -117,11 +121,11 @@ public class ConsultaService
 
     public async Task<int> GetCountProximasConsultasAsync(int dias)
     {
-        var hoje = DateTime.Today;
-        var dataFim = hoje.AddDays(dias);
-        
+        var agora = HorarioBrasil.Agora;
+        var dataFim = agora.AddDays(dias);
+
         return await _context.Consultas
-            .CountAsync(c => c.DataHorario >= hoje && c.DataHorario <= dataFim 
+            .CountAsync(c => c.DataHorario >= agora && c.DataHorario <= dataFim
                            && c.Status == StatusConsulta.Agendada);
     }
 
