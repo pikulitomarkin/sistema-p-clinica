@@ -149,9 +149,9 @@
                                 <div class="card paciente-card h-100">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-2">
-                                                @paciente.Nome.Substring(0, 1).ToUpper()
-                                            </div>
+                                            <span class="me-2">
+                                                <partial name="_AvatarPerfil" model="new AvatarPerfilModel(paciente.FotoUrl, paciente.Nome, 40)" />
+                                            </span>
                                             <div>
                                                 <h6 class="mb-0">@paciente.Nome</h6>
                                                 <small class="text-muted">@paciente.Email</small>
@@ -248,9 +248,9 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-2">
-                                                @paciente.Nome.Substring(0, 1).ToUpper()
-                                            </div>
+                                            <span class="me-2">
+                                                <partial name="_AvatarPerfil" model="new AvatarPerfilModel(paciente.FotoUrl, paciente.Nome, 40)" />
+                                            </span>
                                             <div>
                                                 <strong>@paciente.Nome</strong>
                                                 <br><small class="text-muted">@paciente.Email</small>

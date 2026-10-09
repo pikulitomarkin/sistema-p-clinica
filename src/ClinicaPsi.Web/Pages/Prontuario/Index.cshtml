@@ -55,8 +55,18 @@ else
         @foreach (var p in Model.Prontuarios)
         {
             <tr>
-                <td>@p.Paciente?.Nome</td>
-                <td>@p.Psicologo?.Nome</td>
+                <td>
+                    <span class="d-inline-flex align-items-center gap-2">
+                        <partial name="_AvatarPerfil" model="new AvatarPerfilModel(p.Paciente?.FotoUrl, p.Paciente?.Nome, 32)" />
+                        <span>@p.Paciente?.Nome</span>
+                    </span>
+                </td>
+                <td>
+                    <span class="d-inline-flex align-items-center gap-2">
+                        <partial name="_AvatarPerfil" model="new AvatarPerfilModel(p.Psicologo?.FotoUrl, p.Psicologo?.Nome, 32)" />
+                        <span>@p.Psicologo?.Nome</span>
+                    </span>
+                </td>
                 <td>@p.DataSessao.ToString("dd/MM/yyyy")</td>
                 <td>@p.QueixaPrincipal</td>
                 <td>
