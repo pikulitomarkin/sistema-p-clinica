@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ClinicaPsi.Shared;
 using ClinicaPsi.Shared.Models;
 using ClinicaPsi.Application.Services;
 
@@ -100,8 +101,9 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     }
                 }
 
-                // Carregar estatísticas
-                var consultasHoje = await _consultaService.GetConsultasByDateAsync(DateTime.Today);
+                // Carregar estatísticas no horário de Brasília (os agendamentos são gravados assim)
+                var agora = HorarioBrasil.Agora;
+                var consultasHoje = await _consultaService.GetConsultasByDateAsync(agora.Date);
                 ConsultasHoje = usuario.PsicologoId.HasValue ? 
                     consultasHoje.Where(c => c.PsicologoId == usuario.PsicologoId).Count() : 0;
 
@@ -112,8 +114,8 @@ namespace ClinicaPsi.Web.Pages.Psicologo
                     proximasConsultas.Where(c => c.PsicologoId == usuario.PsicologoId).ToList() : new List<Consulta>();
 
                 // Consultas realizadas no mês atual
-                var inicioMes = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-                var consultasRealizadas = await _consultaService.GetConsultasRealizadasAsync(inicioMes, DateTime.Now);
+                var inicioMes = new DateTime(agora.Year, agora.Month, 1);
+                var consultasRealizadas = await _consultaService.GetConsultasRealizadasAsync(inicioMes, agora);
                 ConsultasRealizadas = usuario.PsicologoId.HasValue ? 
                     consultasRealizadas.Where(c => c.PsicologoId == usuario.PsicologoId).Count() : 0;
 

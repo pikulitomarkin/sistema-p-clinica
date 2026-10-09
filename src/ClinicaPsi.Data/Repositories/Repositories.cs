@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ClinicaPsi.Data.Context;
+using ClinicaPsi.Shared;
 using ClinicaPsi.Shared.Models;
 using ClinicaPsi.Core.Services;
 
@@ -174,12 +175,13 @@ public class ConsultaRepository : BaseRepository<Consulta>, IConsultaRepository
 
     public async Task<IEnumerable<Consulta>> GetProximasConsultasAsync(int dias = 7)
     {
-        var dataLimite = DateTime.Now.AddDays(dias);
+        var agora = HorarioBrasil.Agora;
+        var dataLimite = agora.AddDays(dias);
 
         return await _dbSet
             .Include(c => c.Paciente)
             .Include(c => c.Psicologo)
-            .Where(c => c.DataHorario >= DateTime.Now && 
+            .Where(c => c.DataHorario >= agora &&
                        c.DataHorario <= dataLimite &&
                        c.Status == StatusConsulta.Agendada)
             .OrderBy(c => c.DataHorario)
