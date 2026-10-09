@@ -16,6 +16,7 @@ Allow: /psicologia-cascavel
 Allow: /agendamento
 Allow: /Agendamento
 Allow: /ranking
+Allow: /profissionais/
 Allow: /privacidade
 Allow: /termos/
 Allow: /images/

@@ -1024,6 +1024,8 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    position: relative;
+    cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .psy-pro-card:hover {
@@ -1057,7 +1059,62 @@ html, body {
 }
 .psy-stars { color: #e6a800; font-size: 0.95rem; }
 .psy-stars-label { color: var(--text-muted); margin-left: 0.35rem; font-size: 0.85rem; }
-.psy-pro-actions { margin-top: auto; }
+.psy-pro-actions { margin-top: auto; position: relative; z-index: 2; }
+
+.psy-profile {
+    background: #fff;
+    border: 1px solid var(--border-soft);
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+.psy-profile-back { color: var(--brand-primary, #1f7a4d); text-decoration: none; font-weight: 600; }
+.psy-profile-back:hover { text-decoration: underline; }
+.psy-profile-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.psy-profile-avatar { width: 96px; height: 96px; font-size: 2rem; }
+.psy-profile-id { flex: 1; min-width: 180px; }
+.psy-profile-id h1 { font-size: 1.75rem; font-weight: 700; }
+.psy-profile-cta { min-width: 160px; }
+.psy-profile-stat {
+    background: #f4faf6;
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.psy-profile-stat strong { font-size: 2rem; line-height: 1; color: #1f7a4d; }
+.psy-profile-stat span { color: var(--text-muted); margin-top: 0.35rem; }
+.psy-profile-block h2 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.65rem; }
+.psy-chip-list { list-style: none; display: flex; flex-wrap: wrap; gap: 0.45rem; padding: 0; margin: 0; }
+.psy-chip-list li {
+    background: #e8f6ee;
+    color: #1f7a4d;
+    border-radius: 999px;
+    padding: 0.3rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.psy-hours { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+.psy-hours li { display: flex; gap: 0.75rem; align-items: baseline; }
+.psy-hours span { min-width: 4.5rem; color: var(--text-muted); }
+.psy-review-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.psy-review {
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+}
+.psy-review-top { display: flex; flex-wrap: wrap; gap: 0.5rem 0.85rem; align-items: center; margin-bottom: 0.35rem; }
+.psy-review-top time { color: var(--text-muted); font-size: 0.85rem; margin-left: auto; }
+.psy-review p { margin: 0; }
 
 .psy-rank-list {
     list-style: none;
