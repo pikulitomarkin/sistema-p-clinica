@@ -160,10 +160,13 @@
                                         </small>
                                     </td>
                                     <td>
-                                        <div>
-                                            <strong>@consulta.Paciente?.Nome</strong>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <partial name="_AvatarPerfil" model="new AvatarPerfilModel(consulta.Paciente?.FotoUrl, consulta.Paciente?.Nome, 36)" />
+                                            <div>
+                                                <strong>@consulta.Paciente?.Nome</strong>
+                                                <br><small class="text-muted">@consulta.Paciente?.Email</small>
+                                            </div>
                                         </div>
-                                        <small class="text-muted">@consulta.Paciente?.Email</small>
                                     </td>
                                     <td>
                                         <span class="badge bg-info">@consulta.Tipo.GetDisplayName()</span>
@@ -236,7 +239,10 @@
                                         <span class="badge bg-info">@consulta.Tipo.GetDisplayName()</span>
                                     </div>
                                     <div class="card-body">
-                                        <h6 class="card-title">@consulta.Paciente?.Nome</h6>
+                                        <h6 class="card-title d-flex align-items-center gap-2">
+                                            <partial name="_AvatarPerfil" model="new AvatarPerfilModel(consulta.Paciente?.FotoUrl, consulta.Paciente?.Nome, 32)" />
+                                            <span>@consulta.Paciente?.Nome</span>
+                                        </h6>
                                         <div class="mb-2">
                                             <i class="bi bi-calendar me-1"></i>
                                             <strong>@consulta.DataHorario.ToString("dd/MM/yyyy")</strong>

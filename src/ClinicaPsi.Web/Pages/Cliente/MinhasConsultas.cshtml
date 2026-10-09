@@ -118,9 +118,12 @@
                             <div class="card border-0 shadow-sm h-100">
                                 <div class="card-header bg-light border-0">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-0">@consulta.Psicologo.Nome</h6>
-                                            <small class="text-muted">@consulta.Psicologo.Especialidades</small>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <partial name="_AvatarPerfil" model="new AvatarPerfilModel(consulta.Psicologo.FotoUrl, consulta.Psicologo.Nome, 40)" />
+                                            <div>
+                                                <h6 class="mb-0">@consulta.Psicologo.Nome</h6>
+                                                <small class="text-muted">@consulta.Psicologo.Especialidades</small>
+                                            </div>
                                         </div>
                                         <span class="badge @Model.GetStatusBadgeClass(consulta.Status)">
                                             @consulta.Status.GetDisplayName()

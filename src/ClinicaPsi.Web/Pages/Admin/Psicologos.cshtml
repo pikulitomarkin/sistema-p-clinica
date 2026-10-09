@@ -104,9 +104,9 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar-circle me-3">
-                                            @psicologo.Nome.First()
-                                        </div>
+                                        <span class="me-3">
+                                            <partial name="_AvatarPerfil" model="new AvatarPerfilModel(psicologo.FotoUrl, psicologo.Nome, 40)" />
+                                        </span>
                                         <div>
                                             <strong>@psicologo.Nome</strong>
                                             <br>

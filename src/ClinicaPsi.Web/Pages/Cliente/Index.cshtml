@@ -99,7 +99,12 @@
                                             <strong>@consulta.DataHorario.ToString("dd/MM/yyyy")</strong><br>
                                             <small class="text-muted">@consulta.DataHorario.ToString("HH:mm")</small>
                                         </td>
-                                        <td>@consulta.Psicologo?.Nome</td>
+                                        <td>
+                                            <span class="d-inline-flex align-items-center gap-2">
+                                                <partial name="_AvatarPerfil" model="new AvatarPerfilModel(consulta.Psicologo?.FotoUrl, consulta.Psicologo?.Nome, 32)" />
+                                                <span>@consulta.Psicologo?.Nome</span>
+                                            </span>
+                                        </td>
                                         <td>
                                             @if (consulta.Tipo == TipoConsulta.Gratuita)
                                             {
@@ -215,8 +220,8 @@
                 @if (Model.PacienteInfo != null)
                 {
                     <div class="text-center mb-3">
-                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                            <i class="bi bi-person text-white" style="font-size: 1.5rem;"></i>
+                        <div class="d-inline-flex">
+                            <partial name="_AvatarPerfil" model="new AvatarPerfilModel(Model.PacienteInfo.FotoUrl, Model.PacienteInfo.Nome, 60)" />
                         </div>
                         <h6 class="mt-2 mb-1">@Model.PacienteInfo.Nome</h6>
                         <small class="text-muted">@Model.PacienteInfo.Email</small>

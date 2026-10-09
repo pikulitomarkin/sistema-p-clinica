@@ -1,0 +1,14 @@
+@model ClinicaPsi.Web.Ui.AvatarPerfilModel
+@{
+    var nome = string.IsNullOrWhiteSpace(Model.Nome) ? "Perfil" : Model.Nome.Trim();
+    var inicial = char.ToUpperInvariant(nome[0]);
+    var px = Model.Tamanho <= 0 ? 40 : Model.Tamanho;
+}
+@if (!string.IsNullOrWhiteSpace(Model.FotoUrl))
+{
+    <img src="@Model.FotoUrl" alt="Foto de @nome" width="@px" height="@px" class="avatar-foto" style="width:@(px)px;height:@(px)px;" />
+}
+else
+{
+    <span class="avatar-circle" style="width:@(px)px;height:@(px)px;" aria-hidden="true">@inicial</span>
+}

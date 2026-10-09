@@ -145,7 +145,10 @@
                                 {
                                     <tr>
                                         <td>
-                                            <strong>@consulta.Paciente?.Nome</strong>
+                                            <span class="d-inline-flex align-items-center gap-2">
+                                                <partial name="_AvatarPerfil" model="new AvatarPerfilModel(consulta.Paciente?.FotoUrl, consulta.Paciente?.Nome, 32)" />
+                                                <strong>@consulta.Paciente?.Nome</strong>
+                                            </span>
                                             @if (consulta.Tipo == TipoConsulta.Gratuita)
                                             {
                                                 <span class="badge bg-warning text-dark ms-1">Gratuita</span>
