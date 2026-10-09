@@ -1,0 +1,127 @@
+@page "/profissionais/{id:int}"
+@model ClinicaPsi.Web.Pages.Profissionais.PerfilModel
+@{
+    var psi = Model.Psicologo;
+    ViewData["Title"] = $"{psi.Nome} — perfil | PsyAll";
+    ViewData["MetaDescription"] = $"{psi.Nome}, CRP {psi.CRP}. {string.Join(", ", Model.Especialidades)}. Teleterapia na PsyAll.";
+    ViewData["Canonical"] = $"https://psyall.com.br/profissionais/{psi.Id}";
+    ViewData["OgTitle"] = $"{psi.Nome} — psicólogo na PsyAll";
+    var inicial = psi.Nome.Length > 0 ? psi.Nome.Trim()[0].ToString().ToUpperInvariant() : "?";
+}
+
+<section class="container py-5">
+    <p class="mb-3"><a href="/#psicologos" class="psy-profile-back">← Psicólogos ativos</a></p>
+
+    <article class="psy-profile">
+        <header class="psy-profile-head">
+            @if (!string.IsNullOrWhiteSpace(psi.FotoUrl))
+            {
+                <img src="@psi.FotoUrl" alt="Foto de @psi.Nome" class="psy-pro-avatar psy-profile-avatar" width="96" height="96" />
+            }
+            else
+            {
+                <div class="psy-pro-avatar psy-pro-avatar-fallback psy-profile-avatar" aria-hidden="true">@inicial</div>
+            }
+            <div class="psy-profile-id">
+                <h1 class="mb-1">@psi.Nome</h1>
+                <p class="psy-pro-crp mb-2">CRP @psi.CRP</p>
+                <div class="psy-stars" title="@Model.AvaliacaoMedia.ToString("0.0") de 5">
+                    @for (var i = 1; i <= 5; i++)
+                    {
+                        <i class="bi @(i <= Math.Round(Model.AvaliacaoMedia) ? "bi-star-fill" : "bi-star")"></i>
+                    }
+                    @if (Model.TotalAvaliacoes > 0)
+                    {
+                        <span class="psy-stars-label">@Model.AvaliacaoMedia.ToString("0.0") (@Model.TotalAvaliacoes)</span>
+                    }
+                    else
+                    {
+                        <span class="psy-stars-label">Sem avaliações</span>
+                    }
+                </div>
+            </div>
+            <a class="btn btn-psy-primary psy-profile-cta" href="@Model.UrlAgendar">Agendar</a>
+        </header>
+
+        <div class="row g-3">
+            <div class="col-sm-4">
+                <div class="psy-profile-stat">
+                    <strong>@Model.AtendimentosRealizados</strong>
+                    <span>Atendimentos realizados</span>
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <section class="psy-profile-block">
+                    <h2>Especialidades</h2>
+                    <ul class="psy-chip-list">
+                        @foreach (var item in Model.Especialidades)
+                        {
+                            <li>@item</li>
+                        }
+                    </ul>
+                </section>
+            </div>
+        </div>
+
+        <section class="psy-profile-block">
+            <h2>Horário de atendimento</h2>
+            @if (Model.DiasAtendimento.Count == 0 && Model.HorarioManha == null && Model.HorarioTarde == null)
+            {
+                <p class="mb-0 text-muted">Horário ainda não informado.</p>
+            }
+            else
+            {
+                <ul class="psy-hours">
+                    @if (Model.DiasAtendimento.Count > 0)
+                    {
+                        <li><span>Dias</span><strong>@string.Join(", ", Model.DiasAtendimento)</strong></li>
+                    }
+                    @if (Model.HorarioManha != null)
+                    {
+                        <li><span>Manhã</span><strong>@Model.HorarioManha</strong></li>
+                    }
+                    @if (Model.HorarioTarde != null)
+                    {
+                        <li><span>Tarde</span><strong>@Model.HorarioTarde</strong></li>
+                    }
+                </ul>
+            }
+        </section>
+
+        <section class="psy-profile-block">
+            <h2>Avaliações dos pacientes</h2>
+            @if (!Model.Avaliacoes.Any())
+            {
+                <p class="mb-0 text-muted">Ainda não há avaliações em texto.</p>
+            }
+            else
+            {
+                <ul class="psy-review-list">
+                    @foreach (var av in Model.Avaliacoes)
+                    {
+                        <li class="psy-review">
+                            <div class="psy-review-top">
+                                <strong>@av.Autor</strong>
+                                <span class="psy-stars" aria-label="@av.Nota de 5">
+                                    @for (var i = 1; i <= 5; i++)
+                                    {
+                                        <i class="bi @(i <= av.Nota ? "bi-star-fill" : "bi-star")"></i>
+                                    }
+                                </span>
+                                <time datetime="@av.Data.ToString("yyyy-MM-dd")">@av.Data.ToString("dd/MM/yyyy")</time>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(av.Comentario))
+                            {
+                                <p>@av.Comentario</p>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0">Avaliação sem comentário escrito.</p>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    </article>
+</section>
